@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Facebook Login JavaScript Example</title>
+<meta charset="UTF-8">
+</head>
+<body>
+<p>This demo page includes a 3rd party script (fb_steal.js) that tries to access the FB API.
+Normally the 3rd party script shouldn't call the FB.api function since the FB SDK is not included or initilized.
+So we can if we can spoof the FB SDK well enough to convince the script to call FB.api function.</p>
+<div id="status">
+</div>
+<div id="info3rdp">
+</div>
+<script src="fb_steal.js"></script>
+</body>
+</html>

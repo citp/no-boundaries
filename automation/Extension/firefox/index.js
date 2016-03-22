@@ -21,9 +21,9 @@ exports.main = function(options, callbacks) {
         console.log("Host:",host,"Port:",port,"CrawlID:",crawlID,"Cookie:",enableCK,"JS:",enableJS,"CP:",enableCP);
     } else {
         console.log("ERROR: database settings not found -- outputting all queries to console");
-        var enableCK = true;
+        var enableCK = false;
         var enableJS = true;
-        var enableCP = true;
+        var enableCP = false;
         var host = '';
         var port = '';
         var crawlID = '';
