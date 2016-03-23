@@ -71,7 +71,7 @@ function getPageScript() {
      */
 
     // Recursively generates a path for an element
-    function getPathToDomElement(element) {
+    function getPathToDomElement(element, visibilityAttr=false) {
         if(element == document.body)
             return element.tagName;
         if(element.parentNode == null)
@@ -82,10 +82,15 @@ function getPageScript() {
         for (var i = 0; i < siblings.length; i++) {
             var sibling = siblings[i];
             if (sibling == element) {
-                var path = getPathToDomElement(element.parentNode);
+                var path = getPathToDomElement(element.parentNode, visibilityAttr);
                 path += '/' + element.tagName + '[' + siblingIndex;
                 path += ',' + element.id;
                 path += ',' + element.className;
+                if (visibilityAttr) {
+                  path += ',' + element.hidden;
+                  path += ',' + element.style.display;
+                  path += ',' + element.style.visibility;
+                }
                 if(element.tagName == 'A')
                         path += ',' + element.href;
                 path += ']';
@@ -496,14 +501,65 @@ function getPageScript() {
     //Instrument access to our fake FB API
     instrumentObject(window.FB, "window.FB", false);
 
+    /*
+     * Form insertion
+     */
+    // TODO: change these to MutationObservers?
+
+    // Check if element is visible and within the current viewport
+    // From: http://stackoverflow.com/a/15203639/6073564
+    function isElementVisible(el) {
+      var rect     = el.getBoundingClientRect(),
+        vWidth   = window.innerWidth || doc.documentElement.clientWidth,
+        vHeight  = window.innerHeight || doc.documentElement.clientHeight,
+        efp      = function (x, y) { return document.elementFromPoint(x, y) };
+
+      // Return false if it's not in the viewport
+      if (rect.right < 0 || rect.bottom < 0
+            || rect.left > vWidth || rect.top > vHeight)
+        return false;
+
+      // Return true if any of its four corners are visible
+      return (
+            el.contains(efp(rect.left,  rect.top))
+        ||  el.contains(efp(rect.right, rect.top))
+        ||  el.contains(efp(rect.right, rect.bottom))
+        ||  el.contains(efp(rect.left,  rect.bottom))
+      );
+    }
+
+    function checkFormProperties(form) {
+      var data = {};
+      data['originatingScriptUrl'] = getOriginatingScriptUrl();
+      data['isElementVisible'] = isElementVisible(form);
+      data['nodePath'] = getPathToDomElement(form, true);
+      var serializer = new XMLSerializer();
+      data['serializedForm'] = serializer.serializeToString(form);
+      console.log("FormInserted",data);
+    }
+
+    // NOTE: The current instrumentation may not have all of the properties if
+    // script were to first add a form, and then add properties to that form
+    // in separate calls.
     document.addEventListener("DOMNodeInserted", function (ev) {
-      console.log("DOMNodeInserted", getOriginatingScriptUrl(), ev);
-
+      var target = ev.target;
+      if (target.tagName == 'FORM') {
+        checkFormProperties(target);
+      }
+      var forms = target.getElementsByTagName('form');
+      for (var i=0; i < forms.length; i++) {
+        checkFormProperties(forms[i]);
+      }
     }, false);
 
-    document.addEventListener("DOMNodeInsertedIntoDocument", function (ev) {
-      console.log("DOMNodeInsertedIntoDocument",  getOriginatingScriptUrl(), ev);
-    }, false);
+    // Firefox does not support DOMNodeInsertedIntoDocument
+    //document.addEventListener("DOMNodeInsertedIntoDocument", function (ev) {
+    //  console.log("DOMNodeInsertedIntoDocument",  getOriginatingScriptUrl(), ev);
+    //}, false);
+
+    /*
+     * Form reads
+     */
     // TODO: intercept value reads of input elements
 
     console.log("Successfully started all instrumentation.");
@@ -554,8 +610,6 @@ document.addEventListener(event_id, function (e) {
 insertScript(getPageScript(), {
   event_id: event_id
 });
-
-
 
 // create an observer instance
 //var observer = new MutationObserver(function(mutations) {
