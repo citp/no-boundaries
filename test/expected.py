@@ -147,30 +147,38 @@ fb_api_calls = [(FB_API_JS_TEST_URL,
 fb_api_fake_first_party_sdk_calls = fb_api_calls[0:4]
 FB_API_TEST_URL = u"%s/fb_api/fb_login.html" % BASE_TEST_URL
 
+FORM_SNIFFER_TEST_PAGE = u'https://rawgit.com/gunesacar/cb9e70d6e9b5721894d6/raw/fba680626ab93f622075128c9d163a4d314ea5fa/autofill_mainpage.html'
 FORM_SNIFFER_SCRIPT = u'https://rawgit.com/gunesacar/4f586bfaed271edd7b6d/raw/7c95f726bab3908279dd7f3b3d507d3c5f67205b/autofillsniff.js'  # noqa
-autofill_mainpage_calls = [(FORM_SNIFFER_SCRIPT, u'DOMEvent',
-                            u'DOMNodeInserted', u'', None, None),
-                           ('', u'DOMEvent', u'DOMNodeInserted', u'',
-                            None, None),
-                           (FORM_SNIFFER_SCRIPT, u'DOMEvent',
-                            u'DOMNodeInserted', u'', None, None),
-                           (FORM_SNIFFER_SCRIPT, u'DOMEvent',
-                            u'DOMNodeInserted', u'', None, None)]
 
-# TODO DRY this part
+autofill_mainpage_calls = [(1, 1,
+                           FORM_SNIFFER_TEST_PAGE,
+                           FORM_SNIFFER_SCRIPT,
+                           u'false',
+                           u'BODY/DIV[1,be-container,,false,none,]/FORM[1,,,false,,]',
+                           u'<form xmlns="http://www.w3.org/1999/xhtml"><input type="email" id="email" name="email" /><input type="password" id="password" name="password" /></form>',
+                           u'form')]
+
+# Form autofill with input elements
 FORM_SNIFFER_NO_FORM_SCRIPT = u'https://rawgit.com/gunesacar/801547573d000481e5ef/raw/389b84b6c0a47fcb4656cf47c319ffa3cb2d2687/autofillsniff_noform.js'  # noqa
-autofill_noform_calls = [(FORM_SNIFFER_NO_FORM_SCRIPT, u'DOMEvent',
-                            u'DOMNodeInserted', u'',
-                            None, None),
-                           ('', u'DOMEvent', u'DOMNodeInserted', u'',
-                            None, None),
-                           (FORM_SNIFFER_NO_FORM_SCRIPT, u'DOMEvent',
-                            u'DOMNodeInserted', u'',
-                            None, None),
-                           (FORM_SNIFFER_NO_FORM_SCRIPT, u'DOMEvent',
-                            u'DOMNodeInserted', u'',
-                            None, None)]
-autofill_3rdp_calls = [(u'', u'DOMEvent', u'DOMNodeInserted', u'', None, None),
-                       (FORM_SNIFFER_SCRIPT, u'DOMEvent', u'DOMNodeInserted', u'', None, None),
-                       (u'', u'DOMEvent', u'DOMNodeInserted', u'', None, None),
-                       (FORM_SNIFFER_SCRIPT, u'DOMEvent', u'DOMNodeInserted', u'', None, None)]
+FORM_SNIFFER_NO_FORM_TEST_PAGE = u'https://rawgit.com/gunesacar/4a24574ef1334981cd1b/raw/9d4ee5dbccb92dd227abf5c1471cd135f1b14434/autofillsniff_noform.html'  # noqa
+autofill_noform_calls = [(1, 1,
+                          FORM_SNIFFER_NO_FORM_TEST_PAGE,
+                          FORM_SNIFFER_NO_FORM_SCRIPT,
+                          u'false',
+                          u'BODY/DIV[1,be-container,,false,none,]/INPUT[1,email,,false,,]',  # noqa
+                          u'<input xmlns="http://www.w3.org/1999/xhtml" type="email" id="email" name="email" />',  # noqa
+                          u'input'),
+                         (2, 1,
+                          FORM_SNIFFER_NO_FORM_TEST_PAGE,
+                          FORM_SNIFFER_NO_FORM_SCRIPT,
+                          u'false',
+                          u'BODY/DIV[1,be-container,,false,none,]/INPUT[2,password,,false,,]',  # noqa
+                          u'<input xmlns="http://www.w3.org/1999/xhtml" type="password" id="password" name="password" />',  # noqa
+                          u'input')]
+
+autofill_3rdp_calls = [(1, 1,
+                        u'***REMOVED***',
+                        FORM_SNIFFER_SCRIPT,
+                        u'false', u'BODY/DIV[1,be-container,,false,none,]/FORM[1,,,false,,]',  # noqa
+                        u'<form xmlns="http://www.w3.org/1999/xhtml"><input type="email" id="email" name="email" /><input type="password" id="password" name="password" /></form>',  # noqa
+                        u'form')]

@@ -526,13 +526,14 @@ function getPageScript() {
       );
     }
 
-    function checkFormProperties(form, scriptUrl) {
+    function checkFormProperties(form, scriptUrl, elementType) {
       var data = {};
       data['scriptUrl'] = scriptUrl;
       data['isVisible'] = isElementVisible(form);
       data['nodePath'] = getPathToDomElement(form, true);
       var serializer = new XMLSerializer();
       data['serializedForm'] = serializer.serializeToString(form);
+      data['elementType'] = elementType;
       send('formInserted', data)
       console.log("formInserted",data);
     }
@@ -544,12 +545,24 @@ function getPageScript() {
       let scriptUrl = getOriginatingScriptUrl();
 
       var target = ev.target;
+      var form_found = false;
       if (target.tagName == 'FORM') {
-        checkFormProperties(target, scriptUrl);
+        checkFormProperties(target, scriptUrl, "form");
+        form_found = true;
       }
       var forms = target.getElementsByTagName('form');
       for (var i=0; i < forms.length; i++) {
-        checkFormProperties(forms[i], scriptUrl);
+        checkFormProperties(forms[i], scriptUrl, "form");
+        form_found = true;
+      }
+      if (!form_found){
+        if (target.tagName == 'INPUT') {
+          checkFormProperties(target, scriptUrl, "input");
+        }
+        var inputs = target.getElementsByTagName('input');
+        for (var i=0; i < inputs.length; i++) {
+          checkFormProperties(inputs[i], scriptUrl, "input");
+        }
       }
     }, false);
 
