@@ -147,12 +147,26 @@ fb_api_calls = [(FB_API_JS_TEST_URL,
 fb_api_fake_first_party_sdk_calls = fb_api_calls[0:4]
 FB_API_TEST_URL = u"%s/fb_api/fb_login.html" % BASE_TEST_URL
 
-FORM_SNIFFER_SCRIPT = u'https://rawgit.com/gunesacar/fe844da60dbf1d7642a1/raw/e50e56762d88b65a4d71ed50216d4fbf983ed626/autofillsniff.js'
-autofill_mainpage_calls = [(FORM_SNIFFER_SCRIPT, u'DOMEvent', u'DOMNodeInserted', u'',
+FORM_SNIFFER_SCRIPT = u'https://rawgit.com/gunesacar/fe844da60dbf1d7642a1/raw/e50e56762d88b65a4d71ed50216d4fbf983ed626/autofillsniff.js'  # noqa
+autofill_mainpage_calls = [(FORM_SNIFFER_SCRIPT, u'DOMEvent',
+                            u'DOMNodeInserted', u'', None, None),
+                           ('', u'DOMEvent', u'DOMNodeInserted', u'',
+                            None, None),
+                           (FORM_SNIFFER_SCRIPT, u'DOMEvent',
+                            u'DOMNodeInserted', u'', None, None),
+                           (FORM_SNIFFER_SCRIPT, u'DOMEvent',
+                            u'DOMNodeInserted', u'', None, None)]
+
+# TODO DRY this part
+FORM_SNIFFER_NO_FORM_SCRIPT = u'https://rawgit.com/gunesacar/801547573d000481e5ef/raw/389b84b6c0a47fcb4656cf47c319ffa3cb2d2687/autofillsniff_noform.js'  # noqa
+autofill_noform_calls = [(FORM_SNIFFER_NO_FORM_SCRIPT, u'DOMEvent',
+                            u'DOMNodeInserted', u'',
                             None, None),
                            ('', u'DOMEvent', u'DOMNodeInserted', u'',
                             None, None),
-                           (FORM_SNIFFER_SCRIPT, u'DOMEvent', u'DOMNodeInserted', u'',
+                           (FORM_SNIFFER_NO_FORM_SCRIPT, u'DOMEvent',
+                            u'DOMNodeInserted', u'',
                             None, None),
-                           (FORM_SNIFFER_SCRIPT, u'DOMEvent', u'DOMNodeInserted', u'',
+                           (FORM_SNIFFER_NO_FORM_SCRIPT, u'DOMEvent',
+                            u'DOMNodeInserted', u'',
                             None, None)]
