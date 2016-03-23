@@ -498,7 +498,7 @@ function getPageScript() {
 
     document.addEventListener("DOMNodeInserted", function (ev) {
       let scr_url = getOriginatingScriptUrl();
-      // TODO: what should we call here, is logValue ok?
+      // TODO: To be changed, Steve feel free to overwrite
       logValue("DOMEvent", "", "DOMNodeInserted", scr_url);
     }, false);
 

@@ -10,6 +10,23 @@ import shutil
 import os
 import random
 
+
+class MyFirefoxProfile(webdriver.FirefoxProfile):
+    # We subclass FirefoxProfile to be able to overwrite the frozen prefs.
+    # https://github.com/SeleniumHQ/selenium/blob/7c97c37525d561e2963e86265c1b664456c0c86e/py/selenium/webdriver/firefox/firefox_profile.py#L84
+    def set_preference(self, key, value, force=False):
+        """
+        Set the preference that we want in the profile.
+
+        Overwrite the frozen prefs if force param is True.
+        https://github.com/SeleniumHQ/selenium/blob/75b9300def2854cb1ab01bab6a15206b665da5ad/javascript/firefox-driver/webdriver.json#L2  # noqa
+        """
+        self.default_preferences[key] = value
+        # the code we add is below
+        if force:
+            self.DEFAULT_PREFERENCES['frozen'][key] = value
+
+
 DEFAULT_SCREEN_RES = (1366, 768)  # Default screen res when no preferences are given
 
 def deploy_firefox(status_queue, browser_params, manager_params, crash_recovery):
@@ -19,7 +36,9 @@ def deploy_firefox(status_queue, browser_params, manager_params, crash_recovery)
 
     display_pid = None
     display_port = None
-    fp = webdriver.FirefoxProfile()
+    # fp = webdriver.FirefoxProfile()
+    fp = MyFirefoxProfile()
+
     browser_profile_path = fp.path + '/'
     status_queue.put(('STATUS','Profile Created',browser_profile_path))
 

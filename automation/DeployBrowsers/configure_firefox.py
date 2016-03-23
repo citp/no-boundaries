@@ -85,7 +85,8 @@ def privacy(browser_params, fp, root_dir, browser_profile_path):
 def custom_prefs(fp, browser_params):
     """Set custom prefs passed via browser_params."""
     for pref_name, pref_value in browser_params["custom_prefs"].iteritems():
-        fp.set_preference(pref_name, pref_value)
+        # we force selenium to update frozen prefs
+        fp.set_preference(pref_name, pref_value, force=True)
 
 
 def optimize_prefs(fp):

@@ -145,3 +145,14 @@ fb_api_calls = [(FB_API_JS_TEST_URL,
 # We won't observe the first party calls from the HTML file when we
 # fake the FB API init ourselves
 fb_api_fake_first_party_sdk_calls = fb_api_calls[0:4]
+FB_API_TEST_URL = u"%s/fb_api/fb_login.html" % BASE_TEST_URL
+
+FORM_SNIFFER_SCRIPT = u'https://rawgit.com/gunesacar/fe844da60dbf1d7642a1/raw/e50e56762d88b65a4d71ed50216d4fbf983ed626/autofillsniff.js'
+autofill_mainpage_calls = [(FORM_SNIFFER_SCRIPT, u'DOMEvent', u'DOMNodeInserted', u'',
+                            None, None),
+                           ('', u'DOMEvent', u'DOMNodeInserted', u'',
+                            None, None),
+                           (FORM_SNIFFER_SCRIPT, u'DOMEvent', u'DOMNodeInserted', u'',
+                            None, None),
+                           (FORM_SNIFFER_SCRIPT, u'DOMEvent', u'DOMNodeInserted', u'',
+                            None, None)]
