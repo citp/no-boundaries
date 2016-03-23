@@ -116,6 +116,7 @@ def deploy_firefox(status_queue, browser_params, manager_params, crash_recovery)
     # Configure privacy settings
     configure_firefox.privacy(browser_params, fp, root_dir, browser_profile_path)
 
+    configure_firefox.custom_prefs(fp, browser_params)
     # Set various prefs to improve speed and eliminate traffic to Mozilla
     configure_firefox.optimize_prefs(fp)
 
