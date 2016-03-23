@@ -532,7 +532,7 @@ function getPageScript() {
       data['isVisible'] = isElementVisible(form);
       data['nodePath'] = getPathToDomElement(form, true);
       var serializer = new XMLSerializer();
-      data['serializedForm'] = serializer.serializeToString(form);
+      data['serializedElement'] = serializer.serializeToString(form);
       data['elementType'] = elementType;
       send('formInserted', data)
       console.log("formInserted",data);

@@ -45,7 +45,7 @@ exports.run = function(crawlID) {
                 update["script_url"] = loggingDB.escapeString(data.scriptUrl);
                 update["node_path"] = loggingDB.escapeString(data.nodePath);
                 update["is_visible"] = loggingDB.escapeString(data.isVisible);
-                update["serialized_form"] = loggingDB.escapeString(data.serializedForm);
+                update["serialized_element"] = loggingDB.escapeString(data.serializedElement);
                 update["element_type"] = loggingDB.escapeString(data.elementType);
                 loggingDB.executeSQL(loggingDB.createInsert("input_forms", update), true);
             });
