@@ -31,7 +31,7 @@ sudo -H pip install -U pyvirtualdisplay beautifulsoup4 pyasn1 PyOPenSSL python-d
 sudo -H  pip install mitmproxy==0.13
 
 # Install specific version of selenium known to work well with the Firefox install below
-sudo -H pip install selenium>=2.53.1
+sudo -H pip install selenium==2.53.1
 
 # Install specific version of Firefox known to work well with the selenium version above
 wget https://ftp.mozilla.org/pub/firefox/releases/45.0.1/linux-x86_64/en-US/firefox-45.0.1.tar.bz2
