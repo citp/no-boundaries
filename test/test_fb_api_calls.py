@@ -1,9 +1,7 @@
-import tarfile
-import pytest
+import pytest # NOQA
 import os
 from openwpmtest import OpenWPMTest
 from ..automation import TaskManager
-from ..automation.Errors import CommandExecutionError, ProfileLoadError
 import utilities
 import expected
 

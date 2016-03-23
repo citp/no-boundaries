@@ -1,5 +1,4 @@
 from urlparse import urlparse
-import sqlite3
 import pytest
 import os
 

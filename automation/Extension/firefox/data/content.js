@@ -561,6 +561,8 @@ function getPageScript() {
      */
     // TODO: intercept value reads of input elements
 
+    instrumentObject(window.HTMLInputElement.prototype, "window.HTMLInputElement", true);
+
     console.log("Successfully started all instrumentation.");
 
   } + "());";

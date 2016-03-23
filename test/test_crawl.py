@@ -1,6 +1,6 @@
 from urlparse import urlparse
 import tarfile
-import pytest
+import pytest # NOQA
 import os
 
 from ..automation import TaskManager
@@ -64,7 +64,6 @@ class TestCrawl():
         manager = TaskManager.TaskManager(manager_params, browser_params)
         for site in TEST_SITES:
             manager.get(site)
-        fp = manager.browsers[0].current_profile_path
         ff_db_tar = os.path.join(browser_params[0]['profile_archive_dir'],
                                  'profile.tar.gz')
         manager.close(post_process=False)
