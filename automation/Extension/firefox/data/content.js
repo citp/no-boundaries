@@ -54,10 +54,9 @@ function getPageScript() {
         messages = [];
       }, 100);
 
-      return function (msg) {
+      return function (msgType, msg) {
         // queue the message
-        messages.push(msg);
-        // console.log("send", msg);
+        messages.push({'type':msgType,'content':msg});
         _send();
       };
       }());
@@ -218,7 +217,7 @@ function getPageScript() {
         };
 
         try {
-            send(msg);
+            send('logValue',msg);
         }
         catch(error) {
             console.log("Unsuccessful value log!");
@@ -252,8 +251,7 @@ function getPageScript() {
                 value: "",
                 scriptUrl: scriptUrl
             }
-            send(msg);
-            // self.port.emit("instrumentation", );
+            send('logCall',msg);
         }
         catch(error) {
             console.log("Unsuccessful call log: " + instrumentedFunctionName);
@@ -530,12 +528,13 @@ function getPageScript() {
 
     function checkFormProperties(form) {
       var data = {};
-      data['originatingScriptUrl'] = getOriginatingScriptUrl();
-      data['isElementVisible'] = isElementVisible(form);
+      data['scriptUrl'] = getOriginatingScriptUrl();
+      data['isVisible'] = isElementVisible(form);
       data['nodePath'] = getPathToDomElement(form, true);
       var serializer = new XMLSerializer();
       data['serializedForm'] = serializer.serializeToString(form);
-      console.log("FormInserted",data);
+      send('formInserted', data)
+      console.log("formInserted",data);
     }
 
     // NOTE: The current instrumentation may not have all of the properties if
@@ -582,14 +581,8 @@ function insertScript(text, data) {
   parent.removeChild(script);
 }
 
-function emitMsg(msg) {
-  self.port.emit("instrumentation", {
-    operation: msg.operation,
-    symbol: msg.symbol,
-    value: msg.value,
-    args: msg.args,
-    scriptUrl: msg.scriptUrl
-  });
+function emitMsg(type, msg) {
+  self.port.emit(type, msg);
 }
 
 var event_id = Math.random();
@@ -600,10 +593,10 @@ document.addEventListener(event_id, function (e) {
   var msgs = e.detail;
   if (Array.isArray(msgs)) {
     msgs.forEach(function (msg) {
-      emitMsg(msg);
+      emitMsg(msg['type'],msg['content']);
     });
   } else {
-    emitMsg(msgs);
+    emitMsg(msgs['type'],msgs['content']);
   }
 });
 

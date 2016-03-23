@@ -5,9 +5,12 @@ var pageManager = require("./page-manager.js");
 
 exports.run = function(crawlID) {
 
-    // Set up logging
+    // Set up tables
     var createJavascriptTable = data.load("create_javascript_table.sql");
     loggingDB.executeSQL(createJavascriptTable, false);
+
+    var createFormTable = data.load("create_form_table.sql");
+    loggingDB.executeSQL(createFormTable, false);
 
     // Inject content script to instrument JavaScript API
     pageMod.PageMod({
@@ -16,7 +19,7 @@ exports.run = function(crawlID) {
         contentScriptFile: data.url("./content.js"),
         onAttach: function onAttach(worker) {
             var url = worker.url;
-            worker.port.on("instrumentation", function(data) {
+            function processCallsAndValues(data) {
                 var update = {};
                 update["crawl_id"] = crawlID;
                 update["script_url"] = loggingDB.escapeString(data.scriptUrl);
@@ -33,6 +36,17 @@ exports.run = function(crawlID) {
                 } else {
                     loggingDB.executeSQL(loggingDB.createInsert("javascript", update), true);
                 }
+            }
+            worker.port.on("logCall", function(data){processCallsAndValues(data)});
+            worker.port.on("logValue", function(data){processCallsAndValues(data)});
+            worker.port.on("formInserted", function(data) {
+                var update = {};
+                update["crawl_id"] = crawlID;
+                update["script_url"] = loggingDB.escapeString(data.scriptUrl);
+                update["node_path"] = loggingDB.escapeString(data.nodePath);
+                update["is_visible"] = loggingDB.escapeString(data.isVisible);
+                update["serialized_form"] = loggingDB.escapeString(data.serializedForm);
+                loggingDB.executeSQL(loggingDB.createInsert("input_forms", update), true);
             });
         }
     });
