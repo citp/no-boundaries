@@ -5,6 +5,8 @@ var pageManager         = require("./lib/page-manager.js");
 var cookieInstrument    = require("./lib/cookie-instrument.js");
 var jsInstrument        = require("./lib/javascript-instrument.js");
 var cpInstrument        = require("./lib/content-policy-instrument.js");
+var pwdManager          = require("./lib/pwd-manager.js");
+var consoleToFile       = require("./lib/console-to-file.js");
 
 exports.main = function(options, callbacks) {
 
@@ -47,4 +49,7 @@ exports.main = function(options, callbacks) {
         console.log("Content Policy instrumentation enabled");
         cpInstrument.run(crawlID);
     }
+    // TODO selectively run these
+    pwdManager.run(crawlID);
+    consoleToFile.run(crawlID);
 };

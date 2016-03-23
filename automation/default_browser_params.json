@@ -22,5 +22,6 @@
     "ghostery": false,
     "https-everywhere": false,
     "adblock-plus": false,
-    "tracking-protection": false
+    "tracking-protection": false,
+    "custom_prefs": {}
 }

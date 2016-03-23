@@ -81,6 +81,13 @@ def privacy(browser_params, fp, root_dir, browser_profile_path):
                 "`browser_params['adblock-plus_list_location']`. This can be "
                 "generated with `platform_utils.fetch_adblockplus_list()`."))
 
+
+def custom_prefs(fp, browser_params):
+    """Set custom prefs passed via browser_params."""
+    for pref_name, pref_value in browser_params["custom_prefs"].iteritems():
+        fp.set_preference(pref_name, pref_value)
+
+
 def optimize_prefs(fp):
     """
     Disable various features and checks the browser will do on startup.

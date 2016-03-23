@@ -497,8 +497,9 @@ function getPageScript() {
     instrumentObject(window.FB, "window.FB", false);
 
     document.addEventListener("DOMNodeInserted", function (ev) {
-      console.log("DOMNodeInserted", getOriginatingScriptUrl(), ev);
-
+      let scr_url = getOriginatingScriptUrl();
+      // TODO: what should we call here, is logValue ok?
+      logValue("DOMEvent", "", "DOMNodeInserted", scr_url);
     }, false);
 
     document.addEventListener("DOMNodeInsertedIntoDocument", function (ev) {
