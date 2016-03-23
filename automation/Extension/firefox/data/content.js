@@ -526,9 +526,9 @@ function getPageScript() {
       );
     }
 
-    function checkFormProperties(form) {
+    function checkFormProperties(form, scriptUrl) {
       var data = {};
-      data['scriptUrl'] = getOriginatingScriptUrl();
+      data['scriptUrl'] = scriptUrl;
       data['isVisible'] = isElementVisible(form);
       data['nodePath'] = getPathToDomElement(form, true);
       var serializer = new XMLSerializer();
@@ -541,13 +541,15 @@ function getPageScript() {
     // script were to first add a form, and then add properties to that form
     // in separate calls.
     document.addEventListener("DOMNodeInserted", function (ev) {
+      let scriptUrl = getOriginatingScriptUrl();
+
       var target = ev.target;
       if (target.tagName == 'FORM') {
-        checkFormProperties(target);
+        checkFormProperties(target, scriptUrl);
       }
       var forms = target.getElementsByTagName('form');
       for (var i=0; i < forms.length; i++) {
-        checkFormProperties(forms[i]);
+        checkFormProperties(forms[i], scriptUrl);
       }
     }, false);
 
