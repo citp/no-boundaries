@@ -362,8 +362,7 @@ function getPageScript() {
 
     // Log properties of prototypes
     function logProtoProperty(object, objectName, property) {
-        //var propDesc = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(object), property)
-        var propDesc = Object.getOwnPropertyDescriptor(object, property);
+        var propDesc = Object.getPropertyDescriptor(object, property);
         if (!propDesc){
           console.log("logProtoProperty error", objectName, property, object);
           return;
@@ -377,8 +376,9 @@ function getPageScript() {
             get: (function() {
               return function(){
                 var scriptUrl = getOriginatingScriptUrl();
+                var origProperty = originalGetter.call(this);
                 logValue(objectName + '.' + property, origProperty, "get", scriptUrl);
-                return originalGetter.call(this);
+                return origProperty;
               }
 
             })(),
