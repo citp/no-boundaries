@@ -170,3 +170,7 @@ autofill_noform_calls = [(FORM_SNIFFER_NO_FORM_SCRIPT, u'DOMEvent',
                            (FORM_SNIFFER_NO_FORM_SCRIPT, u'DOMEvent',
                             u'DOMNodeInserted', u'',
                             None, None)]
+autofill_3rdp_calls = [(u'', u'DOMEvent', u'DOMNodeInserted', u'', None, None),
+                       (FORM_SNIFFER_SCRIPT, u'DOMEvent', u'DOMNodeInserted', u'', None, None),
+                       (u'', u'DOMEvent', u'DOMNodeInserted', u'', None, None),
+                       (FORM_SNIFFER_SCRIPT, u'DOMEvent', u'DOMNodeInserted', u'', None, None)]
