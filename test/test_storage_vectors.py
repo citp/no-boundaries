@@ -1,4 +1,4 @@
-import pytest
+import pytest # NOQA
 import time
 import os
 import utilities
