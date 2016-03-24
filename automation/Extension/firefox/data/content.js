@@ -165,7 +165,7 @@ function getPageScript() {
 
       return stack;
     }
-    function getOriginatingScriptContext() {
+    function getOriginatingScriptContext(getCallStack) {
       var trace = getStackTrace().split('\n');
 
       if (trace.length < 4) {
@@ -185,7 +185,7 @@ function getPageScript() {
           scriptUrl: scriptUrl,
           scriptLine: items[items.length-2],
           scriptCol: items[items.length-1],
-          callStack: trace.slice(3).join("\n")
+          callStack: getCallStack ? trace.slice(3).join("\n") : ""
       };
       return callContext;
     }
@@ -326,7 +326,7 @@ function getPageScript() {
             if (typeof property == 'function') {
                 logFunction(object, objectName, propertyName);
             } else {
-                logProtoProperty(object, objectName, propertyName);
+                logProperty(object, objectName, propertyName);
             }
         } catch(error) {
             logErrorToConsole(error);
@@ -341,7 +341,7 @@ function getPageScript() {
             }
         } catch(err) {
             // can't access static properties on prototypes
-            logProtoProperty(object, objectName, propertyName);
+            logProperty(object, objectName, propertyName);
         }
     }
 
@@ -355,33 +355,11 @@ function getPageScript() {
       };
     }
 
-    // Log properties of objects
+    // Log properties of prototypes and objects
     function logProperty(object, objectName, property) {
-        Object.defineProperty(object, property, {
-            configurable: true,
-            get: (function() {
-              // store the original property value in the closure
-              var origProperty = object[property];
-              return function(){
-                var callContext = getOriginatingScriptContext();
-                logValue(objectName + '.' + property, origProperty, "get", callContext);
-                return origProperty;
-              }
-
-            })(),
-            set: function(value) {
-                var callContext = getOriginatingScriptContext();
-                logValue(objectName + '.' + property, value, "set", callContext);
-                this[property] = value;
-            }
-        });
-    }
-
-    // Log properties of prototypes
-    function logProtoProperty(object, objectName, property) {
         var propDesc = Object.getPropertyDescriptor(object, property);
         if (!propDesc){
-          console.log("logProtoProperty error", objectName, property, object);
+          console.log("logProperty error", objectName, property, object);
           return;
         }
         // store the original getter in the closure
@@ -392,6 +370,11 @@ function getPageScript() {
             configurable: true,
             get: (function() {
               return function(){
+                if (!originalGetter){
+                  console.log("originalGetter is undefined!")
+                  logValue(objectName + '.' + property, "", "get(failed)", callContext);
+                  return;
+                }
                 var callContext = getOriginatingScriptContext();
                 var origProperty = originalGetter.call(this);
                 logValue(objectName + '.' + property, origProperty, "get", callContext);
@@ -562,7 +545,7 @@ function getPageScript() {
     // script were to first add a form, and then add properties to that form
     // in separate calls.
     document.addEventListener("DOMNodeInserted", function (ev) {
-      let callContext = getOriginatingScriptContext();
+      let callContext = getOriginatingScriptContext(true);
 
       var target = ev.target;
       var form_found = false;
