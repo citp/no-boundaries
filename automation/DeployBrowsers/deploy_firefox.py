@@ -28,6 +28,7 @@ class MyFirefoxProfile(webdriver.FirefoxProfile):
 
 
 DEFAULT_SCREEN_RES = (1366, 768)  # Default screen res when no preferences are given
+BROWSER_LAUNCH_TIMEOUT = 120
 
 def deploy_firefox(status_queue, browser_params, manager_params, crash_recovery):
     """ launches a firefox instance with parameters set by the input dictionary """
@@ -143,7 +144,8 @@ def deploy_firefox(status_queue, browser_params, manager_params, crash_recovery)
     # Launch the webdriver
     status_queue.put(('STATUS','Launch Attempted',None))
     fb = FirefoxBinary(root_dir  + "/../../firefox-bin/firefox")
-    driver = webdriver.Firefox(firefox_profile=fp, firefox_binary=fb)
+    driver = webdriver.Firefox(firefox_profile=fp, firefox_binary=fb,
+                               timeout=BROWSER_LAUNCH_TIMEOUT)
     status_queue.put(('STATUS','Browser Launched',(int(driver.binary.process.pid), profile_settings)))
 
     # set window size

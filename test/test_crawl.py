@@ -51,6 +51,7 @@ class TestCrawl():
         browser_params[0]['headless'] = True
         return manager_params, browser_params
 
+    @pytest.mark.slow
     def test_browser_profile_coverage(self, tmpdir):
         """ Test the coverage of the browser's profile
 

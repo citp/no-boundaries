@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+  <head>
+  <title>Hidden Input Form Tests</title>
+
+
+    <h3> 1. Single div | hidden = False</h3>
+    <div id='div1'>
+    </div>
+
+    <h3> 2. Single div | hidden = True</h3>
+    <div id='div2' hidden>
+    </div>
+
+    <h3> 3. Single div | hidden = False | display: none</h3>
+    <div id='div3' style='display: none'>
+    </div>
+
+    <h3> 4. Single div | hidden = False | visibility: hidden</h3>
+    <div id='div4' style='visibility: hidden'>
+    </div>
+
+    <h3> 5. Nested divs | hidden = False</h3>
+    <div id='div5-1'>
+    <div id='div5-2'>
+    </div>
+    </div>
+
+    <h3> 6. Nested divs | hidden = True</h3>
+    <div id='div6-1' hidden>
+    <div id='div6-2'>
+    </div>
+    </div>
+
+    <h3> 7. Nested divs | hidden = False | display: none</h3>
+    <div id='div7-1' style = 'display: none'>
+    <div id='div7-2'>
+    </div>
+    </div>
+
+    <h3> 8. Nested divs | hidden = False | visibility: hidden</h3>
+    <div id='div8-1' style = 'visibility: hidden'>
+    <div id='div8-2'>
+    </div>
+    </div>
+
+    <h3> 9. Multiple divs inserted within a div </h3>
+    <div id='div9'></div>
+    <script src="hidden_form.js"></script>  
+  </body>
+</html>

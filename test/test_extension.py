@@ -63,3 +63,9 @@ class TestExtension(OpenWPMTest):
             else:
                 observed_rows.add(item)
         assert set(expected.webrtc_calls) == observed_rows
+
+    def test_set_property_stack_trace(self, tmpdir):
+        # make sure we handle set property on elements properly
+        db = self.visit('/set_property/set_property.html', str(tmpdir))
+        rows = utilities.get_javascript_entries(db)
+        assert rows == expected.set_property

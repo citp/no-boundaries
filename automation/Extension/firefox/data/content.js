@@ -174,7 +174,6 @@ function getPageScript() {
 
       // this script is at 0, 1 and 2
       var callSite = trace[3];
-
       var scriptUrlMatches = callSite.match(geckoCallSiteRe);
       return scriptUrlMatches && scriptUrlMatches[3] || '';
     }
@@ -309,7 +308,7 @@ function getPageScript() {
             if (typeof property == 'function') {
                 logFunction(object, objectName, propertyName);
             } else {
-                logProperty(object, objectName, propertyName);
+                logProtoProperty(object, objectName, propertyName);
             }
         } catch(error) {
             logErrorToConsole(error);
@@ -593,7 +592,6 @@ function insertScript(text, data) {
   for (var key in data) {
     script.setAttribute('data-' + key.replace('_', '-'), data[key]);
   }
-
   parent.insertBefore(script, parent.firstChild);
   parent.removeChild(script);
 }
