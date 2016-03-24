@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+  <title>Input Form Reading Tests</title>
+  <script type="application/javascript">
+
+  function read_forms() {
+    var inputs = document.querySelectorAll("input");
+    for (var i=0; i<inputs.length; i++) {
+      inputs[i].addEventListener("blur", function (e) {
+        console.log("Reading value after Blur",this.value);
+      }, false);
+    }
+  }
+
+  </script>
+  </head>
+  <body onload="read_forms()">
+
+    <h3> 1. A login form, with username and password inputs</h3>
+    <div id='div1'>
+      <form>
+        Email: <input type='email' name='email' value='example@gmail.com'><br />
+        Password: <input type = 'password' value='password'>
+      </form>
+    </div>
+
+  </body>
+</html>
