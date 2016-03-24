@@ -6,7 +6,7 @@ import codecs
 import os
 import sqlite3
 from random import choice
-
+LOCAL_WEBSERVER_PORT = 8000
 PSL_CACHE_LOC = '/tmp/public_suffix_list.dat'
 BASE_TEST_URL_DOMAIN = "localtest.me"
 BASE_TEST_URL_NOPATH = "http://%s:8000" % BASE_TEST_URL_DOMAIN
@@ -26,13 +26,12 @@ def start_server():
     `http://localtest.me:8000/test_pages/...`
     """
     print "Starting HTTP Server in a separate thread"
-    PORT = 8000
     Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
-    server = MyTCPServer(("localhost", PORT), Handler)
+    server = MyTCPServer(("localhost", LOCAL_WEBSERVER_PORT), Handler)
     thread = threading.Thread(target=server.serve_forever)
     thread.daemon = True
     thread.start()
-    print "...serving at port", PORT
+    print "...serving at port", LOCAL_WEBSERVER_PORT
     return server, thread
 
 
@@ -67,3 +66,9 @@ def query_db(db, query, params=None):
         else:
             rows = con.execute(query, params).fetchall()
     return rows
+
+
+def get_javascript_entries(db):
+    return query_db(db, "SELECT script_url, symbol, operation,"
+                    " value, parameter_index, parameter_value"
+                    " FROM javascript")

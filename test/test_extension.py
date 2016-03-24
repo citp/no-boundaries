@@ -34,10 +34,7 @@ class TestExtension(OpenWPMTest):
     def test_canvas_fingerprinting(self, tmpdir):
         db = self.visit('/canvas_fingerprinting.html', str(tmpdir))
         # Check that all calls and methods are recorded
-        rows = utilities.query_db(db,
-                                  "SELECT script_url, symbol, operation,"
-                                  " value, parameter_index, parameter_value"
-                                  " FROM javascript")
+        rows = utilities.get_javascript_entries(db)
         observed_rows = set()
         for item in rows:
             observed_rows.add(item)
@@ -56,9 +53,7 @@ class TestExtension(OpenWPMTest):
     def test_webrtc_localip(self, tmpdir):
         db = self.visit('/webrtc_localip.html', str(tmpdir))
         # Check that all calls and methods are recorded
-        rows = utilities.query_db(db, "SELECT script_url, symbol, operation,"
-                                  " value, parameter_index, parameter_value"
-                                  " FROM javascript")
+        rows = utilities.get_javascript_entries(db)
         observed_rows = set()
         for item in rows:
             if item[1] == "RTCPeerConnection.setLocalDescription":

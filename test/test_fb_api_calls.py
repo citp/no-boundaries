@@ -22,9 +22,7 @@ class TestFBAPICalls(OpenWPMTest):
 
     def test_fb_api_calls(self, tmpdir):
         db = self.visit('/fb_api/fb_login.html', str(tmpdir), sleep_after=20)
-        rows = utilities.query_db(db, "SELECT script_url, symbol, operation,"
-                                  " value, parameter_index, parameter_value"
-                                  " FROM javascript")
+        rows = utilities.get_javascript_entries(db)
         assert expected.fb_api_calls == rows
 
     def test_fake_first_party_sdk(self, tmpdir):
@@ -33,7 +31,5 @@ class TestFBAPICalls(OpenWPMTest):
         """
         db = self.visit('/fb_api/fb_api_call_no_first_party.html', str(tmpdir),
                         sleep_after=10)
-        rows = utilities.query_db(db, "SELECT script_url, symbol, operation,"
-                                  " value, parameter_index, parameter_value"
-                                  " FROM javascript")
+        rows = utilities.get_javascript_entries(db)
         assert expected.fb_api_fake_first_party_sdk_calls == rows
