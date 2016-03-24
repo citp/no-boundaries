@@ -19,7 +19,7 @@ exports.main = function(options, callbacks) {
         var enableCK = dbstring[3].trim() == 'True';
         var enableJS = dbstring[4].trim() == 'True';
         var enableCP = dbstring[5].trim() == 'True';
-        var fakeAutofill = dbstring[6].trim() == 'True';
+        var enableFakeAutofill = dbstring[6].trim() == 'True';
         console.log("Host:",host,"Port:",port,"CrawlID:",crawlID,"Cookie:",enableCK,"JS:",enableJS,"CP:",enableCP);
     } else {
         console.log("ERROR: database settings not found -- outputting all queries to console");
@@ -29,7 +29,7 @@ exports.main = function(options, callbacks) {
         var host = '';
         var port = '';
         var crawlID = '';
-        var fakeAutofill = false;
+        var enableFakeAutofill = true;
     }
 
     // Turn on instrumentation
@@ -50,9 +50,8 @@ exports.main = function(options, callbacks) {
         console.log("Content Policy instrumentation enabled");
         cpInstrument.run(crawlID);
     }
-    if (fakeAutofill) {
+    if (enableFakeAutofill) {
       console.log("Fake autofill is enabled");
       fakeAutofill.run(crawlID);
     }
-
 };

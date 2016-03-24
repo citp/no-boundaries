@@ -8,7 +8,6 @@
         "fakeAutofill": false
     },
     "save_javascript": false,
-
     "random_attributes": false,
     "bot_mitigation": false,
     "disable_flash": true,
