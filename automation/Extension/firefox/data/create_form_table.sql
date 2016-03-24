@@ -5,5 +5,6 @@ CREATE TABLE IF NOT EXISTS input_forms(
   script_url TEXT,
 	is_visible BOOLEAN,
 	node_path TEXT,
-	serialized_form TEXT
+	serialized_element TEXT,
+	element_type TEXT
 );
