@@ -5,8 +5,7 @@ var pageManager         = require("./lib/page-manager.js");
 var cookieInstrument    = require("./lib/cookie-instrument.js");
 var jsInstrument        = require("./lib/javascript-instrument.js");
 var cpInstrument        = require("./lib/content-policy-instrument.js");
-var pwdManager          = require("./lib/pwd-manager.js");
-var consoleToFile       = require("./lib/console-to-file.js");
+var fakeAutofill        = require("./lib/fake-autofill.js");
 
 exports.main = function(options, callbacks) {
 
@@ -20,6 +19,7 @@ exports.main = function(options, callbacks) {
         var enableCK = dbstring[3].trim() == 'True';
         var enableJS = dbstring[4].trim() == 'True';
         var enableCP = dbstring[5].trim() == 'True';
+        var fakeAutofill = dbstring[6].trim() == 'True';
         console.log("Host:",host,"Port:",port,"CrawlID:",crawlID,"Cookie:",enableCK,"JS:",enableJS,"CP:",enableCP);
     } else {
         console.log("ERROR: database settings not found -- outputting all queries to console");
@@ -29,6 +29,7 @@ exports.main = function(options, callbacks) {
         var host = '';
         var port = '';
         var crawlID = '';
+        var fakeAutofill = false;
     }
 
     // Turn on instrumentation
@@ -49,7 +50,9 @@ exports.main = function(options, callbacks) {
         console.log("Content Policy instrumentation enabled");
         cpInstrument.run(crawlID);
     }
-    // TODO selectively run these
-    pwdManager.run(crawlID);
-    consoleToFile.run(crawlID);
+    if (fakeAutofill) {
+      console.log("Fake autofill is enabled");
+      fakeAutofill.run(crawlID);
+    }
+
 };
