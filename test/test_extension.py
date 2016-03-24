@@ -67,5 +67,9 @@ class TestExtension(OpenWPMTest):
     def test_set_property_stack_trace(self, tmpdir):
         # make sure we handle set property on elements properly
         db = self.visit('/set_property/set_property.html', str(tmpdir))
-        rows = utilities.get_javascript_entries(db)
+        rows = utilities.query_db(db, "SELECT script_url, script_line,"
+                                  " script_col, call_stack, symbol,"
+                                  " operation, value, parameter_index,"
+                                  " parameter_value FROM javascript")
+
         assert rows == expected.set_property

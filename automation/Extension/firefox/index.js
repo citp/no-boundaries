@@ -51,7 +51,7 @@ exports.main = function(options, callbacks) {
         cpInstrument.run(crawlID);
     }
     if (enableFakeAutofill) {
-      console.log("Fake autofill is enabled");
-      fakeAutofill.run(crawlID);
+        console.log("Fake autofill is enabled");
+        fakeAutofill.run(crawlID);
     }
 };

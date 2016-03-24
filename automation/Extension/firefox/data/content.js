@@ -165,7 +165,7 @@ function getPageScript() {
 
       return stack;
     }
-    function getOriginatingScriptUrl() {
+    function getOriginatingScriptContext() {
       var trace = getStackTrace().split('\n');
 
       if (trace.length < 4) {
@@ -174,8 +174,20 @@ function getPageScript() {
 
       // this script is at 0, 1 and 2
       var callSite = trace[3];
+
       var scriptUrlMatches = callSite.match(geckoCallSiteRe);
-      return scriptUrlMatches && scriptUrlMatches[3] || '';
+
+      var scriptUrl = scriptUrlMatches && scriptUrlMatches[3] || '';
+      var items = callSite.split(":");
+      var col = (items[items.length-1]);
+      var line = (items[items.length-2]);
+      var callContext = {
+          scriptUrl: scriptUrl,
+          scriptLine: items[items.length-2],
+          scriptCol: items[items.length-1],
+          callStack: trace.slice(3).join("\n")
+      };
+      return callContext;
     }
 
     // Counter to cap # of calls logged for each script/api combination
@@ -197,12 +209,12 @@ function getPageScript() {
     var inLog = false;
 
     // For gets, sets, etc. on a single value
-    function logValue(instrumentedVariableName, value, operation, scriptUrl) {
+    function logValue(instrumentedVariableName, value, operation, callContext) {
         if(inLog)
             return;
         inLog = true;
 
-        var overLimit = updateCounterAndCheckIfOver(scriptUrl, instrumentedVariableName);
+        var overLimit = updateCounterAndCheckIfOver(callContext.scriptUrl, instrumentedVariableName);
         if (overLimit) {
             inLog = false;
             return;
@@ -212,11 +224,14 @@ function getPageScript() {
             operation: operation,
             symbol: instrumentedVariableName,
             value: serializeObject(value),
-            scriptUrl: scriptUrl
+            scriptUrl: callContext.scriptUrl,
+            scriptLine: callContext.scriptLine,
+            scriptCol: callContext.scriptCol,
+            callStack: callContext.callStack
         };
 
         try {
-            send('logValue',msg);
+            send('logValue', msg);
         }
         catch(error) {
             console.log("Unsuccessful value log!");
@@ -227,12 +242,12 @@ function getPageScript() {
     }
 
     // For functions
-    function logCall(instrumentedFunctionName, args, scriptUrl) {
+    function logCall(instrumentedFunctionName, args, callContext) {
         if(inLog)
             return;
         inLog = true;
 
-        var overLimit = updateCounterAndCheckIfOver(scriptUrl, instrumentedFunctionName);
+        var overLimit = updateCounterAndCheckIfOver(callContext.scriptUrl, instrumentedFunctionName);
         if (overLimit) {
             inLog = false;
             return;
@@ -248,9 +263,12 @@ function getPageScript() {
                 symbol: instrumentedFunctionName,
                 args: serialArgs,
                 value: "",
-                scriptUrl: scriptUrl
+                scriptUrl: callContext.scriptUrl,
+                scriptLine: callContext.scriptLine,
+                scriptCol: callContext.scriptCol,
+                callStack: callContext.callStack
             }
-            send('logCall',msg);
+            send('logCall', msg);
         }
         catch(error) {
             console.log("Unsuccessful call log: " + instrumentedFunctionName);
@@ -331,8 +349,8 @@ function getPageScript() {
     function logFunction(object, objectName, method) {
       var originalMethod = object[method];
       object[method] = function () {
-        var scriptUrl = getOriginatingScriptUrl();
-        logCall(objectName + '.' + method, arguments, scriptUrl);
+        var callContext = getOriginatingScriptContext();
+        logCall(objectName + '.' + method, arguments, callContext);
         return originalMethod.apply(this, arguments);
       };
     }
@@ -345,15 +363,15 @@ function getPageScript() {
               // store the original property value in the closure
               var origProperty = object[property];
               return function(){
-                var scriptUrl = getOriginatingScriptUrl();
-                logValue(objectName + '.' + property, origProperty, "get", scriptUrl);
+                var callContext = getOriginatingScriptContext();
+                logValue(objectName + '.' + property, origProperty, "get", callContext);
                 return origProperty;
               }
 
             })(),
             set: function(value) {
-                var scriptUrl = getOriginatingScriptUrl();
-                logValue(objectName + '.' + property, value, "set", scriptUrl);
+                var callContext = getOriginatingScriptContext();
+                logValue(objectName + '.' + property, value, "set", callContext);
                 this[property] = value;
             }
         });
@@ -374,21 +392,21 @@ function getPageScript() {
             configurable: true,
             get: (function() {
               return function(){
-                var scriptUrl = getOriginatingScriptUrl();
+                var callContext = getOriginatingScriptContext();
                 var origProperty = originalGetter.call(this);
-                logValue(objectName + '.' + property, origProperty, "get", scriptUrl);
+                logValue(objectName + '.' + property, origProperty, "get", callContext);
                 return origProperty;
               }
 
             })(),
             set: (function() {
               return function(value) {
-                var scriptUrl = getOriginatingScriptUrl();
+                var callContext = getOriginatingScriptContext();
                 if (!originalSetter) {
-                  logValue(objectName + '.' + property, value, "set(failed)", scriptUrl);
+                  logValue(objectName + '.' + property, value, "set(failed)", callContext);
                   return value;
                 }
-                logValue(objectName + '.' + property, value, "set", scriptUrl);
+                logValue(objectName + '.' + property, value, "set", callContext);
                 return originalSetter.call(this, value);
               }
             })()
@@ -401,7 +419,7 @@ function getPageScript() {
     // TODO: user should be able to choose what to instrument
 
     // Access to navigator properties
-    var navigatorProperties = [ "appCodeName", "appMinorVersion", "appName", "appVersion", "buildID", "cookieEnabled", "cpuClass", "doNotTrack", "geolocation", "language", "languages", "onLine", "opsProfile", "oscpu", "platform", "product", "productSub", "systemLanguage", "userAgent", "userLanguage", "userProfile", "vendorSub", "vendor" ];
+    var navigatorProperties = [ "appCodeName", "appName", "appVersion", "buildID", "cookieEnabled", "doNotTrack", "geolocation", "language", "languages", "onLine", "oscpu", "platform", "product", "productSub", "userAgent", "vendorSub", "vendor" ];
     navigatorProperties.forEach(function(property) {
         instrumentObjectProperty(window.navigator, "window.navigator", property);
     });
@@ -525,9 +543,12 @@ function getPageScript() {
       );
     }
 
-    function checkFormProperties(form, scriptUrl, elementType) {
+    function checkFormProperties(form, callContext, elementType) {
       var data = {};
-      data['scriptUrl'] = scriptUrl;
+      data['scriptUrl'] = callContext.scriptUrl;
+      data['scriptLine'] = callContext.scriptLine;
+      data['scriptCol'] = callContext.scriptCol;
+      data['callStack'] = callContext.callStack;
       data['isVisible'] = isElementVisible(form);
       data['nodePath'] = getPathToDomElement(form, true);
       var serializer = new XMLSerializer();
@@ -541,40 +562,33 @@ function getPageScript() {
     // script were to first add a form, and then add properties to that form
     // in separate calls.
     document.addEventListener("DOMNodeInserted", function (ev) {
-      let scriptUrl = getOriginatingScriptUrl();
+      let callContext = getOriginatingScriptContext();
 
       var target = ev.target;
       var form_found = false;
       if (target.tagName == 'FORM') {
-        checkFormProperties(target, scriptUrl, "form");
+        checkFormProperties(target, callContext, "form");
         form_found = true;
       }
       var forms = target.getElementsByTagName('form');
       for (var i=0; i < forms.length; i++) {
-        checkFormProperties(forms[i], scriptUrl, "form");
+        checkFormProperties(forms[i], callContext, "form");
         form_found = true;
       }
       if (!form_found){
         if (target.tagName == 'INPUT') {
-          checkFormProperties(target, scriptUrl, "input");
+          checkFormProperties(target, callContext, "input");
         }
         var inputs = target.getElementsByTagName('input');
         for (var i=0; i < inputs.length; i++) {
-          checkFormProperties(inputs[i], scriptUrl, "input");
+          checkFormProperties(inputs[i], callContext, "input");
         }
       }
     }, false);
 
-    // Firefox does not support DOMNodeInsertedIntoDocument
-    //document.addEventListener("DOMNodeInsertedIntoDocument", function (ev) {
-    //  console.log("DOMNodeInsertedIntoDocument",  getOriginatingScriptUrl(), ev);
-    //}, false);
-
     /*
      * Form reads
      */
-    // TODO: intercept value reads of input elements
-
     instrumentObject(window.HTMLInputElement.prototype, "window.HTMLInputElement", true);
 
     console.log("Successfully started all instrumentation.");

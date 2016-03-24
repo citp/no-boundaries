@@ -1,29 +1,22 @@
 """ Contains lists of expected data and or rows for tests """
 from utilities import BASE_TEST_URL, BASE_TEST_URL_DOMAIN, BASE_TEST_URL_NOPATH
 
-# Navigator and Screen properties
 properties = {
     "window.navigator.appCodeName",
-    "window.navigator.appMinorVersion",
     "window.navigator.appName",
     "window.navigator.appVersion",
     "window.navigator.buildID",
     "window.navigator.cookieEnabled",
-    "window.navigator.cpuClass",
     "window.navigator.doNotTrack",
     "window.navigator.geolocation",
     "window.navigator.language",
     "window.navigator.languages",
     "window.navigator.onLine",
-    "window.navigator.opsProfile",
     "window.navigator.oscpu",
     "window.navigator.platform",
     "window.navigator.product",
     "window.navigator.productSub",
-    "window.navigator.systemLanguage",
     "window.navigator.userAgent",
-    "window.navigator.userLanguage",
-    "window.navigator.userProfile",
     "window.navigator.vendorSub",
     "window.navigator.vendor",
     "window.screen.pixelDepth",
@@ -258,4 +251,5 @@ form_insertion_js_calls = [(FORM_SNIFFER_SCRIPT,
                             u'PWD12345678', None, None)]
 
 set_property = [(u'http://localtest.me:8000/test_pages/set_property/set_property.js',  # noqa
+                 u'3', u'3', u'set_window_name@http://localtest.me:8000/test_pages/set_property/set_property.js:3:3\n@http://localtest.me:8000/test_pages/set_property/set_property.js:6:1\n',
                  u'window.name', u'set', u'TEST', None, None)]
