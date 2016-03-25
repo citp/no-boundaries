@@ -448,7 +448,11 @@ function getPageScript() {
 
     // Access to canvas
     instrumentObject(window.HTMLCanvasElement.prototype,"HTMLCanvasElement", true);
-    var excludedProperties = [ "quadraticCurveTo", "lineTo", "transform", "globalAlpha", "moveTo", "drawImage" ];
+
+    var excludedProperties = [ "quadraticCurveTo", "lineTo", "transform",
+                               "globalAlpha", "moveTo", "drawImage",
+                               "setTransform", "clearRect", "closePath", "beginPath", "canvas", "translate" ];
+
     instrumentObject(window.CanvasRenderingContext2D.prototype, "CanvasRenderingContext2D", true, excludedProperties);
 
     // Access to webRTC
@@ -572,7 +576,8 @@ function getPageScript() {
     /*
      * Form reads
      */
-    instrumentObject(window.HTMLInputElement.prototype, "window.HTMLInputElement", true);
+    let excluded_properties = [ "nodeType", "nodeName", "parentNode", "checked" ];
+    instrumentObject(window.HTMLInputElement.prototype, "window.HTMLInputElement", true, excluded_properties);
 
     console.log("Successfully started all instrumentation.");
 
