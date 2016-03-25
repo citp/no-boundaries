@@ -1,15 +1,20 @@
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
+import selenium.common.exceptions as selenium_exceptions
 from pyvirtualdisplay import Display
 from collections import OrderedDict
 from selenium import webdriver
 from tabulate import tabulate
 from copy import deepcopy
+from Errors import TimeExceededError
+
 import subprocess
 import shutil
 import json
 import time
 import sys
 import os
+import httplib
+import signal
 
 def get_version():
     """Return OpenWPM version tag/current commit and Firefox version """
@@ -105,6 +110,42 @@ def get_configuration_string(manager_params, browser_params, versions):
     config_str += '\n\n'
     return config_str
 
+
+def raise_signal(signum, frame):
+    """Raise an exception when the alarm times out."""
+    raise TimeExceededError
+
+
+def timeout(duration):
+    """Timeout after given duration."""
+    # SIGALRM is only available on Linux
+    signal.signal(signal.SIGALRM, raise_signal)
+    signal.alarm(duration)  # alarm after X seconds
+
+
+def cancel_timeout():
+    """Cancel a previously set timer."""
+    signal.alarm(0)
+
+
+def quit_driver(driver):
+    """."""
+    try:
+        driver.quit()
+    except httplib.CannotSendRequest:
+        pass
+
+
+def close_driver(driver, _timeout=10):
+    timeout(_timeout)
+    try:
+        driver.close()
+    except (selenium_exceptions.UnexpectedAlertPresentException,
+            TimeExceededError):
+        pass
+    cancel_timeout()
+
+
 def fetch_adblockplus_list(output_directory, wait_time=20):
     """ Saves an updated AdBlock Plus list to the specified directory.
     <output_directory> - The directory to save lists to. Will be created if it
@@ -148,5 +189,7 @@ def fetch_adblockplus_list(output_directory, wait_time=20):
         shutil.copy(browser_path+'adblockplus/patterns.ini', output_directory)
         shutil.copy(browser_path+'adblockplus/elemhide.css', output_directory)
     finally:
-        driver.close()
+        close_driver(driver)
+        quit_driver(driver)
+        # driver.close()
         display.stop()

@@ -251,5 +251,5 @@ form_insertion_js_calls = [(FORM_SNIFFER_SCRIPT,
                             u'PWD12345678', None, None)]
 
 set_property = [(u'http://localtest.me:8000/test_pages/set_property/set_property.js',  # noqa
-                 u'3', u'3', u'set_window_name@http://localtest.me:8000/test_pages/set_property/set_property.js:3:3\n@http://localtest.me:8000/test_pages/set_property/set_property.js:6:1\n',
+                 u'3', u'3', u'',
                  u'window.name', u'set', u'TEST', None, None)]

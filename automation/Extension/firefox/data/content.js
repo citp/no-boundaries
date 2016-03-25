@@ -449,12 +449,17 @@ function getPageScript() {
     // prototype must be instrumented instead. Unfortunately this fails to differentiate
     // between sessionStorage and localStorage. Instead, you'll have to look for a sequence
     // of a get for the localStorage object followed by a getItem/setItem for the Storage object.
+    /*
+     * NO STORAGE LOGGING
+     *
+     *
+     * TODO: make sure we really not want to discard these properties
     var windowProperties = [ "name", "localStorage", "sessionStorage" ];
     windowProperties.forEach(function(property) {
         instrumentObjectProperty(window, "window", property);
     });
     instrumentObject(window.Storage.prototype, "window.Storage", true);
-
+     */
     // Access to canvas
     instrumentObject(window.HTMLCanvasElement.prototype,"HTMLCanvasElement", true);
 
@@ -594,6 +599,13 @@ function getPageScript() {
           excluded_properties: [ "nodeType", "nodeName", "parentNode", "checked" ]
         });
 
+    instrumentObject(window.HTMLFormElement.prototype, "window.HTMLFormElement",
+        true,
+        {
+          logFunctionsAsStrings: true,
+          logCallStack: true,
+          excluded_properties: [ "nodeType", "nodeName", "parentNode" ]
+        });
 
     console.log("Successfully started all instrumentation.");
 
