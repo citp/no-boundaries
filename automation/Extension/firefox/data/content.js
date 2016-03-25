@@ -318,7 +318,7 @@ function getPageScript() {
         var properties = Object.getPropertyNames(object);
         for (var i = 0; i < properties.length; i++) {
             if (logSettings.excludedProperties &&
-                excludedProperties.indexOf(properties[i]) > -1) {
+                logSettings.excludedProperties.indexOf(properties[i]) > -1) {
                   continue;
             }
             if (prototype) {
@@ -596,7 +596,8 @@ function getPageScript() {
         {
           logFunctionsAsStrings: true,
           logCallStack: true,
-          excluded_properties: [ "nodeType", "nodeName", "parentNode", "checked" ]
+          excludedProperties: [ "nodeType", "nodeName", "parentNode", "checked",
+                                "selectionStart", "selectionEnd", "offsetWidth" , "offsetHeight" ]
         });
 
     instrumentObject(window.HTMLFormElement.prototype, "window.HTMLFormElement",
@@ -604,7 +605,7 @@ function getPageScript() {
         {
           logFunctionsAsStrings: true,
           logCallStack: true,
-          excluded_properties: [ "nodeType", "nodeName", "parentNode" ]
+          excludedProperties: [ "nodeType", "nodeName", "parentNode" ]
         });
 
     console.log("Successfully started all instrumentation.");
