@@ -1,6 +1,7 @@
 import utilities
 import pytest
 from time import sleep
+import commands
 from ..automation import TaskManager
 
 
@@ -16,3 +17,27 @@ class OpenWPMTest(object):
         sleep(sleep_after)
         manager.close(post_process)
         return manager_params['db']
+
+    def is_installed(self, pkg_name):
+        """Check if a Linux package is installed."""
+        cmd = 'which %s' % pkg_name
+        status, _ = commands.getstatusoutput(cmd)
+        return False if status else True
+
+    def assert_is_installed(self, pkg):
+        assert self.is_installed(pkg), 'Cannot find %s in your system' % pkg
+
+    def assert_py_pkg_installed(self, pkg):
+        # some modules are imported using a different name than the ones used
+        # at the installation.
+        pkg_name_mapping = {"pyopenssl": "OpenSSL",
+                            "mitmproxy": "libmproxy",
+                            "beautifulsoup4": "bs4",
+                            "python-dateutil": "dateutil"
+                            }
+        # get the mapped name if it exists.
+        pkg_importable = pkg_name_mapping.get(pkg.lower(), pkg)
+        try:
+            __import__(pkg_importable)
+        except ImportError:
+            pytest.fail("Cannot find python package %s in your system" % pkg)

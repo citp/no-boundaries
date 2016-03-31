@@ -605,7 +605,8 @@ function getPageScript() {
         {
           logFunctionsAsStrings: true,
           logCallStack: true,
-          excludedProperties: [ "nodeType", "nodeName", "parentNode" ]
+          excludedProperties: [ "nodeType", "nodeName", "parentNode",
+                                "tagName", "contains", "getBoundingClientRect" ]
         });
 
     console.log("Successfully started all instrumentation.");

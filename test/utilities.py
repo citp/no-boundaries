@@ -68,7 +68,11 @@ def query_db(db, query, params=None):
     return rows
 
 
-def get_javascript_entries(db):
-    return query_db(db, "SELECT script_url, symbol, operation,"
-                    " value, parameter_index, parameter_value"
-                    " FROM javascript")
+def get_javascript_entries(db, all_columns=False):
+    if all_columns:
+        select_columns = "*"
+    else:
+        select_columns = "script_url, symbol, operation, value, parameter_index,\
+             parameter_value"
+
+    return query_db(db, "SELECT %s FROM javascript" % select_columns)

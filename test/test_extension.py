@@ -71,5 +71,4 @@ class TestExtension(OpenWPMTest):
                                   " script_col, call_stack, symbol,"
                                   " operation, value, parameter_index,"
                                   " parameter_value FROM javascript")
-
         assert rows == expected.set_property
