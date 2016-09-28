@@ -68,7 +68,7 @@ def tab_restart_browser(webdriver):
     time.sleep(0.5)
 
 
-def get_website(url, webdriver, proxy_queue, browser_params, extension_socket):
+def get_website(url, sleep, visit_id, webdriver, proxy_queue, browser_params, extension_socket):
     """
     goes to <url> using the given <webdriver> instance
     <proxy_queue> is queue for sending the proxy the current first party site
@@ -80,17 +80,20 @@ def get_website(url, webdriver, proxy_queue, browser_params, extension_socket):
     # sends top-level domain to proxy and extension (if enabled)
     # then, waits for it to finish marking traffic in proxy before moving to new site
     if proxy_queue is not None:
-        proxy_queue.put(url)
+        proxy_queue.put(visit_id)
         while not proxy_queue.empty():
             time.sleep(0.001)
     if extension_socket is not None:
-        extension_socket.send(url)
+        extension_socket.send(visit_id)
 
     # Execute a get through selenium
     try:
         webdriver.get(url)
     except TimeoutException:
         pass
+
+    # Sleep after get returns
+    time.sleep(sleep)
 
     # Close modal dialog if exists
     try:
@@ -138,15 +141,15 @@ def extract_links(webdriver, browser_params, manager_params):
 
     sock.close()
 
-def browse_website(url, num_links, webdriver, proxy_queue, browser_params, manager_params, extension_socket):
-    """
-    calls get_website before visiting <num_links> present on the page
-    NOTE: top_url will NOT be properly labeled for requests to subpages
-          these will still have the top_url set to the url passed as a parameter
-          to this function.
+def browse_website(url, num_links, sleep, visit_id, webdriver, proxy_queue,
+                   browser_params, manager_params, extension_socket):
+    """Calls get_website before visiting <num_links> present on the page.
+
+    Note: the site_url in the site_visits table for the links visited will
+    be the site_url of the original page and NOT the url of the links visited.
     """
     # First get the site
-    get_website(url, webdriver, proxy_queue, browser_params, extension_socket)
+    get_website(url, sleep, visit_id, webdriver, proxy_queue, browser_params, extension_socket)
 
     # Connect to logger
     logger = loggingclient(*manager_params['logger_address'])
@@ -157,20 +160,21 @@ def browse_website(url, num_links, webdriver, proxy_queue, browser_params, manag
         links = filter(lambda x: x.is_displayed() == True, links)
         if len(links) == 0:
             break
-        r = int(random.random()*len(links)-1)
+        r = int(random.random()*len(links))
         logger.info("BROWSER %i: visiting internal link %s" % (browser_params['crawl_id'], links[r].get_attribute("href")))
 
         try:
             links[r].click()
             wait_until_loaded(webdriver, 300)
-            time.sleep(1)
+            time.sleep(max(1,sleep))
             if browser_params['bot_mitigation']:
                 bot_mitigation(webdriver)
             webdriver.back()
-        except Exception, e:
+            wait_until_loaded(webdriver, 300)
+        except Exception:
             pass
 
-def dump_flash_cookies(top_url, start_time, webdriver, browser_params, manager_params):
+def dump_flash_cookies(start_time, visit_id, webdriver, browser_params, manager_params):
     """ Save newly changed Flash LSOs to database
 
     We determine which LSOs to save by the `start_time` timestamp.
@@ -185,8 +189,8 @@ def dump_flash_cookies(top_url, start_time, webdriver, browser_params, manager_p
     # Flash cookies
     flash_cookies = get_flash_cookies(start_time)
     for cookie in flash_cookies:
-        query = ("INSERT INTO flash_cookies (crawl_id, page_url, domain, filename, local_path, \
-                  key, content) VALUES (?,?,?,?,?,?,?)", (browser_params['crawl_id'], top_url, cookie.domain,
+        query = ("INSERT INTO flash_cookies (crawl_id, visit_id, domain, filename, local_path, \
+                  key, content) VALUES (?,?,?,?,?,?,?)", (browser_params['crawl_id'], visit_id, cookie.domain,
                                                           cookie.filename, cookie.local_path,
                                                           cookie.key, cookie.content))
         sock.send(query)
@@ -194,7 +198,7 @@ def dump_flash_cookies(top_url, start_time, webdriver, browser_params, manager_p
     # Close connection to db
     sock.close()
 
-def dump_profile_cookies(top_url, start_time, webdriver, browser_params, manager_params):
+def dump_profile_cookies(start_time, visit_id, webdriver, browser_params, manager_params):
     """ Save changes to Firefox's cookies.sqlite to database
 
     We determine which cookies to save by the `start_time` timestamp.
@@ -214,9 +218,9 @@ def dump_profile_cookies(top_url, start_time, webdriver, browser_params, manager
     rows = get_cookies(browser_params['profile_path'], start_time)
     if rows is not None:
         for row in rows:
-            query = ("INSERT INTO profile_cookies (crawl_id, page_url, baseDomain, name, value, \
+            query = ("INSERT INTO profile_cookies (crawl_id, visit_id, baseDomain, name, value, \
                       host, path, expiry, accessed, creationTime, isSecure, isHttpOnly) \
-                      VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", (browser_params['crawl_id'], top_url) + row)
+                      VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", (browser_params['crawl_id'], visit_id) + row)
             sock.send(query)
 
     # Close connection to db

@@ -1,4 +1,4 @@
-OpenWPM
+OpenWPM [![Build Status](https://travis-ci.org/citp/OpenWPM.svg)](https://travis-ci.org/citp/OpenWPM)
 =======
 
 OpenWPM is a web privacy measurement framework which makes it easy to collect
@@ -24,7 +24,7 @@ us know!
 Quick Start
 -----------
 
-Once installed, it's very easy to run a quick test of OpenWPM. Check out
+Once installed, it is very easy to run a quick test of OpenWPM. Check out
 `demo.py` for an example. This will the default setting specified in
 `automation/default_manager_params.json` and
 `automation/default_browser_params.json`, with the exception of the changes
@@ -58,7 +58,7 @@ OpenWPM includes the following instrumentation by default:
         * NOTE: this will not include cookies set by Javascript, see our
             Firefox extension option below.
     * De-duplicated content storage
-        * Right new we detect and store javascript, but this can be expanded
+        * Right now we detect and store javascript, but this can be expanded
 * A Firefox Extension
     * Javascript calls
     * Cookie setting and access
@@ -116,22 +116,21 @@ scripts.
 Citation
 --------
 
-If you use OpenWPM in your research, please cite our current [Technical
-Report](http://www.cs.princeton.edu/~ste/papers/openwpm_03-2015.pdf) on the
-infrastructure. You can use the following BibTeX.
+If you use OpenWPM in your research, please cite our CCS 2016 (to appear)
+[publication](http://randomwalker.info/publications/OpenWPM_1_million_site_tracking_measurement.pdf)
+on the infrastructure. You can use the following BibTeX.
 
-    @unpublished{englehardt2015openwpm,
-        author = "Steven Englehardt and Christian Eubank and Peter Zimmerman and Dillon Reisman and Arvind Narayanan",
-        title  = "{OpenWPM: An Automated Platform for Web Privacy Measurement}",
-        month = "March",
-        year   = "2015",
-        note = "Manuscript"
+    @inproceedings{englehardt2016census,
+        author    = "Steven Englehardt and Arvind Narayanan",
+        title     = "{Online tracking: A 1-million-site measurement and analysis}",
+        booktitle = {Proceedings of ACM CCS 2016},
+        year      = "2016",
     }
 
 License
 -------
 
-OpenWPM is licenced under GNU GPLv3. Additional code has been included from
+OpenWPM is licensed under GNU GPLv3. Additional code has been included from
 [FourthParty](https://github.com/fourthparty/fourthparty) and
 [Privacy Badger](https://github.com/EFForg/privacybadgerfirefox), both of which 
 are licensed GPLv3+.

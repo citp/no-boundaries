@@ -1,9 +1,10 @@
 import pytest # NOQA
 import os
-from openwpmtest import OpenWPMTest
-from ..automation import TaskManager
 import utilities
 import expected
+from openwpmtest import OpenWPMTest
+from ..automation import TaskManager
+# TODO: add test for setter instrumentation
 
 
 class TestExtension(OpenWPMTest):
@@ -40,6 +41,37 @@ class TestExtension(OpenWPMTest):
             observed_rows.add(item)
         assert expected.canvas == observed_rows
 
+    def test_extension_gets_correct_visit_id(self, tmpdir):
+        manager_params, browser_params = self.get_config(str(tmpdir))
+        manager = TaskManager.TaskManager(manager_params, browser_params)
+
+        url_a = utilities.BASE_TEST_URL + '/simple_a.html'
+        url_b = utilities.BASE_TEST_URL + '/simple_b.html'
+
+        manager.get(url_a)
+        manager.get(url_b)
+        manager.close(post_process=False)
+        qry_res = utilities.query_db(manager_params['db'],
+                                     "SELECT visit_id, site_url FROM site_visits")
+
+        # Construct dict mapping site_url to visit_id
+        visit_ids = dict()
+        for row in qry_res:
+            visit_ids[row[1]] = row[0]
+
+        simple_a_visit_id = utilities.query_db(
+                                    manager_params['db'],
+                                    "SELECT visit_id FROM javascript WHERE "
+                                    "symbol=?", ("window.navigator.userAgent",))
+
+        simple_b_visit_id = utilities.query_db(
+                                    manager_params['db'],
+                                    "SELECT visit_id FROM javascript WHERE "
+                                    "symbol=?", ("window.navigator.platform",))
+
+        assert visit_ids[url_a] == simple_a_visit_id[0][0]
+        assert visit_ids[url_b] == simple_b_visit_id[0][0]
+
     def check_webrtc_sdp_offer(self, sdp_str):
         """Make sure the SDP offer includes expected fields/strings.
 
@@ -72,3 +104,12 @@ class TestExtension(OpenWPMTest):
                                   " operation, value, parameter_index,"
                                   " parameter_value FROM javascript")
         assert rows == expected.set_property
+
+    def test_audio_fingerprinting(self, tmpdir):
+        db = self.visit('/audio_fingerprinting.html', str(tmpdir))
+        # Check that all calls and methods are recorded
+        rows = utilities.get_javascript_entries(db)
+        observed_symbols = set()
+        for item in rows:
+            observed_symbols.add(item[1])
+        assert expected.audio == observed_symbols
