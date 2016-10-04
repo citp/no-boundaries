@@ -1,4 +1,6 @@
 from utilities import BASE_TEST_URL, start_server
+from os.path import dirname, join, realpath
+from os import chdir
 import subprocess
 
 
@@ -13,19 +15,22 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
-def run_cmd(command):
+def run_cmd(command, cwd=None):
     popen = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
+                             stderr=subprocess.STDOUT, cwd=cwd)
     return iter(popen.stdout.readline, b"")
 
 
 def start_manual_test():
-    cmd_cd = "cd ../automation/Extension/firefox/"
-    cmd_jpm = "jpm run --binary-args '%s' -b `which firefox`" % BASE_TEST_URL
+    ext_path = join(dirname(dirname(realpath(__file__))),
+                    'automation', 'Extension', 'firefox')
+    ff_bin_path = join(dirname(dirname(realpath(__file__))),
+                       'firefox-bin', 'firefox')
+    cmd_jpm = "jpm run --binary-args '%s' -b %s" % (BASE_TEST_URL, ff_bin_path)
     server, thread = start_server()
     try:
         # http://stackoverflow.com/a/4417735/3104416
-        for line in run_cmd("%s && %s" % (cmd_cd, cmd_jpm)):
+        for line in run_cmd(cmd_jpm, cwd=ext_path):
             print bcolors.OKGREEN, line, bcolors.ENDC,
     except KeyboardInterrupt:
         print "Keyboard Interrupt detected, shutting down..."

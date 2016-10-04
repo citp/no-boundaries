@@ -1,4 +1,4 @@
-from os.path import isfile, dirname, join
+from os.path import isfile, dirname, join, realpath
 from openwpmtest import OpenWPMTest
 
 
@@ -22,6 +22,7 @@ class TestDependencies(OpenWPMTest):
             self.assert_py_pkg_installed(pkg)
 
     def test_firefox_bin(self):
-        ff_bin = join(dirname(dirname(__file__)), 'firefox-bin', 'firefox')
+        ff_bin = join(dirname(dirname(realpath(__file__))),
+                      'firefox-bin', 'firefox')
         assert isfile(ff_bin), "Can't find the Firefox binary in"\
             "OpenWPM/firefox-bin. Please run install.sh."
