@@ -1,10 +1,10 @@
-import pytest
+from os.path import isfile, dirname, join
 from openwpmtest import OpenWPMTest
 
 
 class TestDependencies(OpenWPMTest):
     # TODO: add tests for firefox-bin directory and Alexa list
-    def test_dependencies(self, tmpdir):
+    def test_dependencies(self):
         self.assert_is_installed("npm")
         self.assert_is_installed("jpm")
         self.assert_is_installed('mitmdump')
@@ -20,3 +20,8 @@ class TestDependencies(OpenWPMTest):
 
         for pkg in py_pkgs:
             self.assert_py_pkg_installed(pkg)
+
+    def test_firefox_bin(self):
+        ff_bin = join(dirname(dirname(__file__)), 'firefox-bin', 'firefox')
+        assert isfile(ff_bin), "Can't find the Firefox binary in"\
+            "OpenWPM/firefox-bin. Please run install.sh."
