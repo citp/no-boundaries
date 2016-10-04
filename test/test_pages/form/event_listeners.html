@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+  <title>Test page that registers various event listeners</title>
+  <script type="application/javascript">
+
+  function add_listeners() {
+
+    // Add listeners directly to forms
+    var inputs = document.querySelectorAll("input");
+    for (var i=0; i<inputs.length; i++) {
+      inputs[i].addEventListener("blur", function (e) {
+        console.log("input listener reading Blur", e.target.value);
+      }, false);
+    }
+
+    // Add listener to document body
+    window.document.body.addEventListener("blur", function(e) {
+      console.log("body listener reading blur", e.target.value);
+    }, true);
+
+    // Add listener to document
+    window.document.addEventListener("blur", function(e) {
+      console.log("document listener reading blur", e.target.value);
+    }, true);
+
+    // Add listener to window object
+    window.addEventListener("blur", function(e) {
+      console.log("window listener reading blur", e.target.value);
+    }, true);
+  }
+
+  </script>
+  </head>
+  <body onload="add_listeners()">
+
+    <h3> A fake login form contained in a div</h3>
+    <div id='div1'>
+      <form id="theForm" action="">
+        Email: <input id="input1" type='email' name='email' value='example@gmail.com'><br />
+        Password: <input id="input2" type = 'password' value='password'>
+      </form>
+    </div>
+
+  </body>
+</html>

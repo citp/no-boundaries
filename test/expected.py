@@ -246,6 +246,14 @@ set_property = [(SET_PROP_TEST_PAGE,
                  u'window.HTMLFormElement.action',
                  u'set', u'TEST-ACTION', None, None)]
 
+# Event listeners
+event_listener_additions = {
+    "window.addEventListener",
+    "window.document.addEventListener",
+    "window.HTMLBodyElement.addEventListener",
+    "window.HTMLInputElement.addEventListener"
+}
+
 # AudioContext and AudioNode symbols we expect from our test script
 audio = {
     u"AudioContext.createOscillator",

@@ -209,10 +209,10 @@ function getPageScript() {
       }
       return false;
     }
-    
+
     // Prevent logging of gets arising from logging
     var inLog = false;
-    
+
     // For gets, sets, etc. on a single value
     function logValue(instrumentedVariableName, value, operation, callContext, logSettings) {
       if(inLog)
@@ -310,9 +310,20 @@ function getPageScript() {
      */
 
     // Use for objects or object prototypes
-    // be sure to set the `prototype` flag for prototypes
+    // Set the `prototype` flag for prototypes
+    // logSettings options
+    // -------------------
+    //   propertiesToInstrument : Array
+    //     An array of properties to instrument on this object. Default is all properties.
+    //   excludedProperties : Array
+    //     Properties excluded from instrumentation. Default is an empty array.
+    //   logCallStack : boolean
+    //     Set to true save the call stack info with each property call. Default is false.
+    //   logFunctionsAsStrings : boolean
+    //     Set to true to save functional arguments as strings during argument serialization. Default is false.
     function instrumentObject(object, objectName, prototype=false, logSettings={}) {
-      var properties = Object.getPropertyNames(object);
+      var properties = logSettings.propertiesToInstrument ?
+        logSettings.propertiesToInstrument : Object.getPropertyNames(object);
       for (var i = 0; i < properties.length; i++) {
         if (logSettings.excludedProperties &&
             logSettings.excludedProperties.indexOf(properties[i]) > -1) {
@@ -593,7 +604,8 @@ function getPageScript() {
           logFunctionsAsStrings: true,
           logCallStack: true,
           excludedProperties: [ "nodeType", "nodeName", "parentNode", "checked",
-                                "selectionStart", "selectionEnd", "offsetWidth" , "offsetHeight" ]
+                                "selectionStart", "selectionEnd", "offsetWidth" ,
+                                "offsetHeight" ]
         });
 
     instrumentObject(window.HTMLFormElement.prototype, "window.HTMLFormElement",
@@ -604,6 +616,23 @@ function getPageScript() {
           excludedProperties: [ "nodeType", "nodeName", "parentNode",
                                 "tagName", "contains", "getBoundingClientRect" ]
         });
+
+    /* Monitor new event listeners to top-level objects */
+
+    var listenerLogSettings = {
+          logFunctionsAsStrings: true,
+          logCallStack: true,
+          propertiesToInstrument: [ "addEventListener" ]
+    };
+
+    instrumentObject(window.HTMLBodyElement.prototype, "window.HTMLBodyElement",
+        true, listenerLogSettings);
+
+    instrumentObject(window.document, "window.document",
+        false, listenerLogSettings);
+
+    instrumentObject(window, "window",
+        false, listenerLogSettings);
 
     console.log("Successfully started all instrumentation.");
   } + "());";
