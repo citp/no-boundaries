@@ -33,10 +33,13 @@ exports.run = function(crawlID) {
       createInstance(Ci.nsILoginInfo);
 
     newSignon.init(hostname, formAction, realm, fakeEmail, fakePwd, emailField, PwdField);
-    console.log("newSignon", hostname, formAction, realm, fakeEmail, fakePwd, emailField, PwdField);
     try {
-      // Add the credentials to password database
-      passwordManager.addLogin(newSignon);
+      // Add the credentials to password database if not present
+      if (passwordManager.findLogins({}, hostname, formAction, realm).length == 0) {
+        passwordManager.addLogin(newSignon);
+        console.log("Login credentials successfully added: ", hostname,
+            formAction, realm, fakeEmail, fakePwd, emailField, PwdField);
+      }
     } catch (e) {
       console.log("ERROR: passwordManager.addLogin(loginInfo);", e);
     };
