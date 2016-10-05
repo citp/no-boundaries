@@ -7,6 +7,8 @@ import os
 import sqlite3
 from random import choice
 from os.path import realpath, dirname
+
+
 LOCAL_WEBSERVER_PORT = 8000
 PSL_CACHE_LOC = '/tmp/public_suffix_list.dat'
 BASE_TEST_URL_DOMAIN = "localtest.me"

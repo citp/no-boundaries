@@ -14,6 +14,15 @@ import time
 import os
 import httplib
 import signal
+from os.path import join, realpath, dirname
+import commands
+
+
+def create_xpi():
+    """Creates a new extension xpi using jpm."""
+    ext_dirname = join(dirname(realpath(__file__)), 'Extension', 'firefox')
+    return commands.getstatusoutput("cd %s && jpm xpi" % ext_dirname)
+
 
 def get_version():
     """Return OpenWPM version tag/current commit and Firefox version """

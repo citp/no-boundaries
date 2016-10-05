@@ -1,13 +1,7 @@
 import pytest
 import utilities
-import commands
+from ..automation.platform_utils import create_xpi
 
-
-def create_xpi():
-    """Creates a new xpi using jpm."""
-    cmd_cd = "cd ../automation/Extension/firefox/"
-    cmd_jpm = "jpm xpi"
-    print commands.getstatusoutput("%s && %s" % (cmd_cd, cmd_jpm))
 
 @pytest.fixture(scope="session", autouse=True)
 def prepare_test_setup(request):
