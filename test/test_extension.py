@@ -96,15 +96,6 @@ class TestExtension(OpenWPMTest):
                 observed_rows.add(item)
         assert set(expected.webrtc_calls) == observed_rows
 
-    def test_set_property_stack_trace(self, tmpdir):
-        # make sure we handle set property on elements properly
-        db = self.visit('/set_property/set_property.html', str(tmpdir))
-        rows = utilities.query_db(db, "SELECT script_url, script_line,"
-                                  " script_col, call_stack, symbol,"
-                                  " operation, value, parameter_index,"
-                                  " parameter_value FROM javascript")
-        assert rows == expected.set_property
-
     def test_audio_fingerprinting(self, tmpdir):
         db = self.visit('/audio_fingerprinting.html', str(tmpdir))
         # Check that all calls and methods are recorded
@@ -113,3 +104,12 @@ class TestExtension(OpenWPMTest):
         for item in rows:
             observed_symbols.add(item[1])
         assert expected.audio == observed_symbols
+
+    def test_set_property_stack_trace(self, tmpdir):
+        # make sure we handle set property on elements properly
+        db = self.visit('/set_property/set_property.html', str(tmpdir))
+        rows = utilities.query_db(db, "SELECT script_url, script_line,"
+                                  " script_col, call_stack, symbol,"
+                                  " operation, value, parameter_index,"
+                                  " parameter_value FROM javascript")
+        assert rows == expected.set_property
