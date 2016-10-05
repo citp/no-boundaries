@@ -251,6 +251,7 @@ event_listener_additions = {
     "window.addEventListener",
     "window.document.addEventListener",
     "window.HTMLBodyElement.addEventListener",
+    "window.HTMLFormElement.addEventListener",
     "window.HTMLInputElement.addEventListener"
 }
 

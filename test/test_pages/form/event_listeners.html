@@ -6,27 +6,35 @@
 
   function add_listeners() {
 
-    // Add listeners directly to forms
+    // Add listeners directly to input elements
     var inputs = document.querySelectorAll("input");
     for (var i=0; i<inputs.length; i++) {
       inputs[i].addEventListener("blur", function (e) {
-        console.log("input listener reading Blur", e.target.value);
+        console.log("input listener fired on blur", e.target.value);
+      }, false);
+    }
+
+    // Add listeners to forms
+    var forms = document.getElementsByTagName("form");
+    for (var i=0; i<forms.length; i++) {
+      forms[i].addEventListener("blur", function (e) {
+        console.log("form listener fired on blur", e.target.value);
       }, false);
     }
 
     // Add listener to document body
     window.document.body.addEventListener("blur", function(e) {
-      console.log("body listener reading blur", e.target.value);
+      console.log("body listener fired on blur", e.target.value);
     }, true);
 
     // Add listener to document
     window.document.addEventListener("blur", function(e) {
-      console.log("document listener reading blur", e.target.value);
+      console.log("document listener fired on blur", e.target.value);
     }, true);
 
     // Add listener to window object
     window.addEventListener("blur", function(e) {
-      console.log("window listener reading blur", e.target.value);
+      console.log("window listener fired on blur", e.target.value);
     }, true);
   }
 
