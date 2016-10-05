@@ -33,6 +33,7 @@ class TestMITMProxy(OpenWPMTest):
         assert test_url in response_urls
         assert HTTP_STATUS_OK in response_statuses
 
+    @pytest.mark.xfail(reason="citp/OpenWPM/issues/53")
     def test_https_connection(self, tmpdir):
         """Make sure mitmproxy allows connections to HTTPS sites.
 
