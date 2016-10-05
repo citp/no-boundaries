@@ -5,6 +5,7 @@ var pageManager         = require("./lib/page-manager.js");
 var cookieInstrument    = require("./lib/cookie-instrument.js");
 var jsInstrument        = require("./lib/javascript-instrument.js");
 var cpInstrument        = require("./lib/content-policy-instrument.js");
+var httpInstrument      = require("./lib/http-instrument.js");
 var fakeAutofill        = require("./lib/fake-autofill.js");
 
 exports.main = function(options, callbacks) {
@@ -19,13 +20,17 @@ exports.main = function(options, callbacks) {
         var enableCK = dbstring[3].trim() == 'True';
         var enableJS = dbstring[4].trim() == 'True';
         var enableCP = dbstring[5].trim() == 'True';
-        var enableFakeAutofill = dbstring[6].trim() == 'True';
-        console.log("Host:",host,"Port:",port,"CrawlID:",crawlID,"Cookie:",enableCK,"JS:",enableJS,"CP:",enableCP);
+        var enableHTTP = dbstring[6].trim() == 'True';
+        var enableFakeAutofill = dbstring[7].trim() == 'True';
+        console.log("Host:",host,"Port:",port,"CrawlID:",crawlID,
+            "Cookie:",enableCK,"JS:",enableJS,"CP:",enableCP,
+            "HTTP:",enableHTTP,"Autofill:",enableFakeAutofill);
     } else {
         console.log("ERROR: database settings not found -- outputting all queries to console");
-        var enableCK = false;
+        var enableCK = true;
         var enableJS = true;
-        var enableCP = false;
+        var enableCP = true;
+        var enableHTTP = true;
         var host = '';
         var port = '';
         var crawlID = '';
@@ -33,11 +38,8 @@ exports.main = function(options, callbacks) {
     }
 
     // Turn on instrumentation
-    if (enableCK || enableJS || enableCP) {
-        loggingDB.open(host, port, crawlID);
-        //BROKEN
-        //pageManager.setup(crawlID);
-    }
+    loggingDB.open(host, port, crawlID);
+
     if (enableCK) {
         console.log("Cookie instrumentation enabled");
         cookieInstrument.run(crawlID);
@@ -49,6 +51,10 @@ exports.main = function(options, callbacks) {
     if (enableCP) {
         console.log("Content Policy instrumentation enabled");
         cpInstrument.run(crawlID);
+    }
+    if (enableHTTP) {
+        console.log("HTTP Instrumentation enabled");
+        httpInstrument.run(crawlID);
     }
     if (enableFakeAutofill) {
         console.log("Fake autofill is enabled");

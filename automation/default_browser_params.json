@@ -5,6 +5,7 @@
         "cookieInstrument": false,
         "jsInstrument": false,
         "cpInstrument": false,
+        "httpInstrument": false,
         "fakeAutofill": false
     },
     "save_javascript": false,
