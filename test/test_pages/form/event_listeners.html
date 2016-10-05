@@ -17,8 +17,8 @@
     // Add listeners to forms
     var forms = document.getElementsByTagName("form");
     for (var i=0; i<forms.length; i++) {
-      forms[i].addEventListener("blur", function (e) {
-        console.log("form listener fired on blur", e.target.value);
+      forms[i].addEventListener("submit", function (e) {
+        console.log("form listener fired on submit", e.target.value);
       }, false);
     }
 
@@ -47,6 +47,7 @@
       <form id="theForm" action="">
         Email: <input id="input1" type='email' name='email' value='example@gmail.com'><br />
         Password: <input id="input2" type = 'password' value='password'>
+        <input type="submit" value="submit">
       </form>
     </div>
 
