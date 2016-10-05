@@ -1,6 +1,5 @@
 from utilities import BASE_TEST_URL, start_server
 from os.path import dirname, join, realpath
-from os import chdir
 import subprocess
 
 
