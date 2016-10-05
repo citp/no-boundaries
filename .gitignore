@@ -1,3 +1,6 @@
+# firefox extension
+*.xpi
+
 # firefox directories
 firefox-bin/
 
