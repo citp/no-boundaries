@@ -9,6 +9,7 @@ from pyvirtualdisplay import Display
 import shutil
 import os
 import random
+from os.path import join, dirname, isfile
 
 
 class MyFirefoxProfile(webdriver.FirefoxProfile):
@@ -96,8 +97,11 @@ def deploy_firefox(status_queue, browser_params, manager_params, crash_recovery)
         fp.set_preference("extensions.firebug.currentVersion", "1.11.0")  # Avoid startup screen
 
     if browser_params['extension']['enabled']:
-        ext_loc = os.path.join(root_dir + "/../", 'Extension/firefox/@openwpm-0.0.1.xpi')
-        ext_loc = os.path.normpath(ext_loc)
+        ext_dir = join(dirname(root_dir), 'Extension', 'firefox')
+        ext_loc = join(ext_dir, '@openwpm-0.0.1.xpi')
+        # jpm 1.2.0 doesn't add the version number to the xpi name
+        ext_loc_no_version = join(ext_dir, 'openwpm.xpi')
+        ext_loc = ext_loc if isfile(ext_loc) else ext_loc_no_version
         fp.add_extension(extension=ext_loc)
         with open(browser_profile_path + 'database_settings.txt', 'w') as f:
             host, port = manager_params['aggregator_address']

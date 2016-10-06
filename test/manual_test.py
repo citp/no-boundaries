@@ -25,7 +25,7 @@ def start_manual_test():
                     'automation', 'Extension', 'firefox')
     ff_bin_path = join(dirname(dirname(realpath(__file__))),
                        'firefox-bin', 'firefox')
-    cmd_jpm = "jpm run --binary-args '%s' -b %s" % (BASE_TEST_URL, ff_bin_path)
+    cmd_jpm = "jpm run --binary-args 'url %s' -b %s" % (BASE_TEST_URL, ff_bin_path)
     server, thread = start_server()
     try:
         # http://stackoverflow.com/a/4417735/3104416
