@@ -13,4 +13,4 @@ install:
 before_script:
   - cd test
 script:
-  - travis_retry py.test -s -v --cov=automation --cov-report term-missing --durations=10
+  - py.test -s -v --cov=automation --cov-report term-missing --durations=10
