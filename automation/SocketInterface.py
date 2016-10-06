@@ -2,7 +2,7 @@ import Queue
 import threading
 import socket
 import struct
-import json
+import dill
 
 #TODO - Implement a cleaner shutdown for server socket
 # see: https://stackoverflow.com/questions/1148062/python-socket-accept-blocks-prevents-app-from-quitting
@@ -16,7 +16,7 @@ class serversocket:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.bind(('localhost', 0))
         self.sock.listen(10)  # queue a max of n connect requests
-        self.verbose = verbose
+        self.verbose = True
         self.queue = Queue.Queue()
         if self.verbose:
             print "Server bound to: " + str(self.sock.getsockname())
@@ -52,17 +52,17 @@ class serversocket:
                 msg = self.receive_msg(client, msglen)
                 if is_serialized:
                     try:
-                        msg = json.loads(msg)
+                        msg = dill.loads(str(msg))
                     except UnicodeDecodeError:
                         try:
-                            msg = json.loads(unicode(msg, 'ISO-8859-1', 'ignore'))
+                            msg = dill.loads(unicode(msg, 'ISO-8859-1', 'ignore'))
                         except ValueError:
                             if self.verbose:
                                 "Unrecognized character encoding during de-serialization."
                             continue
                     except ValueError as e:
                         try:
-                            msg = json.loads(unicode(msg, 'utf-8', 'ignore'))
+                            msg = dill.loads(unicode(msg, 'utf-8', 'ignore'))
                         except ValueError:
                             if self.verbose:
                                 print "Unrecognized character encoding during de-serialization."
@@ -101,7 +101,7 @@ class clientsocket:
         """
         #if input not string, serialize to string
         if type(msg) is not str:
-            msg = json.dumps(msg)
+            msg = dill.dumps(msg)
             is_serialized = True
         else:
             is_serialized = False
