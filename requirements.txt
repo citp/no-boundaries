@@ -11,8 +11,6 @@ plyvel
 tblib
 tabulate
 pytest
-# pytest-cov is only need to generate coverage report
-pytest-cov==2.2.1
 publicsuffix
 # Install specific mitmproxy version since we rely on some internal structure of
 # netlib and mitmproxy. New releases tend to break things and should be tested
