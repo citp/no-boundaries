@@ -31,8 +31,11 @@ exports.executeSQL = function(statement, async) {
     if (debugging) {
         if (typeof statement == 'string')
             console.log(statement);
-        else
-            console.log(statement[1]);
+        else{  // log the table name and values to be inserted
+          var table_name = statement[0].replace("INSERT INTO ", "").split(" ")[0];
+          console.log(table_name, statement[1]);
+        }
+
         return;
     }
     // catch statements without arguments
