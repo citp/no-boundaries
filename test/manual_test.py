@@ -19,6 +19,8 @@ def get_command_output_lines(command, cwd=None):
                              stderr=subprocess.STDOUT, cwd=cwd)
     return iter(popen.stdout.readline, b"")
 
+OPENWPM_LOG_PREFIX = "console.log: openwpm: "
+
 
 def start_manual_test():
     ext_path = join(dirname(dirname(realpath(__file__))),
@@ -30,7 +32,11 @@ def start_manual_test():
     try:
         # http://stackoverflow.com/a/4417735/3104416
         for line in get_command_output_lines(cmd_jpm, cwd=ext_path):
-            print bcolors.OKGREEN, line, bcolors.ENDC,
+            if "Array" in line:
+                line = line.replace("Array", bcolors.OKBLUE + "Array")
+            if OPENWPM_LOG_PREFIX in line:
+                line = line.replace(OPENWPM_LOG_PREFIX, OPENWPM_LOG_PREFIX + bcolors.OKGREEN)
+            print line, bcolors.ENDC,
     except KeyboardInterrupt:
         print "Keyboard Interrupt detected, shutting down..."
     print "\nClosing server thread..."
