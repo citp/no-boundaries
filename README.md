@@ -1,4 +1,4 @@
-OpenWPM Third-part Identity Sniffing Fork[![Build Status](https://travis-ci.com/PrincetonUniversity/OpenWPM_Leuven_Princeton.svg?token=RAFcuqCqzvu2pjcs8qEn&branch=master)](https://travis-ci.com/PrincetonUniversity/OpenWPM_Leuven_Princeton)
+OpenWPM Third-party Identity Sniffing Fork [![Build Status](https://travis-ci.com/englehardt/OpenWPM_Leuven_Princeton.svg?token=RAFcuqCqzvu2pjcs8qEn&branch=master)](https://travis-ci.com/englehardt/OpenWPM_Leuven_Princeton)
 =======
 
 OpenWPM is a web privacy measurement framework which makes it easy to collect
