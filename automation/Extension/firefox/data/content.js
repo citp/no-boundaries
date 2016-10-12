@@ -419,7 +419,10 @@ function getPageScript() {
     // TODO: user should be able to choose what to instrument
 
     // Access to navigator properties
-    var navigatorProperties = [ "appCodeName", "appName", "appVersion", "buildID", "cookieEnabled", "doNotTrack", "geolocation", "language", "languages", "onLine", "oscpu", "platform", "product", "productSub", "userAgent", "vendorSub", "vendor" ];
+    var navigatorProperties = [ "appCodeName", "appName", "appVersion",
+        "buildID", "cookieEnabled", "doNotTrack", "geolocation", "language",
+        "languages", "onLine", "oscpu", "platform", "product", "productSub",
+        "userAgent", "vendorSub", "vendor" ];
     navigatorProperties.forEach(function(property) {
       instrumentObjectProperty(window.navigator, "window.navigator", property);
     });
@@ -437,7 +440,8 @@ function getPageScript() {
       for (var i = 0; i < window.navigator.plugins.length; i++) {
       let pluginName = window.navigator.plugins[i].name;
       pluginProperties.forEach(function(property) {
-        instrumentObjectProperty(window.navigator.plugins[pluginName], "window.navigator.plugins[" + pluginName + "]", property);
+        instrumentObjectProperty(window.navigator.plugins[pluginName],
+            "window.navigator.plugins[" + pluginName + "]", property);
       });
     }
 
@@ -446,14 +450,16 @@ function getPageScript() {
     for (var i = 0; i < window.navigator.mimeTypes.length; i++) {
       let mimeTypeName = window.navigator.mimeTypes[i].type;
       mimeTypeProperties.forEach(function(property) {
-        instrumentObjectProperty(window.navigator.mimeTypes[mimeTypeName], "window.navigator.mimeTypes[" + mimeTypeName + "]", property);
+        instrumentObjectProperty(window.navigator.mimeTypes[mimeTypeName],
+            "window.navigator.mimeTypes[" + mimeTypeName + "]", property);
       });
     }
     // Name, localStorage, and sessionsStorage logging
-    // Instrumenting window.localStorage directly doesn't seem to work, so the Storage
-    // prototype must be instrumented instead. Unfortunately this fails to differentiate
-    // between sessionStorage and localStorage. Instead, you'll have to look for a sequence
-    // of a get for the localStorage object followed by a getItem/setItem for the Storage object.
+    // Instrumenting window.localStorage directly doesn't seem to work, so
+    // the Storage prototype must be instrumented instead. Unfortunately this
+    // fails to differentiate between sessionStorage and localStorage. Instead,
+    // you'll have to look for a sequence of a get for the localStorage object
+    // followed by a getItem/setItem for the Storage object.
     var windowProperties = [ "name", "localStorage", "sessionStorage" ];
     windowProperties.forEach(function(property) {
       instrumentObjectProperty(window, "window", property);
@@ -465,9 +471,11 @@ function getPageScript() {
 
     var excludedProperties = [ "quadraticCurveTo", "lineTo", "transform",
                                "globalAlpha", "moveTo", "drawImage",
-                               "setTransform", "clearRect", "closePath", "beginPath", "canvas", "translate" ];
+                               "setTransform", "clearRect", "closePath",
+                               "beginPath", "canvas", "translate" ];
 
-    instrumentObject(window.CanvasRenderingContext2D.prototype, "CanvasRenderingContext2D", true, excludedProperties);
+    instrumentObject(window.CanvasRenderingContext2D.prototype,
+        "CanvasRenderingContext2D", true, excludedProperties);
 
     // Access to webRTC
     instrumentObject(window.RTCPeerConnection.prototype,"RTCPeerConnection", true);
@@ -496,7 +504,8 @@ function getPageScript() {
       };
       callback(response);
     };
-    // TODO execute the callback function and provide an instrumented email, id object to see if the script will access it
+    // TODO execute the callback function and provide an instrumented email,
+    // id object to see if the script will access it
     window.FB.api = function api(path, method, params, callback) {
       console.log("Call to window.FB.api with params:",path, method, params, callback);
       return;
