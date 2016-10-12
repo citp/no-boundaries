@@ -107,6 +107,7 @@ stack_trace_inject_image =\
     "onload@" + HTTP_STACKTRACE_TEST_URL + ":1:1;null"
 
 RAWGIT_HTTP_STACKTRACE_TEST_URL = "https://rawgit.com/gunesacar/b927d3fe69f3e7bf456da5192f74beea/raw/8d3e490b5988c633101ec45ef1443e61b1fd495e/inject_pixel.js"  # noqa
+# https://gist.github.com/gunesacar/b927d3fe69f3e7bf456da5192f74beea
 stack_trace_inject_pixel =\
     "inject_pixel@" + RAWGIT_HTTP_STACKTRACE_TEST_URL + ":4:3;null\n"\
     "null@" + RAWGIT_HTTP_STACKTRACE_TEST_URL + ":6:1;null\n"
@@ -255,8 +256,12 @@ fb_api_calls = [(FB_API_JS_TEST_URL,
 fb_api_fake_first_party_sdk_calls = fb_api_calls[0:4]
 FB_API_TEST_URL = u"%s/fb_api/fb_login.html" % BASE_TEST_URL
 FORM_HTML = u'<form xmlns="http://www.w3.org/1999/xhtml"><input type="email" id="email" name="email" /><input type="password" id="password" name="password" /></form>'  #noqa
+
 FORM_SNIFFER_TEST_PAGE = u'https://rawgit.com/gunesacar/cb9e70d6e9b5721894d6/raw/fba680626ab93f622075128c9d163a4d314ea5fa/autofill_mainpage.html'
+# https://gist.github.com/gunesacar/cb9e70d6e9b5721894d6
+
 FORM_SNIFFER_SCRIPT = u'https://rawgit.com/gunesacar/4f586bfaed271edd7b6d/raw/7c95f726bab3908279dd7f3b3d507d3c5f67205b/autofillsniff.js'  # noqa
+# https://gist.github.com/gunesacar/4f586bfaed271edd7b6d
 
 autofill_mainpage_calls = [(FORM_SNIFFER_TEST_PAGE,
                            FORM_SNIFFER_SCRIPT,
@@ -268,7 +273,10 @@ autofill_mainpage_calls = [(FORM_SNIFFER_TEST_PAGE,
 # Form autofill with input elements
 
 FORM_SNIFFER_NO_FORM_SCRIPT = u'https://rawgit.com/gunesacar/801547573d000481e5ef/raw/389b84b6c0a47fcb4656cf47c319ffa3cb2d2687/autofillsniff_noform.js'  # noqa
+# https://gist.github.com/gunesacar/801547573d000481e5ef
+
 FORM_SNIFFER_NO_FORM_TEST_PAGE = u'https://rawgit.com/gunesacar/4a24574ef1334981cd1b/raw/9d4ee5dbccb92dd227abf5c1471cd135f1b14434/autofillsniff_noform.html'  # noqa
+# https://gist.github.com/gunesacar/4a24574ef1334981cd1b
 autofill_noform_calls = [(FORM_SNIFFER_NO_FORM_TEST_PAGE,
                           FORM_SNIFFER_NO_FORM_SCRIPT,
                           u'false',
