@@ -560,47 +560,96 @@ function getPageScript() {
       );
     }
 
-    function checkFormProperties(form, callContext, elementType) {
+    function addGUID(element) {
+      var guid;
+      if (element.hasAttribute('openwpm-guid'))
+        return element.getAttribute('openwpm-guid');
+
+      guid = Math.random();
+      element.setAttribute("openwpm-guid", guid);
+      return guid;
+    }
+
+    function checkElementProperties(element, callContext, elementType) {
       var data = {};
+      var guid = addGUID(element);
+      if (guid)
+        data['guid'] = guid;
       data['scriptUrl'] = callContext.scriptUrl;
       data['scriptLine'] = callContext.scriptLine;
       data['scriptCol'] = callContext.scriptCol;
       data['callStack'] = callContext.callStack;
-      data['isVisible'] = isElementVisible(form);
-      data['nodePath'] = getPathToDomElement(form, true);
+      data['isVisible'] = isElementVisible(element);
+      data['nodePath'] = getPathToDomElement(element, true);
       var serializer = new XMLSerializer();
-      data['serializedElement'] = serializer.serializeToString(form);
+      data['serializedElement'] = serializer.serializeToString(element);
       data['elementType'] = elementType;
-      send('formInserted', data)
-      console.log("formInserted",data);
+      var current_time = new Date();
+      data["timeStamp"] = current_time.toISOString();
+      return data;
     }
 
-    // NOTE: The current instrumentation may not have all of the properties if
-    // script were to first add a form, and then add properties to that form
-    // in separate calls.
-    document.addEventListener("DOMNodeInserted", function (ev) {
+    document.addEventListener("DOMNodeInserted", function(ev) {
       let callContext = getOriginatingScriptContext(true);
-
       var target = ev.target;
-      var form_found = false;
-      if (target.tagName == 'FORM') {
-        checkFormProperties(target, callContext, "form");
-        form_found = true;
+
+      if (!target.tagName)
+        return;
+
+      if (target.tagName == 'FORM' ||
+          target.tagName == 'INPUT') {
+        var data = checkElementProperties(target, callContext, target.tagName);
+        send('elementInserted', data);
+        console.log('elementInserted',data);
       }
-      var forms = target.getElementsByTagName('form');
-      for (var i=0; i < forms.length; i++) {
-        checkFormProperties(forms[i], callContext, "form");
-        form_found = true;
-      }
-      if (!form_found){
-        if (target.tagName == 'INPUT') {
-          checkFormProperties(target, callContext, "input");
+
+      // Search within the inserted Node
+      function searchWithin(target, tagName) {
+        var elements = target.getElementsByTagName(tagName);
+        for (var i=0; i < elements.length; i++) {
+          var data = checkElementProperties(elements[i], callContext, tagName);
+          send('elementInserted', data);
+          console.log('elementInserted',data);
         }
-        var inputs = target.getElementsByTagName('input');
-        for (var i=0; i < inputs.length; i++) {
-          checkFormProperties(inputs[i], callContext, "input");
+      }
+      searchWithin(target, "FORM");
+      searchWithin(target, "INPUT");
+    }, false);
+
+    document.addEventListener("DOMAttrModified", function(event) {
+      let callContext = getOriginatingScriptContext(true);
+      var target = event.target;
+
+      if (!target.tagName)
+        return;
+
+      if (event.attrName == 'openwpm-guid')
+        return;
+
+      if (target.tagName == 'FORM' ||
+          target.tagName == 'INPUT') {
+        var data = checkElementProperties(target, callContext, target.tagName);
+        data['attribute'] = event.attrName;
+        data['prevValue'] = event.prevValue;
+        data['newValue'] = event.newValue;
+        send('elementModified', data);
+        console.log('elementModified',data);
+      }
+
+      // Search within the inserted Node
+      function searchWithin(target, tagName) {
+        var elements = target.getElementsByTagName(tagName);
+        for (var i=0; i < elements.length; i++) {
+          var data = checkElementProperties(target, callContext, target.tagName);
+          data['attribute'] = event.attrName;
+          data['prevValue'] = event.prevValue;
+          data['newValue'] = event.newValue;
+          send('elementModified', data);
+          console.log('elementModified',data);
         }
       }
+      searchWithin(target, "FORM");
+      searchWithin(target, "INPUT");
     }, false);
 
     /*

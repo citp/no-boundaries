@@ -27,10 +27,10 @@ exports.main = function(options, callbacks) {
             "HTTP:",enableHTTP,"Autofill:",enableFakeAutofill);
     } else {
         console.log("ERROR: database settings not found -- outputting all queries to console");
-        var enableCK = true;
+        var enableCK = false;
         var enableJS = true;
-        var enableCP = true;
-        var enableHTTP = true;
+        var enableCP = false;
+        var enableHTTP = false;
         var host = '';
         var port = '';
         var crawlID = '';
