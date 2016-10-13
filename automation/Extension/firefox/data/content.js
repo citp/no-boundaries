@@ -635,21 +635,6 @@ function getPageScript() {
         send('elementModified', data);
         console.log('elementModified',data);
       }
-
-      // Search within the inserted Node
-      function searchWithin(target, tagName) {
-        var elements = target.getElementsByTagName(tagName);
-        for (var i=0; i < elements.length; i++) {
-          var data = checkElementProperties(target, callContext, target.tagName);
-          data['attribute'] = event.attrName;
-          data['prevValue'] = event.prevValue;
-          data['newValue'] = event.newValue;
-          send('elementModified', data);
-          console.log('elementModified',data);
-        }
-      }
-      searchWithin(target, "FORM");
-      searchWithin(target, "INPUT");
     }, false);
 
     /*
