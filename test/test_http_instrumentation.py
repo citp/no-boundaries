@@ -4,6 +4,8 @@ import utilities
 import expected
 from openwpmtest import OpenWPMTest
 from ..automation import TaskManager
+from ..automation.platform_utils import parse_http_stack_trace_str
+
 
 class TestHTTPInstrument(OpenWPMTest):
     NUM_BROWSERS = 1
@@ -45,3 +47,32 @@ class TestHTTPInstrument(OpenWPMTest):
     #refresh page.
 
     #TODO: test that javascript content is saved correctly
+
+    def test_http_stacktrace(self, tmpdir):
+        test_url = utilities.BASE_TEST_URL + '/http_stacktrace.html'
+        db = self.visit(test_url, str(tmpdir), sleep_after=3)
+        rows = utilities.query_db(db, (
+            "SELECT url, req_call_stack FROM http_requests_ext"))
+        for row in rows:
+            url, stacktrace = row
+            if url.endswith("inject_pixel.js"):
+                assert stacktrace == expected.stack_trace_inject_js
+            if url.endswith("test_image.png"):
+                assert stacktrace == expected.stack_trace_inject_image
+            if url.endswith("Blank.gif"):
+                assert stacktrace == expected.stack_trace_inject_pixel
+
+    def test_parse_http_stack_trace_str(self, tmpdir):
+        stacktrace = expected.stack_trace_inject_image
+        stack_frames = parse_http_stack_trace_str(stacktrace)
+        assert stack_frames == expected.call_stack_inject_image
+
+    def test_http_stacktrace_nonjs_loads(self, tmpdir):
+        # stacktrace should be empty for requests NOT triggered by scripts
+        test_url = utilities.BASE_TEST_URL + '/http_test_page.html'
+        db = self.visit(test_url, str(tmpdir), sleep_after=3)
+        rows = utilities.query_db(db, (
+            "SELECT url, req_call_stack FROM http_requests_ext"))
+        for row in rows:
+            _, stacktrace = row
+            assert stacktrace == ""
