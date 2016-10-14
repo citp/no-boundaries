@@ -18,6 +18,27 @@ from os.path import join, realpath, dirname
 import commands
 
 
+def parse_http_stack_trace_str(trace_str):
+    """Parse a stacktrace string and return an array of dict."""
+    stack_trace = []
+    frames = trace_str.split("\n")
+    for frame in frames:
+        try:
+            func_name, rest = frame.split("@", 1)
+            rest, async_cause = rest.rsplit(";", 1)
+            filename, line_no, col_no = rest.rsplit(":", 2)
+            stack_trace.append({
+                                "func_name": func_name,
+                                "filename": filename,
+                                "line_no": line_no,
+                                "col_no": col_no,
+                                "async_cause": async_cause,
+                                })
+        except Exception as exc:
+            print "Exception parsing the stack frame %s %s" % (frame, exc)
+    return stack_trace
+
+
 def create_xpi():
     """Creates a new extension xpi using jpm."""
     ext_dirname = join(dirname(realpath(__file__)), 'Extension', 'firefox')
