@@ -590,11 +590,14 @@ function getPageScript() {
     }
 
     document.addEventListener("DOMNodeInserted", function(ev) {
+      inLog = true;
       let callContext = getOriginatingScriptContext(true);
       var target = ev.target;
 
-      if (!target.tagName)
+      if (!target.tagName) {
+        inLog = false;
         return;
+      }
 
       if (target.tagName == 'FORM' ||
           target.tagName == 'INPUT') {
@@ -614,17 +617,26 @@ function getPageScript() {
       }
       searchWithin(target, "FORM");
       searchWithin(target, "INPUT");
+      inLog = false;
     }, false);
 
     document.addEventListener("DOMAttrModified", function(event) {
+      if (inLog) {
+        return;
+      }
+      inLog = true;
       let callContext = getOriginatingScriptContext(true);
       var target = event.target;
 
-      if (!target.tagName)
+      if (!target.tagName) {
+        inLog = false;
         return;
+      }
 
-      if (event.attrName == 'openwpm-guid')
+      if (event.attrName == 'openwpm-guid') {
+        inLog = false;
         return;
+      }
 
       if (target.tagName == 'FORM' ||
           target.tagName == 'INPUT') {
@@ -635,6 +647,7 @@ function getPageScript() {
         send('elementModified', data);
         console.log('elementModified',data);
       }
+      inLog = false;
     }, false);
 
     /*
