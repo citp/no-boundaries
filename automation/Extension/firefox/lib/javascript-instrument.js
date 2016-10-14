@@ -68,7 +68,6 @@ exports.run = function(crawlID) {
               update["node_path"] = loggingDB.escapeString(data.nodePath);
               update["serialized_element"] = loggingDB.escapeString(data.serializedElement);
               update["element_type"] = loggingDB.escapeString(data.elementType);
-              update["src"] = loggingDB.escapeString(data.src);
               update["attribute"] = loggingDB.escapeString(data.attribute);
               update["prev_value"] = loggingDB.escapeString(data.prevValue);
               update["new_value"] = loggingDB.escapeString(data.newValue);

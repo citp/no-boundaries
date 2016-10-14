@@ -326,6 +326,58 @@ form_insertion_js_calls = {
         (FORM_SNIFFER_SCRIPT, u'window.HTMLFormElement.appendChild', u'call', u'', 0, u'"NULL/INPUT"')
 }
 
+# DOM modification instrumentation
+DOM_MODIFICATION_TEST_PAGE = u'http://localtest.me:8000/test_pages/dom_modification.html'
+inserted_elements = {
+        (DOM_MODIFICATION_TEST_PAGE,
+         DOM_MODIFICATION_TEST_PAGE,
+         u'true',
+         u'BODY/DIV[1,test1,,false,,]/FORM[1,form1,,false,,]',
+         u'FORM'),
+        (DOM_MODIFICATION_TEST_PAGE,
+         DOM_MODIFICATION_TEST_PAGE,
+         u'true',
+         u'BODY/DIV[1,test1,,false,,]/FORM[1,form1,,false,,]/INPUT[1,email1,,false,,]',
+         u'INPUT'),
+        (DOM_MODIFICATION_TEST_PAGE,
+         DOM_MODIFICATION_TEST_PAGE,
+         u'true',
+         u'BODY/DIV[1,test1,,false,,]/FORM[1,form1,,false,,]/INPUT[2,password1,,false,,]',
+         u'INPUT'),
+        (DOM_MODIFICATION_TEST_PAGE,
+         DOM_MODIFICATION_TEST_PAGE,
+         u'false',
+         u'BODY/DIV[2,test2,,false,,]/FORM[1,form2,,false,,]',
+         u'FORM'),
+        (DOM_MODIFICATION_TEST_PAGE,
+         DOM_MODIFICATION_TEST_PAGE,
+         u'true',
+         u'BODY/DIV[2,test2,,false,,]/FORM[1,form2,,false,,]/INPUT[1,email2,,false,,]',
+         u'INPUT'),
+        (DOM_MODIFICATION_TEST_PAGE,
+         DOM_MODIFICATION_TEST_PAGE,
+         u'true',
+         u'BODY/DIV[2,test2,,false,,]/FORM[1,form2,,false,,]/INPUT[2,password2,,false,,]',
+         u'INPUT')
+}
+modified_elements = {
+        (DOM_MODIFICATION_TEST_PAGE,
+         DOM_MODIFICATION_TEST_PAGE,
+         u'BODY/DIV[1,test1,,false,,]/FORM[1,form1,,false,,]',
+         u'FORM',
+         u'autocomplete',
+         u'',
+         u'on'),
+        (DOM_MODIFICATION_TEST_PAGE,
+         DOM_MODIFICATION_TEST_PAGE,
+         u'BODY/DIV[2,test2,,false,,]/FORM[1,form2,,false,,]',
+         u'FORM',
+         u'autocomplete',
+         u'',
+         u'on')
+}
+
+
 SET_PROP_TEST_PAGE = u'%s/set_property/set_property.js' % BASE_TEST_URL
 set_property = [(SET_PROP_TEST_PAGE,
                  u'5', u'3',

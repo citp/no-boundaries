@@ -9,7 +9,6 @@ CREATE TABLE IF NOT EXISTS modified_elements(
     node_path TEXT,
     serialized_element TEXT,
     element_type TEXT,
-    src TEXT,
     attribute TEXT,
     prev_value TEXT,
     new_value TEXT,
