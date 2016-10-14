@@ -298,18 +298,6 @@ autofill_noform_calls = {
          u'BODY/DIV[1,be-container,,false,none,]/INPUT[2,password,,false,,]',  # noqa
          u'INPUT')
 }
-autofill_noform_calls = [(FORM_SNIFFER_NO_FORM_TEST_PAGE,
-                          FORM_SNIFFER_NO_FORM_SCRIPT,
-                          u'false',
-                          u'BODY/DIV[1,be-container,,false,none,]/INPUT[1,email,,false,,]',  # noqa
-                          u'<input xmlns="http://www.w3.org/1999/xhtml" type="email" id="email" name="email" />',  # noqa
-                          u'input'),
-                         (FORM_SNIFFER_NO_FORM_TEST_PAGE,
-                          FORM_SNIFFER_NO_FORM_SCRIPT,
-                          u'false',
-                          u'BODY/DIV[1,be-container,,false,none,]/INPUT[2,password,,false,,]',  # noqa
-                          u'<input xmlns="http://www.w3.org/1999/xhtml" type="password" id="password" name="password" />',  # noqa
-                          u'input')]
 
 FORM_SNIFFER_3RDP_TEST_PAGE = u'***REMOVED***' # noqa
 autofill_3rdp_calls = {
