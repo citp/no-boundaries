@@ -46,7 +46,7 @@ for dir in ${crawl_dirs[@]}; do
 
     printf '\n Decompressing local copy\n'
     local_archive=$data_dir$compressed
-    pbzip2 -dck $local_archive | tar -x
+    pbzip2 -dck $local_archive | tar -C $data_dir -x
 
     printf '\n Check m5sum of local copy...'
     local_md5sum=( $(md5sum $data_dir$crawl_db) )
