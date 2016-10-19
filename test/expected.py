@@ -481,3 +481,15 @@ js_stack_calls = (
     (JS_STACK_TEST_URL, u'1', u'1', u'', u'line 8 > eval', u'',
      u'window.navigator.appCodeName', u'get'))
 
+# Form fill test
+FORM_FILL_PAGE = u'%s/form/form_fill.html' % BASE_TEST_URL
+HTMLINPUT_VALUE = "window.HTMLInputElement.value"
+# TODO: read the following from a common file or from form_utils.py
+TEST_EMAIL = "randomtestuser@gmail.com"
+TEST_PASSWORD = "_pa$$word123_"
+
+form_sniffing = set([(FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", TEST_EMAIL),
+                     (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", "password"),
+                     (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", "Subscribe"),
+                     (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", "Sign Up"),
+                     (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", TEST_PASSWORD)])

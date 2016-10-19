@@ -143,6 +143,27 @@ def is_active(input_element):
     return (input_element.is_displayed() and input_element.is_enabled())
 
 
+def get_button_text(element):
+    """Get the text either via `value` attribute or using (inner) `text`.
+
+    `value` attribute works for <input type="button"...> or
+    <input type="submit".
+
+    `text` works for <button>elements, e.g. <button>text</button>.
+    """
+    button_text = element.get_attribute("value") or element.text
+    return button_text.lower()
+
+
+def iter_frames(driver):
+    """Return a generator for iframes."""
+    driver.switch_to_default_content()
+    iframes = driver.find_elements_by_tag_name('iframe')
+    for iframe in iframes:
+        driver.switch_to_default_content()
+        yield iframe
+
+
 #TODO Update this. No direct access to DB right now
 '''
 #get and set xpaths into xpath database
