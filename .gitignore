@@ -1,3 +1,6 @@
+# Jupyter notebooks
+.ipynb_checkpoints/
+
 # firefox extension
 *.xpi
 
