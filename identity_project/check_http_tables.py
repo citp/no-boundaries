@@ -5,7 +5,9 @@ import sqlite3
 
 #con = sqlite3.connect('/mnt/ssd/2016-10_identity_crawl_form_filling/2016-10_identity_crawl_form_filling.sqlite')
 #con = sqlite3.connect('/mnt/ssd/2016-10_identity_test_crawl/2016-10_identity_test_crawl.sqlite')
-con = sqlite3.connect('/mnt/ssd/2016-11_http_differences_test/2016-11_http_differences_test.sqlite')
+#con = sqlite3.connect('/mnt/ssd/2016-11_http_differences_test/2016-11_http_differences_test.sqlite')
+#con = sqlite3.connect('/mnt/ssd/2016-11_http_differences_test_2/2016-11_http_differences_test_2.sqlite')
+con = sqlite3.connect('/mnt/ssd/2016-11_http_differences_test_3/2016-11_http_differences_test_3.sqlite')
 cur = con.cursor()
 cur.execute("PRAGMA cache_size = -%i" % (0.1 * 10**7)) # 10 GB
 cur.execute("PRAGMA temp_store = 2") # Store temp tables, indicies in memory
