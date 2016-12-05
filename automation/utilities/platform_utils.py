@@ -5,7 +5,7 @@ from collections import OrderedDict
 from selenium import webdriver
 from tabulate import tabulate
 from copy import deepcopy
-from Errors import TimeExceededError
+from ..Errors import TimeExceededError
 
 import subprocess
 import shutil
@@ -63,30 +63,9 @@ def parse_js_stack_trace_str(trace_str):
 
 def create_xpi():
     """Creates a new extension xpi using jpm."""
-    ext_dirname = join(dirname(realpath(__file__)), 'Extension', 'firefox')
+    ext_dirname = join(dirname(realpath(__file__)), '..', 'Extension', 'firefox')
     return commands.getstatusoutput("cd %s && jpm xpi" % ext_dirname)
 
-
-
-def parse_http_stack_trace_str(trace_str):
-    """Parse a stacktrace string and return an array of dict."""
-    stack_trace = []
-    frames = trace_str.split("\n")
-    for frame in frames:
-        try:
-            func_name, rest = frame.split("@", 1)
-            rest, async_cause = rest.rsplit(";", 1)
-            filename, line_no, col_no = rest.rsplit(":", 2)
-            stack_trace.append({
-                                "func_name": func_name,
-                                "filename": filename,
-                                "line_no": line_no,
-                                "col_no": col_no,
-                                "async_cause": async_cause,
-                                })
-        except Exception as exc:
-            print "Exception parsing the stack frame %s %s" % (frame, exc)
-    return stack_trace
 
 def get_version():
     """Return OpenWPM version tag/current commit and Firefox version """
@@ -106,6 +85,7 @@ def get_version():
                 ff = line[8:].strip()
                 break
     return openwpm, ff
+
 
 def get_configuration_string(manager_params, browser_params, versions):
     """Construct a well-formatted string for {manager,browser}params

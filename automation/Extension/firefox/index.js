@@ -65,6 +65,6 @@ exports.main = function(options, callbacks) {
   }
   if (config['fake_autofill']) {
     console.log("Fake autofill is enabled");
-    fakeAutofill.run(crawlID);
+    fakeAutofill.run(config['crawl_id']);
   }
 };
