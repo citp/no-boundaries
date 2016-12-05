@@ -1,14 +1,13 @@
 {
-    "proxy": true,
-    "extension": {
-        "enabled": false,
-        "cookieInstrument": false,
-        "jsInstrument": false,
-        "cpInstrument": false,
-        "httpInstrument": false,
-        "fakeAutofill": false
-    },
+    "extension_enabled": true,
+    "disable_webdriver_self_id": true,
+    "cookie_instrument": false,
+    "js_instrument": false,
+    "cp_instrument": false,
+    "http_instrument": false,
     "save_javascript": false,
+    "fake_autofill": false,
+
     "random_attributes": false,
     "bot_mitigation": false,
     "disable_flash": true,
@@ -24,5 +23,8 @@
     "https-everywhere": false,
     "adblock-plus": false,
     "tracking-protection": false,
-    "custom_prefs": {}
+    "custom_prefs": {},
+
+    "proxy": false,
+    "save_javascript_proxy": false
 }
