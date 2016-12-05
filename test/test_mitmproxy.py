@@ -15,17 +15,16 @@ class TestMITMProxy(OpenWPMTest):
         manager_params['log_directory'] = data_dir
         browser_params[0]['headless'] = True
         browser_params[0]['proxy'] = True
-        browser_params[0]['extension']['enabled'] = True
-        browser_params[0]['extension']['jsInstrument'] = True
+        browser_params[0]['js_instrument'] = True
         manager_params['db'] = os.path.join(manager_params['data_directory'],
                                             manager_params['database_name'])
         return manager_params, browser_params
 
     def assert_request_and_responses(self, db, test_url):
         HTTP_STATUS_OK = 200
-        request_url_rows = query_db(db, "SELECT url FROM http_requests")
+        request_url_rows = query_db(db, "SELECT url FROM http_requests_proxy")
         response_url_rows = query_db(db, "SELECT url, response_status FROM"
-                                     " http_responses")
+                                     " http_responses_proxy")
         request_urls = [row[0] for row in request_url_rows]
         assert test_url in request_urls
         response_urls = [row[0] for row in response_url_rows]
