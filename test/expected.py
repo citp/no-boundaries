@@ -421,7 +421,7 @@ SET_PROP_TEST_PAGE = u'%s/set_property/set_property.js' % BASE_TEST_URL
 set_property = [(SET_PROP_TEST_PAGE,
                  u'5', u'3',
                  u'set_window_name@%s:5:3\n'
-                 '@%s:8:1\n' % (SET_PROP_TEST_PAGE, SET_PROP_TEST_PAGE),
+                 '@%s:8:1' % (SET_PROP_TEST_PAGE, SET_PROP_TEST_PAGE),
                  u'window.HTMLFormElement.action',
                  u'set', u'TEST-ACTION', None, None)]
 
