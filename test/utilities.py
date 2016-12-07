@@ -109,9 +109,3 @@ def any_command_failed(db):
             return True
     return False
 
-
-def get_input_forms_entries(db):
-    return query_db(db, "SELECT v.site_url, f.script_url, f.is_visible,"
-                    " f.node_path, f.serialized_element, f.element_type"
-                    " FROM input_forms AS f LEFT JOIN site_visits as v"
-                    " ON f.visit_id = v.visit_id")
