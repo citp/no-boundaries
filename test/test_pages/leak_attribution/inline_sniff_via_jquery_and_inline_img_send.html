@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+<title>Credential leak - Stack based attribution test</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script type="application/javascript">
+
+    function send_email(email) {
+      console.log("Will send the email read from the form", email);
+      var img_div = document.getElementById("img-div-inline");
+      img_div.innerHTML = "<img src='../shared/test_image.png?email=" + email + "' />";
+    }
+
+    $(document).ready(function() {
+	  $("#input1").blur(function() {
+		send_email($("#input1").val());
+      });
+    });
+
+  </script>
+ </head>
+ <body>
+  <p> An inline script reads and sends the email on blur event.
+  Uses jQuery to add event listener for blur.
+  Needs form-filling selenium code (or any other mean) to trigger the blur event.</p>
+    <h3> A fake login form contained in a div</h3>
+    <div id='div1'>
+      <form id="theForm" action="">
+        Email: <input id="input1" type='email' name='email' value='example@gmail.com'><br />
+        Password: <input id="input2" type = 'password' value='password'>
+        <input type="submit" value="submit">
+      </form>
+    </div>
+ <div id='img-div-inline'></div>
+ </body></html>
