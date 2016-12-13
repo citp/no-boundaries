@@ -1,5 +1,11 @@
 """ Contains lists of expected data and or rows for tests """
 from utilities import BASE_TEST_URL, BASE_TEST_URL_DOMAIN, BASE_TEST_URL_NOPATH
+from ..automation.Commands.utils.form_utils import FORM_FILL_EMAIL, FORM_FILL_PASSWORD
+
+# the email we use to autofill the page forms
+AUTO_FILL_EMAIL = "randomtestuser.4321@gmail.com"
+AUTO_FILL_PASSWORD = FORM_FILL_PASSWORD
+
 
 properties = {
     "window.navigator.appCodeName",
@@ -402,8 +408,8 @@ hidden_form_insertions = [(HIDDEN_FORM_TEST_URL,
                            u'form')]
 
 form_insertion_js_calls = [(FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.id', u'set', u'email', None, None),
-                           (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.value', u'get', u'randomtestuser@gmail.com', None, None),
-                           (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.value', u'get', u'PWD12345678', None, None),
+                           (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.value', u'get', AUTO_FILL_EMAIL, None, None),
+                           (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.value', u'get', AUTO_FILL_PASSWORD, None, None),
                            (FORM_SNIFFER_SCRIPT, u'window.HTMLFormElement.attributes', u'get', u'{}', None, None),
                            (FORM_SNIFFER_TEST_PAGE, u'window.HTMLFormElement.id', u'get', u'', None, None),
                            (FORM_SNIFFER_TEST_PAGE, u'window.HTMLFormElement.hidden', u'get', u'false', None, None),
@@ -484,12 +490,9 @@ js_stack_calls = (
 # Form fill test
 FORM_FILL_PAGE = u'%s/form/form_fill.html' % BASE_TEST_URL
 HTMLINPUT_VALUE = "window.HTMLInputElement.value"
-# TODO: read the following from a common file or from form_utils.py
-TEST_EMAIL = "randomtestuser@gmail.com"
-TEST_PASSWORD = "_pa$$word123_"
 
-form_sniffing = set([(FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", TEST_EMAIL),
+form_sniffing = set([(FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", FORM_FILL_EMAIL),
                      (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", "password"),
                      (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", "Subscribe"),
                      (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", "Sign Up"),
-                     (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", TEST_PASSWORD)])
+                     (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", FORM_FILL_PASSWORD)])
