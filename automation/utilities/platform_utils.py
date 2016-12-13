@@ -238,9 +238,10 @@ def fetch_adblockplus_list(output_directory, wait_time=20):
         # driver.close()
         display.stop()
 
-    def contains_email_regex(self, text):
-        """Check if the given text contains a string that looks like email.
-        Regular expression from http://emailregex.com
-        """
-        email_regex = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
-        return True if re.search(email_regex, text) else False
+
+def contains_email_regex(self, text):
+    """Check if the given text contains a string that looks like email.
+    Regular expression from http://emailregex.com
+    """
+    email_regex = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+    return True if re.search(email_regex, text) else False
