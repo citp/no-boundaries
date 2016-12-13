@@ -162,6 +162,7 @@ def iter_frames(driver):
     for iframe in iframes:
         driver.switch_to_default_content()
         yield iframe
+    driver.switch_to_default_content()
 
 
 #TODO Update this. No direct access to DB right now
