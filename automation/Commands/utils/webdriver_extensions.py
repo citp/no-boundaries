@@ -11,6 +11,8 @@ import time
 
 import domain_utils as du
 import XPathUtil
+from selenium.webdriver.common.action_chains import ActionChains
+
 
 #### Basic functions
 def scroll_down(driver):
@@ -111,6 +113,57 @@ def is_clickable(driver, full_xpath, xpath, timeout = 1):
         return XPathUtil.is_clickable(full_xpath)
     except (TimeoutException, ElementNotVisibleException):
         return False
+
+
+def get_element_type(element):
+    return element.get_attribute("type")
+
+
+def str_element(element):
+    """Return a human readable representation of webelement."""
+    return '<%s type="%s" name="%s" value="%s" ...> x:%s y:%s w:%d h:%d' %\
+        (element.tag_name, get_element_type(element),
+         element.get_attribute("name"), element.get_attribute("value"),
+         element.location["x"], element.location["y"],
+         element.size["width"], element.size["height"])
+
+
+def is_text_or_email_input(element):
+    """Check if the given input element is a text or an email field."""
+    element_type = get_element_type(element)
+    return element_type in ["text", "email"]
+
+
+def move_to_element(driver, element):
+    ActionChains(driver).move_to_element(element).perform()
+
+
+def is_active(input_element):
+    """Check if we can interact with the given element."""
+    return (input_element.is_displayed() and input_element.is_enabled())
+
+
+def get_button_text(element):
+    """Get the text either via `value` attribute or using (inner) `text`.
+
+    `value` attribute works for <input type="button"...> or
+    <input type="submit".
+
+    `text` works for <button>elements, e.g. <button>text</button>.
+    """
+    button_text = element.get_attribute("value") or element.text
+    return button_text.lower()
+
+
+def iter_frames(driver):
+    """Return a generator for iframes."""
+    driver.switch_to_default_content()
+    iframes = driver.find_elements_by_tag_name('iframe')
+    for iframe in iframes:
+        driver.switch_to_default_content()
+        yield iframe
+    driver.switch_to_default_content()
+
 
 #TODO Update this. No direct access to DB right now
 '''

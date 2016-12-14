@@ -1,5 +1,11 @@
 """ Contains lists of expected data and or rows for tests """
 from utilities import BASE_TEST_URL, BASE_TEST_URL_DOMAIN, BASE_TEST_URL_NOPATH
+from ..automation.Commands.utils.form_utils import FORM_FILL_EMAIL, FORM_FILL_PASSWORD
+
+# the email we use to autofill the page forms
+AUTO_FILL_EMAIL = "randomtestuser.4321@gmail.com"
+AUTO_FILL_PASSWORD = FORM_FILL_PASSWORD
+
 
 properties = {
     "window.navigator.appCodeName",
@@ -402,8 +408,8 @@ hidden_form_insertions = [(HIDDEN_FORM_TEST_URL,
                            u'form')]
 
 form_insertion_js_calls = [(FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.id', u'set', u'email', None, None),
-                           (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.value', u'get', u'randomtestuser@gmail.com', None, None),
-                           (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.value', u'get', u'PWD12345678', None, None),
+                           (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.value', u'get', AUTO_FILL_EMAIL, None, None),
+                           (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.value', u'get', AUTO_FILL_PASSWORD, None, None),
                            (FORM_SNIFFER_SCRIPT, u'window.HTMLFormElement.attributes', u'get', u'{}', None, None),
                            (FORM_SNIFFER_TEST_PAGE, u'window.HTMLFormElement.id', u'get', u'', None, None),
                            (FORM_SNIFFER_TEST_PAGE, u'window.HTMLFormElement.hidden', u'get', u'false', None, None),
@@ -421,7 +427,7 @@ SET_PROP_TEST_PAGE = u'%s/set_property/set_property.js' % BASE_TEST_URL
 set_property = [(SET_PROP_TEST_PAGE,
                  u'5', u'3',
                  u'set_window_name@%s:5:3\n'
-                 '@%s:8:1\n' % (SET_PROP_TEST_PAGE, SET_PROP_TEST_PAGE),
+                 '@%s:8:1' % (SET_PROP_TEST_PAGE, SET_PROP_TEST_PAGE),
                  u'window.HTMLFormElement.action',
                  u'set', u'TEST-ACTION', None, None)]
 
@@ -481,3 +487,12 @@ js_stack_calls = (
     (JS_STACK_TEST_URL, u'1', u'1', u'', u'line 8 > eval', u'',
      u'window.navigator.appCodeName', u'get'))
 
+# Form fill test
+FORM_FILL_PAGE = u'%s/form/form_fill.html' % BASE_TEST_URL
+HTMLINPUT_VALUE = "window.HTMLInputElement.value"
+
+form_sniffing = set([(FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", FORM_FILL_EMAIL),
+                     (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", "password"),
+                     (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", "Subscribe"),
+                     (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", "Sign Up"),
+                     (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", FORM_FILL_PASSWORD)])

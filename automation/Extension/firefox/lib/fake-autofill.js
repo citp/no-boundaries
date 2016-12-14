@@ -8,8 +8,8 @@ var passwordManager = Cc["@mozilla.org/login-manager;1"].getService(
 
 exports.run = function(crawlID) {
 
-  let fakePwd = "PWD12345678";
-  let fakeEmail = "randomtestuser@gmail.com";
+  let fakePwd = "_pa$$word123_";
+  let fakeEmail = "randomtestuser.4321@gmail.com";
   let emailField = "email";
   let PwdField = "password";
   let realm = null;
