@@ -1,5 +1,11 @@
 """ Contains lists of expected data and or rows for tests """
 from utilities import BASE_TEST_URL, BASE_TEST_URL_DOMAIN, BASE_TEST_URL_NOPATH
+from ..automation.Commands.utils.form_utils import FORM_FILL_EMAIL, FORM_FILL_PASSWORD
+
+# the email we use to autofill the page forms
+AUTO_FILL_EMAIL = "randomtestuser.4321@gmail.com"
+AUTO_FILL_PASSWORD = FORM_FILL_PASSWORD
+
 
 properties = {
     "window.navigator.appCodeName",
@@ -45,12 +51,17 @@ http_requests = {
         None,
         0, None, None, None, None,
         u'http://localtest.me:8000',
-        None, 3),
+        u'undefined', 3),
     (u'http://localtest.me:8000/test_pages/shared/test_image_2.png',
         u'http://localtest.me:8000/test_pages/http_test_page.html',
         0, None, None, 0, 0,
         u'http://localtest.me:8000',
         u'http://localtest.me:8000/test_pages/http_test_page_2.html', 3),
+    (u'http://localtest.me:8000/test_pages/shared/test_script_2.js',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        0, None, None, 0, 0,
+        u'http://localtest.me:8000',
+        u'http://localtest.me:8000/test_pages/http_test_page_2.html', 2),
     (u'http://localtest.me:8000/test_pages/shared/test_script.js',
         u'http://localtest.me:8000/test_pages/http_test_page.html',
         0, None, None, 0, 0,
@@ -95,12 +106,62 @@ http_responses = {
         u''),
     (u'http://localtest.me:8000/test_pages/shared/test_image_2.png',
         u'http://localtest.me:8000/test_pages/http_test_page_2.html',
+        u''),
+    (u'http://localtest.me:8000/test_pages/shared/test_script_2.js',
+        u'http://localtest.me:8000/test_pages/http_test_page_2.html',
         u'')
 }
 
+http_cached_requests = {
+    (u'http://localtest.me:8000/test_pages/http_test_page.html',
+        None,
+        0, 0, 1, None, None,
+        u'[System Principal]',
+        u'chrome://browser/content/browser.xul', 6),
+    (u'http://localtest.me:8000/test_pages/shared/test_script_2.js',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        0, None, None, 0, 0,
+        u'http://localtest.me:8000',
+        u'http://localtest.me:8000/test_pages/http_test_page_2.html', 2),
+    (u'http://localtest.me:8000/test_pages/shared/test_script.js',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        0, None, None, 0, 0,
+        u'http://localtest.me:8000',
+        u'http://localtest.me:8000/test_pages/http_test_page.html', 2),
+    (u'http://localtest.me:8000/test_pages/http_test_page_2.html',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        0, 1, 0, 0, 0,
+        u'http://localtest.me:8000',
+        u'http://localtest.me:8000/test_pages/http_test_page.html', 7),
+    (u'http://localtest.me:8000/test_pages/shared/test_style.css',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        0, None, None, 0, 0,
+        u'http://localtest.me:8000',
+        u'http://localtest.me:8000/test_pages/http_test_page.html', 4)
+}
+
+# format: (request_url, referrer, is_cached)
+http_cached_responses = {
+    (u'http://localtest.me:8000/test_pages/http_test_page.html',
+        u'',
+        1),
+    (u'http://localtest.me:8000/test_pages/shared/test_style.css',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        1),
+    (u'http://localtest.me:8000/test_pages/shared/test_script.js',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        1),
+    (u'http://localtest.me:8000/test_pages/http_test_page_2.html',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        1),
+    (u'http://localtest.me:8000/test_pages/shared/test_script_2.js',
+        u'http://localtest.me:8000/test_pages/http_test_page_2.html',
+        1)
+}
+
 # HTTP request call stack instrumentation
-# Expected stack frames from http_stack_trace.html page
-HTTP_STACKTRACE_TEST_URL = BASE_TEST_URL + "/http_stack_trace.html"
+# Expected stack frames
+HTTP_STACKTRACE_TEST_URL = BASE_TEST_URL + "/http_stacktrace.html"
 stack_trace_inject_image =\
     "inject_image@" + HTTP_STACKTRACE_TEST_URL + ":18:7;null\n"\
     "inject_all@" + HTTP_STACKTRACE_TEST_URL + ":22:7;null\n"\
@@ -110,29 +171,30 @@ RAWGIT_HTTP_STACKTRACE_TEST_URL = "https://rawgit.com/gunesacar/b927d3fe69f3e7bf
 # https://gist.github.com/gunesacar/b927d3fe69f3e7bf456da5192f74beea
 stack_trace_inject_pixel =\
     "inject_pixel@" + RAWGIT_HTTP_STACKTRACE_TEST_URL + ":4:3;null\n"\
-    "null@" + RAWGIT_HTTP_STACKTRACE_TEST_URL + ":6:1;null\n"
+    "null@" + RAWGIT_HTTP_STACKTRACE_TEST_URL + ":6:1;null"
 
 stack_trace_inject_js =\
     "inject_js@" + HTTP_STACKTRACE_TEST_URL + ":13:7;null\n"\
     "inject_all@" + HTTP_STACKTRACE_TEST_URL + ":21:7;null\n"\
     "onload@" + HTTP_STACKTRACE_TEST_URL + ":1:1;null"
 
+http_stacktraces = set((stack_trace_inject_image, stack_trace_inject_pixel, stack_trace_inject_js))
 # parsed HTTP call stack dict
 call_stack_inject_image =\
     [{"func_name": "inject_image",
-     "filename": BASE_TEST_URL + "/http_stack_trace.html",
+     "filename": HTTP_STACKTRACE_TEST_URL,
      "line_no": "18",
      "col_no": "7",
      "async_cause": "null"
      },
     {"func_name": "inject_all",
-     "filename": BASE_TEST_URL + "/http_stack_trace.html",
+     "filename": HTTP_STACKTRACE_TEST_URL,
      "line_no": "22",
      "col_no": "7",
      "async_cause": "null"
      },
     {"func_name": "onload",
-     "filename": BASE_TEST_URL + "/http_stack_trace.html",
+     "filename": HTTP_STACKTRACE_TEST_URL,
      "line_no": "1",
      "col_no": "1",
      "async_cause": "null"
@@ -423,12 +485,11 @@ modified_elements = {
          u'on')
 }
 
-
 SET_PROP_TEST_PAGE = u'%s/set_property/set_property.js' % BASE_TEST_URL
 set_property = [(SET_PROP_TEST_PAGE,
                  u'5', u'3',
                  u'set_window_name@%s:5:3\n'
-                 '@%s:8:1\n' % (SET_PROP_TEST_PAGE, SET_PROP_TEST_PAGE),
+                 '@%s:8:1' % (SET_PROP_TEST_PAGE, SET_PROP_TEST_PAGE),
                  u'window.HTMLFormElement.action',
                  u'set', u'TEST-ACTION', None, None)]
 
@@ -468,3 +529,32 @@ audio = {
     u"ScriptProcessorNode.disconnect",
     u"GainNode.disconnect",
     u"OscillatorNode.stop"}
+
+JS_STACK_TEST_URL = u"%s/js_call_stack.html" % BASE_TEST_URL
+JS_STACK_TEST_SCRIPT_URL = u"%s/stack.js" % BASE_TEST_URL
+
+js_stack_calls = (
+    (JS_STACK_TEST_URL, u'1', u'1', u'', u'line 10 > eval', u'',
+     u'window.navigator.appName', u'get'),
+    (JS_STACK_TEST_SCRIPT_URL, u'3', u'5', u'js_check_navigator', u'', u'',
+     u'window.navigator.userAgent', u'get'),
+    (JS_STACK_TEST_SCRIPT_URL, u'1', u'1', u'', u'line 4 > eval', u'',
+     u'window.navigator.platform', u'get'),
+    (JS_STACK_TEST_SCRIPT_URL, u'1', u'1', u'', u'line 11 > eval', u'',
+     u'window.navigator.buildID', u'get'),
+    (JS_STACK_TEST_SCRIPT_URL, u'1', u'1', u'anonymous', u'line 14 > Function', u'',
+     u'window.navigator.appVersion', u'get'),
+    (JS_STACK_TEST_URL, u'7', u'9', u'check_navigator', u'', u'',
+     u'window.navigator.userAgent', u'get'),
+    (JS_STACK_TEST_URL, u'1', u'1', u'', u'line 8 > eval', u'',
+     u'window.navigator.appCodeName', u'get'))
+
+# Form fill test
+FORM_FILL_PAGE = u'%s/form/form_fill.html' % BASE_TEST_URL
+HTMLINPUT_VALUE = "window.HTMLInputElement.value"
+
+form_sniffing = set([(FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", FORM_FILL_EMAIL),
+                     (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", "password"),
+                     (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", "Subscribe"),
+                     (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", "Sign Up"),
+                     (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", FORM_FILL_PASSWORD)])

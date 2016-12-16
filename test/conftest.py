@@ -1,6 +1,6 @@
 import pytest
 import utilities
-from ..automation.platform_utils import create_xpi
+from ..automation.utilities.platform_utils import create_xpi
 
 
 @pytest.fixture(scope="session", autouse=True)

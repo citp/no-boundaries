@@ -53,7 +53,7 @@ class serversocket:
         try:
             while True:
                 msg = self.receive_msg(client, 5)
-                msglen, serialization = struct.unpack('>ic', msg)
+                msglen, serialization = struct.unpack('>Lc', msg)
                 if self.verbose:
                     print "Msglen: " + str(msglen) + " is_serialized: " + str(serialization != 'n')
                 msg = self.receive_msg(client, msglen)
@@ -127,7 +127,7 @@ class clientsocket:
         if self.verbose: print "Sending message with serialization %s" % serialization
 
         #prepend with message length
-        msg = struct.pack('>Ic', len(msg), serialization) + msg
+        msg = struct.pack('>Lc', len(msg), serialization) + msg
         totalsent = 0
         while totalsent < len(msg):
             sent = self.sock.send(msg[totalsent:])
