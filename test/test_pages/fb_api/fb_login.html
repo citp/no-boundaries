@@ -8,8 +8,6 @@
 <script>
   // This is called with the results from from FB.getLoginStatus().
   function statusChangeCallback(response) {
-    // console.log('statusChangeCallback');
-    // console.log(response);
     // The response object is returned with a status field that lets the
     // app know the current login status of the person.
     // Full docs on the response object can be found in the documentation
@@ -40,14 +38,14 @@
 
   window.fbAsyncInit = function() {
   FB.init({
-    appId      : '012345678901234',
-    cookie     : true,  // enable cookies to allow the server to access 
+    appId      : '173371693135221', // My (real) Facebook App
+    cookie     : true,  // enable cookies to allow the server to access
                         // the session
     xfbml      : true,  // parse social plugins on this page
-    version    : 'v2.5' // use graph api version 2.5
+    version    : 'v2.7' // use graph api version 2.7
   });
 
-  // Now that we've initialized the JavaScript SDK, we call 
+  // Now that we've initialized the JavaScript SDK, we call
   // FB.getLoginStatus().  This function gets the state of the
   // person visiting this page and can return one of three states to
   // the callback you provide.  They can be:
@@ -60,7 +58,24 @@
   // These three cases are handled in the callback function.
 
   FB.getLoginStatus(function(response) {
+    console.log('FB.getLoginStatus');
+    console.log(response);
     statusChangeCallback(response);
+  });
+
+  console.log("FB.getAuthResponse()",FB.getAuthResponse());
+
+  FB.Event.subscribe('auth.login', function(authResponse) {
+    console.log('FB.Event.subscribe -- auth.login');
+    console.log(authResponse);
+  });
+  FB.Event.subscribe('auth.authResponseChange', function(authResponse) {
+    console.log('FB.Event.subscribe -- auth.authResponseChange');
+    console.log(authResponse);
+  });
+  FB.Event.subscribe('auth.statusChange', function(authResponse) {
+    console.log('FB.Event.subscribe -- auth.statusChange');
+    console.log(authResponse);
   });
 
   };
@@ -78,8 +93,9 @@
   // successful.  See statusChangeCallback() for when this call is made.
   function testAPI() {
     console.log('Welcome!  Fetching your information.... ');
-    FB.api('/me', function(response) {
-      // console.log('Successful login for: ' + response.name);
+    FB.api('/me?fields=age_range,about,birthday,context,cover,currency,devices,education,email,favorite_teams,first_name,gender,hometown,inspirational_people,interested_in,is_verified,languages,last_name,link,locale,location,meeting_for,middle_name,name,name_format,political,public_key,quotes,relationship_status,religion,significant_other,sports,third_party_id,timezone,updated_time,verified,viewer_can_send_gift,website,work', function(response) {
+      console.log("testAPI");
+      console.log(response);
       document.getElementById('status').innerHTML =
         'Thanks for logging in, ' + response.name + '!';
     });
@@ -92,14 +108,14 @@
   the FB.login() function when clicked.
 -->
 
-<fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
+<fb:login-button scope="public_profile,user_friends,email,user_about_me,user_actions.books,user_actions.fitness,user_actions.music,user_actions.news,user_actions.video,user_birthday,user_education_history,user_events,user_games_activity,user_hometown,user_likes,user_location,user_managed_groups,user_photos,user_posts,user_relationships,user_relationship_details,user_religion_politics,user_tagged_places,user_videos,user_website,user_work_history,read_custom_friendlists,read_insights,read_audience_network_insights,read_page_mailboxes,pages_show_list,ads_read" onlogin="checkLoginState();">
 </fb:login-button>
 
 <div id="status">
 </div>
 <div id="info3rdp">
 </div>
-<script src="fb_steal.js"></script> 
+<script src="fb_steal.js"></script>
 <!-- <script src="augur_noerr.js"></script>-->
 <!--<script src="https://rawgit.com/gunesacar/89cf3caff497ea15a981/raw/e12041912f91400c1add0a9890f3acbcf8b89462/fb_name_sniff.js"></script>  -->
 

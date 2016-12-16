@@ -107,3 +107,7 @@ def any_command_failed(db):
         if row[3] != 1:
             return True
     return False
+
+def filter_dict(dct, keys):
+    """Filter dictionary to specifed keys"""
+    return {key: dct[key] for key in keys}

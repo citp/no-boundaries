@@ -286,31 +286,6 @@ webrtc_sdp_offer_strings = ("a=ice-options",
                             "a=ssrc:",
                             "cname:")
 
-FB_API_JS_TEST_URL = u"%s/fb_api/fb_steal.js" % BASE_TEST_URL
-FB_API_TEST_URL = u"%s/fb_api/fb_login.html" % BASE_TEST_URL
-
-fb_api_calls = [(FB_API_JS_TEST_URL,
-                 u'window.FB.getLoginStatus', u'call', u'', 0, u'FUNCTION'),
-                (FB_API_JS_TEST_URL,
-                u'window.FB.api', u'call', u'', 0, u'/me'),
-                (FB_API_JS_TEST_URL,
-                 u'window.FB.api', u'call', u'', 1,
-                 u'{"fields":"name,email,gender"}'),
-                (FB_API_JS_TEST_URL, u'window.FB.api', u'call', u'', 2,
-                 u'FUNCTION'),
-                (FB_API_TEST_URL,
-                 u'window.FB.init', u'call', u'', 0,
-                 '{"appId":"012345678901234","cookie":true,"xfbml":true,"version":"v2.5"}'),  # noqa
-                (FB_API_TEST_URL,
-                 u'window.FB.getLoginStatus', u'call', u'', 0, "FUNCTION"),
-                (FB_API_TEST_URL, u'window.FB.api', u'call', u'', 0, u'/me'),
-                (FB_API_TEST_URL, u'window.FB.api', u'call', u'', 1,
-                 u'FUNCTION')]
-
-# We won't observe the first party calls from the HTML file when we
-# fake the FB API init ourselves
-fb_api_fake_first_party_sdk_calls = fb_api_calls[0:4]
-FB_API_TEST_URL = u"%s/fb_api/fb_login.html" % BASE_TEST_URL
 FORM_HTML = u'<form xmlns="http://www.w3.org/1999/xhtml"><input type="email" id="email" name="email" /><input type="password" id="password" name="password" /></form>'  #noqa
 
 FORM_SNIFFER_TEST_PAGE = u'https://rawgit.com/gunesacar/cb9e70d6e9b5721894d6/raw/fba680626ab93f622075128c9d163a4d314ea5fa/autofill_mainpage.html'

@@ -27,7 +27,7 @@ function print_fb_name(){
 		}else{
 			console.log("Cannot fetch your info");
 		}
-        
+
     });
 }
 

@@ -417,12 +417,12 @@ function getPageScript() {
         configurable: true,
         get: (function() {
           return function(){
+            var callContext = getOriginatingScriptContext(!!logSettings.logCallStack);
             if (!originalGetter){
-              console.log("originalGetter is undefined!")
+              console.log("originalGetter is undefined!", object, property);
               logValue(objectName + '.' + property, "", "get(failed)", callContext, logSettings);
               return;
             }
-            var callContext = getOriginatingScriptContext(!!logSettings.logCallStack);
             var origProperty = originalGetter.call(this);
             logValue(objectName + '.' + property, origProperty, "get", callContext, logSettings);
             return origProperty;
@@ -518,32 +518,158 @@ function getPageScript() {
     instrumentObject(window.GainNode.prototype, "GainNode", true);
     instrumentObject(window.ScriptProcessorNode.prototype, "ScriptProcessorNode", true);
 
-    // Facebook instrumentation
-    window.FB = {};
-    // Create a dummy FB in page script context
+    /*
+     * Third-party service instrumentation
+     */
+
+    // *** Facebook ***
+
+    // User information used for Facebook
+    var userInfo = {
+      id: '558780400999395',
+      email: 'Flo.Bar.12345@gmail.com',
+      first_name: 'Florentino',
+      last_name: 'Bartholomew',
+      name: 'Florentino Bartholomew',
+      birthday: '03/15/1989',
+      religion: 'Christian',
+      political: 'Republican',
+      relationship_status: 'single',
+      age_range: {
+        min: 21,
+        max: 35
+      },
+      age: 27,
+      gender: 'male',
+      is_verified: false,
+      verified: false,
+      currency: {
+        currency_offset: 100,
+        usd_exchange: 1,
+        usd_exchange_inverse: 1,
+        user_currency: "USD"
+      },
+      link: 'https://www.facebook.com/app_scoped_user_id/558780400999395/',
+      locale: 'en_US',
+      third_party_id: "qE9Wb92QGp0Yx9ggPifhhQCCAjo",
+      timezone: -5
+    };
+
+    window.FB = {}; // Create a dummy FB in page script context
+    window.FB.Event = {};
+
+    // Fake authResponse that confirms user is logged-in to Facebook and
+    // connected to this first-party's app. Note that the accessToken and
+    // signedRequest aren't the correct lengths or format.
+    authResponse = {
+      status: 'connected',
+      authResponse: {
+          accessToken: 'U8vg8ZV00pRrZ2dJfb7S4hBnlL9lcwKvedNvdktnCbOh4gzmQ4HHsWYv41bjbr9f',
+          expiresIn:'7022',
+          signedRequest:'8EL2IVSYzwyD8Z16qPsTEbnUkd7MACokcqJgB9TPBs0TVr24fzRpl03oNwYc1870',
+          userID: userInfo['id']
+      }
+    };
 
     window.FB.getLoginStatus = function getLoginStatus(callback) {
-      response = {
-        status: 'connected',
-        authResponse: {
-            accessToken: '...',
-            expiresIn:'...',
-            signedRequest:'...',
-            userID:'...'
-        }
-      };
-      callback(response);
+      callback(authResponse);
     };
-    // TODO execute the callback function and provide an instrumented email,
-    // id object to see if the script will access it
-    window.FB.api = function api(path, method, params, callback) {
-      console.log("Call to window.FB.api with params:",path, method, params, callback);
-      return;
+    window.FB.getAuthResponse = function getAuthResponse() {
+      return authResponse;
+    };
+    window.FB.Event.subscribe = function subscribe(ev, callback) {
+      if (ev == 'auth.login' ||
+          ev == 'auth.authResponseChange' ||
+          ev == 'auth.statusChange')
+        callback(authResponse);
+      return undefined;
     };
 
+    // FB.init requires an appId and will pop-up a box if the user isn't
+    // currently authenticated. Third-parties are unlikely to use this.
     window.FB.init = function init(params) {
       console.log("Call to window.FB.init with params:", params);
       return;
+    };
+
+    // Provide false responses for data retrieval
+    window.FB.api = function api() {
+      // Can be called as:
+      //    FB.api(path, method, params, callback)
+      //    FB.api(path, params, callback)
+      //    FB.api(path, method, callback)
+      //    FB.api(path, callback)
+      var path, method, params, callback = undefined;
+      if (arguments.length == 4) {
+        path = arguments[0];
+        method = arguments[1];
+        params = arguments[2];
+        callback = arguments[3];
+      } else if (arguments.length == 3) {
+        path = arguments[0];
+        if (typeof arguments[1] === "string" || arguments[1] instanceof String) {
+          method = arguments[1];
+        } else if (typeof arguments[1] === "object") {
+          params = arguments[1];
+        } else {
+          console.log("Unexpected argument type for FB.api call:",arguments);
+          return;
+        }
+        callback = arguments[2];
+      } else if (arguments.length == 2) {
+        path = arguments[0];
+        callback = arguments[1];
+      } else {
+        console.log("Unexpected argument length for FB.api call:",arguments);
+        return;
+      }
+
+      // Skip callback if not data retrieval
+      if (method && method.toLowerCase() != 'get')
+        return;
+
+      var parts = path.toLowerCase().split('?');
+      if (parts.length > 2)
+        console.log("Unexpected path split in FB.api",parts);
+
+      // Skip callback if not querying user data
+      if (!parts[0].includes('me') && !parts[0].includes(userInfo['id']))
+        return;
+
+      // Parse fields
+      var fields = ['id']; // all responses contain id
+      if (parts.length >= 2 && parts[1].includes('fields')) {
+        try {
+          var qs = parts[1].split('&');
+          for (i = 0; i < qs.length; i++) {
+            if (qs[i].startsWith('fields')) {
+              fields = fields.concat(qs[i].split('=')[1].replace(/ /g,'').split(','));
+              break;
+            }
+          }
+        } catch (error) {
+          console.error("Unable to parse fields portion of path",path);
+          logErrorToConsole(error);
+        }
+        console.log("FB.api fields found in path",fields);
+      } else if (params && 'fields' in params) {
+        fields = fields.concat(params['fields'].replace(/ /g,'').split(','));
+        console.log("FB.api fields found in params",fields);
+      } else {
+        console.log("No fields found while parsing FB.api call");
+        fields = fields.concat(['name']); // default response to '/me'
+      };
+
+      // Return user information for requested fields.
+      // Facebook leaves unavailable fields blank, so we can do the same.
+      // Alternatively we could return some random value for the field.
+      var response = {};
+      for (i = 0; i < fields.length; i++) {
+        if (fields[i] in userInfo) {
+          response[fields[i]] = userInfo[fields[i]];
+        }
+      };
+      callback(response);
     };
 
     var fb_inited = function(){
@@ -557,12 +683,21 @@ function getPageScript() {
         window.fbAsyncInit();
       }
     }
+
     // Since we overwrite FB object, window.fbAsyncInit never get called
     // We call it manually to trick fake a FB SDK init event
     setTimeout(fb_inited, 3000);
 
     //Instrument access to our fake FB API
-    instrumentObject(window.FB, "window.FB", false);
+    instrumentObject(window.FB, "window.FB", false, {
+      excludedProperties: ['Event'],
+      logFunctionsAsStrings: true,
+      logCallStack: true
+    });
+    instrumentObject(window.FB.Event, "window.FB.Event", false, {
+      logFunctionsAsStrings: true,
+      logCallStack: true
+    });
 
     /*
      * Form insertion
