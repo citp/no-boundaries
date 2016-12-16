@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test page for DOM modification instrumentation</title>
+    <script>
+      function insertForms() {
+        // Insert a complete form
+        var div1 = document.getElementById('test1');
+        var form = document.createElement('form');
+        form.id = 'form1';
+        var emailInput = document.createElement('input');
+        emailInput.id = 'email1';
+        emailInput.type = 'email';
+        emailInput.name = 'email';
+        form.appendChild(emailInput);
+        var passwordInput = document.createElement('input');
+        passwordInput.id = 'password1';
+        passwordInput.type = 'password';
+        passwordInput.name = 'password';
+        form.appendChild(passwordInput);
+        div1.appendChild(form);
+
+        // Insert a form then add input elements
+        var div2 = document.getElementById('test2');
+        var form = document.createElement('form');
+        form.id = 'form2';
+        div2.appendChild(form);
+        form.innerHTML = "<input type='email' name='email' id='email2'></input>";
+        var passwordInput = document.createElement('input');
+        passwordInput.id = 'password2';
+        passwordInput.type = 'password';
+        passwordInput.name = 'password';
+        form.appendChild(passwordInput);
+
+        // Modify a few pre-existing elements in different ways
+        var form1 = document.getElementById('form1');
+        form1.setAttribute("autocomplete","on");
+        var form2 = document.getElementById('form2');
+        form2.autocomplete = "on";
+      }
+    </script>
+  </head>
+  <body onload='insertForms();'>
+    <h1> Test page for DOMNodeInserted and DOMAttrModified Events</h1>
+    <p> This test page inserts a form with inputs, inserts a form and then
+    inserts two inputs into that form, and finally modifies a few attributes on
+    those forms.</p>
+    <div id='test1'><p>Test Form 1</p><br /></div><br />
+    <div id='test2'><p>Test Form 2</p><br /></div><br />
+  </body>
+</html>

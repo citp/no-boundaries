@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS input_forms(
+CREATE TABLE IF NOT EXISTS inserted_elements(
   id INTEGER PRIMARY KEY,
   crawl_id INTEGER,
   visit_id INTEGER,
@@ -9,5 +9,7 @@ CREATE TABLE IF NOT EXISTS input_forms(
   is_visible BOOLEAN,
   node_path TEXT,
   serialized_element TEXT,
-  element_type TEXT
+  element_type TEXT,
+  guid TEXT,
+  time_stamp TEXT
 );
