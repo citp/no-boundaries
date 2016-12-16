@@ -422,8 +422,8 @@ hidden_form_insertions = {
 
 form_insertion_js_calls = {
         (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.id', u'set', u'email', None, None),
-        (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.value', u'get', u'randomtestuser@gmail.com', None, None),
-        (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.value', u'get', u'PWD12345678', None, None),
+        (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.value', u'get', u'randomtestuser.4321@gmail.com', None, None),
+        (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.value', u'get', u'_pa$$word123_', None, None),
         (FORM_SNIFFER_SCRIPT, u'window.HTMLFormElement.attributes', u'get', u'{}', None, None),
         (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.type', u'set', u'email', None, None),
         (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.type', u'set', u'password', None, None),
