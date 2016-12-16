@@ -5,7 +5,7 @@ import codecs
 import os
 
 BASE_DIR = os.path.dirname(__file__)
-PSL_CACHE_LOC = os.path.join(BASE_DIR,'public_suffix_list.dat')
+PSL_CACHE_LOC = os.path.join(BASE_DIR,'../data/public_suffix_list.dat')
 
 def get_psl():
     """
@@ -82,11 +82,13 @@ def get_stripped_url(url, scheme=False):
     surl = ''
     if scheme:
         surl += purl.scheme + '://'
-    try:
-        surl += purl.hostname + purl.path
-    except TypeError:
-        surl += purl.hostname
-    return surl
+    if purl.hostname is None:
+        print "Empty hostname, corrupted url? %s" % url
+        return None
+    if purl.path is not None:
+        return surl + purl.hostname + purl.path
+    else:
+        return surl + purl.hostname
 
 def get_stripped_urls(urls, scheme=False):
     """ Returns a set (or list) of urls stripped to (scheme)?+hostname+path """
