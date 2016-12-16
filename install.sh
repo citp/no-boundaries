@@ -23,7 +23,7 @@ sudo apt-get install -y firefox htop git python-dev libxml2-dev libxslt-dev libf
 sudo apt-get install -y libleveldb1v5 || sudo apt-get install -y libleveldb1
 
 if [ "$flash" = true ]; then
-    sudo apt-get install -y adobe-flashplugin
+    sudo apt-get install -y --fix-missing adobe-flashplugin
 fi
 
 # Check if we're running on continuous integration

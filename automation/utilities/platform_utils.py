@@ -7,6 +7,7 @@ from tabulate import tabulate
 from copy import deepcopy
 from ..Errors import TimeExceededError
 
+import re
 import subprocess
 import shutil
 import json
@@ -236,3 +237,11 @@ def fetch_adblockplus_list(output_directory, wait_time=20):
         quit_driver(driver)
         # driver.close()
         display.stop()
+
+
+def contains_email_regex(self, text):
+    """Check if the given text contains a string that looks like email.
+    Regular expression from http://emailregex.com
+    """
+    email_regex = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+    return True if re.search(email_regex, text) else False
