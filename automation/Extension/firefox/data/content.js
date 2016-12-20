@@ -536,7 +536,8 @@ function getPageScript() {
     // *** Facebook ***
 
     // User information used for Facebook
-    var userInfo = {
+    // TODO: update to different info than Google
+    var FBUserInfo = {
       id: '558780400999395',
       email: 'Flo.Bar.12345@gmail.com',
       first_name: 'Florentino',
@@ -578,7 +579,7 @@ function getPageScript() {
           accessToken: 'U8vg8ZV00pRrZ2dJfb7S4hBnlL9lcwKvedNvdktnCbOh4gzmQ4HHsWYv41bjbr9f',
           expiresIn:'7022',
           signedRequest:'8EL2IVSYzwyD8Z16qPsTEbnUkd7MACokcqJgB9TPBs0TVr24fzRpl03oNwYc1870',
-          userID: userInfo['id']
+          userID: FBUserInfo['id']
       }
     };
 
@@ -644,7 +645,7 @@ function getPageScript() {
         console.log("Unexpected path split in FB.api",parts);
 
       // Skip callback if not querying user data
-      if (!parts[0].includes('me') && !parts[0].includes(userInfo['id']))
+      if (!parts[0].includes('me') && !parts[0].includes(FBUserInfo['id']))
         return;
 
       // Parse fields
@@ -676,8 +677,8 @@ function getPageScript() {
       // Alternatively we could return some random value for the field.
       var response = {};
       for (i = 0; i < fields.length; i++) {
-        if (fields[i] in userInfo) {
-          response[fields[i]] = userInfo[fields[i]];
+        if (fields[i] in FBUserInfo) {
+          response[fields[i]] = FBUserInfo[fields[i]];
         }
       };
       callback(response);
@@ -709,6 +710,154 @@ function getPageScript() {
       logFunctionsAsStrings: true,
       logCallStack: true
     });
+
+    // *** Google API ***
+    // Spoofing API available here:
+    // https://developers.google.com/identity/sign-in/web/reference
+
+    // User information used for Google
+    var GUserInfo = {
+      id: '101947710780300010678',
+      email: 'Flo.Bar.12345@gmail.com',
+      first_name: 'Florentino',
+      last_name: 'Bartholomew',
+      name: 'Florentino Bartholomew',
+      image_url: 'https://lh4.googleusercontent.com/-UqEcQyoiCHk/AAAAAAAAAAI/AAAAAAAAAAA/AKB_U8vzhLOBmQrGyD1teSBAuB4YvWhnJA/s96-c/photo.jpg',
+    };
+
+    window.gapi = {};
+    window.gapi.auth2 = {};
+
+    // BasicProfile
+    window.gapi.auth2.BasicProfile = {};
+    window.gapi.auth2.BasicProfile.getId = function() {
+      return GUserInfo['id'];
+    };
+    window.gapi.auth2.BasicProfile.getName = function() {
+      return GUserInfo['name'];
+    };
+    window.gapi.auth2.BasicProfile.getGivenName = function() {
+      return GUserInfo['first_name'];
+    };
+    window.gapi.auth2.BasicProfile.getFamilyName = function() {
+      return GUserInfo['last_name'];
+    };
+    window.gapi.auth2.BasicProfile.getImageUrl = function() {
+      return GUserInfo['image_url'];
+    };
+    window.gapi.auth2.BasicProfile.getEmail = function() {
+      return GUserInfo['email'];
+    };
+
+    // GoogleUser
+    // other possible methods
+    // * getHostedDomain()
+    // * getGrantedScopes()
+    // * getAuthResponse()
+    // * reloadAuthResponse()
+    // * hasGrantedScopes()
+    // * grant()
+    window.gapi.auth2.GoogleUser = {};
+    window.gapi.auth2.GoogleUser.getId = function() {
+      return GUserInfo['id'];
+    };
+    window.gapi.auth2.GoogleUser.isSignedIn = function() {
+      return true;
+    };
+    window.gapi.auth2.GoogleUser.getBasicProfile = function() {
+      return window.gapi.auth2.BasicProfile;
+    };
+
+    // GoogleAuth
+    // other possible methods
+    //  * GoogleAuth.signIn()
+    window.gapi.auth2.GoogleAuth = {};
+    window.gapi.auth2.GoogleAuth.currentUser = {};
+    window.gapi.auth2.GoogleAuth.currentUser.get = function() {
+      return window.gapi.auth2.GoogleUser;
+    };
+    window.gapi.auth2.GoogleAuth.currentUser.listen = function(listener) {
+      listener(window.gapi.auth2.GoogleUser); // Immediately return user
+    };
+    window.gapi.auth2.GoogleAuth.isSignedIn = {};
+    window.gapi.auth2.GoogleAuth.isSignedIn.get = function() {
+      return true;
+    };
+    window.gapi.auth2.GoogleAuth.isSignedIn.listen = function(listener) {
+      listener(true); // Immediately call listener as "signed in"
+    };
+
+    window.gapi.auth2.GoogleAuth.then = function(onInit) {
+      onInit(window.gapi.auth2.GoogleAuth); // Immediately "resolve" promise
+    };
+
+    window.gapi.auth2.init = function(params) {
+      return window.gapi.auth2.GoogleAuth;
+    };
+
+    window.gapi.auth2.getAuthInstance = function() {
+      return window.gapi.auth2.GoogleAuth;
+    };
+
+    // Instrument access to our spoofed Google API
+    // TODO fix #65 -- should reduce this to one call
+    instrumentObject(window.gapi, "window.gapi", false, {
+      excludedProperties: ['auth2'],
+      logFunctionsAsStrings: true,
+      logCallStack: true
+    });
+    instrumentObject(window.gapi.auth2, "window.gapi.auth2", false, {
+      excludedProperties: ['GoogleAuth','GoogleUser','BasicProfile'],
+      logFunctionsAsStrings: true,
+      logCallStack: true
+    });
+    instrumentObject(
+        window.gapi.auth2.BasicProfile,
+        "window.gapi.auth2.BasicProfile",
+        false,
+        {
+          logFunctionsAsStrings: true,
+          logCallStack: true
+        }
+    );
+    instrumentObject(
+        window.gapi.auth2.GoogleUser,
+        "window.gapi.auth2.GoogleUser",
+        false,
+        {
+          logFunctionsAsStrings: true,
+          logCallStack: true
+        }
+    );
+    instrumentObject(
+        window.gapi.auth2.GoogleAuth,
+        "window.gapi.auth2.GoogleAuth",
+        false,
+        {
+          excludedProperties: ['currentUser','isSignedIn'],
+          logFunctionsAsStrings: true,
+          logCallStack: true
+        }
+    );
+    instrumentObject(
+        window.gapi.auth2.GoogleAuth.currentUser,
+        "window.gapi.auth2.GoogleAuth.currentUser",
+        false,
+        {
+          logFunctionsAsStrings: true,
+          logCallStack: true
+        }
+    );
+    instrumentObject(
+        window.gapi.auth2.GoogleAuth.isSignedIn,
+        "window.gapi.auth2.GoogleAuth.isSignedIn",
+        false,
+        {
+          logFunctionsAsStrings: true,
+          logCallStack: true
+        }
+    );
+
 
     /*
      * Form insertion

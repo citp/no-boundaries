@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Google Login JavaScript Example</title>
+    <meta charset="UTF-8">
+    <!-- My test app only works on `localhost:8000` and `localtest.me:8000` -->
+    <meta name="google-signin-client_id"
+          content="902141776049-ur13579tca4qt93i6r6tkps355vffkot.apps.googleusercontent.com">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+  </head>
+  <body>
+    <script>
+      function onSignIn(googleUser) {
+        var profile = googleUser.getBasicProfile();
+        var infoStr = "";
+        console.log('ID: ' + profile.getId());
+        infoStr += 'ID: ' + profile.getId() + "\n";
+        console.log('Name: ' + profile.getName());
+        infoStr += 'Name: ' + profile.getName() + "\n";
+        console.log('Image URL: ' + profile.getImageUrl());
+        infoStr += 'Image URL: ' + profile.getImageUrl() + "\n";
+        console.log('Email: ' + profile.getEmail());
+        infoStr += 'Email: ' + profile.getEmail() + "\n";
+        var pre = document.getElementById("userInfo");
+        pre.innerHTML = infoStr;
+      }
+
+      function initGoogle() {
+        //var test = window.gapi.auth2.init({
+        //  client_id: '902141776049-ur13579tca4qt93i6r6tkps355vffkot.apps.googleusercontent.com'
+        //});
+
+        var test = window.gapi.auth2.init({});
+
+        var test2 = test.then(function() {
+          console.log(arguments);
+          console.log("success!");
+          onSignIn(arguments[0].currentUser.get());
+        }, function() {
+          console.log("failure!");
+        });
+      }
+    </script>
+    <div class="g-signin2" data-onsuccess="initGoogle"></div>
+
+    <pre id="userInfo">
+    </pre>
+
+  </body>
+</html>
