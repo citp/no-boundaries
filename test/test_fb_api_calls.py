@@ -30,10 +30,10 @@ fb_api_fake_first_party_sdk_calls = fb_api_calls[0:2]
 
 ei = {  # Expected user info
   'id': '558780400999395',
-  'email': 'Flo.Bar.12345@gmail.com',
-  'first_name': 'Florentino',
-  'last_name': 'Bartholomew',
-  'name': 'Florentino Bartholomew',
+  'email': 'will_tbone@hotmail.com',
+  'first_name': 'William',
+  'last_name': 'TBone',
+  'name': 'William TBone',
   'birthday': '03/15/1989',
   'religion': 'Christian',
   'political': 'Republican',

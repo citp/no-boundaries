@@ -536,13 +536,12 @@ function getPageScript() {
     // *** Facebook ***
 
     // User information used for Facebook
-    // TODO: update to different info than Google
     var FBUserInfo = {
       id: '558780400999395',
-      email: 'Flo.Bar.12345@gmail.com',
-      first_name: 'Florentino',
-      last_name: 'Bartholomew',
-      name: 'Florentino Bartholomew',
+      email: 'will_tbone@hotmail.com',
+      first_name: 'William',
+      last_name: 'TBone',
+      name: 'William TBone',
       birthday: '03/15/1989',
       religion: 'Christian',
       political: 'Republican',
