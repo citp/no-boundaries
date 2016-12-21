@@ -262,10 +262,16 @@ function getPageScript() {
         return;
       }
 
+      var serializedValue = serializeObject(value, !!logSettings.logFunctionsAsStrings);
+      if (instrumentedVariableName.indexOf("Storage") != -1) {
+        const maxStorageLength = 1024;
+        serializedValue = serializedValue.substring(0, maxStorageLength);  // truncate JS value entries
+      }
+
       var msg = {
         operation: operation,
         symbol: instrumentedVariableName,
-        value: serializeObject(value, !!logSettings.logFunctionsAsStrings),
+        value: serializedValue,
         scriptUrl: callContext.scriptUrl,
         scriptLine: callContext.scriptLine,
         scriptCol: callContext.scriptCol,
