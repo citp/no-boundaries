@@ -13,13 +13,13 @@
       function onSignIn(googleUser) {
         var profile = googleUser.getBasicProfile();
         var infoStr = "";
-        console.log('ID: ' + profile.getId());
+        console.log(profile.getId());
         infoStr += 'ID: ' + profile.getId() + "\n";
-        console.log('Name: ' + profile.getName());
+        console.log(profile.getName());
         infoStr += 'Name: ' + profile.getName() + "\n";
-        console.log('Image URL: ' + profile.getImageUrl());
+        console.log(profile.getImageUrl());
         infoStr += 'Image URL: ' + profile.getImageUrl() + "\n";
-        console.log('Email: ' + profile.getEmail());
+        console.log(profile.getEmail());
         infoStr += 'Email: ' + profile.getEmail() + "\n";
         var pre = document.getElementById("userInfo");
         pre.innerHTML = infoStr;

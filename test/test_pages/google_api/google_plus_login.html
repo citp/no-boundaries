@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<!-- Some code taken from: https://github.com/googleplus/gplus-quickstart-javascript/blob/e87ebcc22bcfcc3f9b6827968d395b8d8e1d5057/index.html -->
+<html>
+  <head>
+    <title>Google Plus Login JavaScript Example</title>
+    <meta charset="UTF-8">
+    <!-- My test app only works on `localhost:8000` and `localtest.me:8000` -->
+    <meta name="google-signin-client_id"
+          content="902141776049-ur13579tca4qt93i6r6tkps355vffkot.apps.googleusercontent.com">
+  </head>
+  <body>
+    <script>
+      function onSignIn(googleUser) {
+        console.log(googleUser);
+        var profile = googleUser.getBasicProfile();
+        var infoStr = "";
+        console.log(profile.getId());
+        infoStr += 'ID: ' + profile.getId() + "\n";
+        console.log(profile.getName());
+        infoStr += 'Name: ' + profile.getName() + "\n";
+        console.log(profile.getImageUrl());
+        infoStr += 'Image URL: ' + profile.getImageUrl() + "\n";
+        console.log(profile.getEmail());
+        infoStr += 'Email: ' + profile.getEmail() + "\n";
+        var pre = document.getElementById("userInfo");
+        pre.innerHTML = infoStr;
+      }
+
+      function startApp() {
+        gapi.load('auth2', function() {
+          gapi.client.load('plus','v1').then(function() {
+            gapi.signin2.render('signin-button', {
+              scope: 'https://www.googleapis.com/auth/plus.login',
+              fetch_basic_profile: false
+            });
+            gapi.auth2.init({fetch_basic_profile: true,
+              scope:'https://www.googleapis.com/auth/plus.login'
+            }).then(function () {
+              var GoogleAuth = gapi.auth2.getAuthInstance();
+              onSignIn(GoogleAuth.currentUser.get());
+            });
+          });
+        });
+      }
+
+      function fetchPlusGetThen() {
+        gapi.client.plus.people.get({
+          userId: 'me'
+        }).then(function(response) {
+          console.log("Get request.then arg1",response);
+          var pre = document.getElementById("plusInfo1");
+          pre.innerHTML = JSON.stringify(response.result);
+        });
+      };
+      function fetchPlusGetExecute() {
+        gapi.client.plus.people.get({
+          userId: 'me'
+        }).execute(function(response, response2) {
+          console.log("Get request.execute arg1",response);
+          console.log("Get request.execute arg2",response2);
+          var pre = document.getElementById("plusInfo2");
+          pre.innerHTML = JSON.stringify(response.result);
+        });
+      };
+      function fetchPlusRequestThen() {
+        gapi.client.request({
+          path: 'plus/v1/people/me'
+        }).then(function(response) {
+          console.log("Request request.then arg1",response);
+          var pre = document.getElementById("plusInfo3");
+          pre.innerHTML = JSON.stringify(response.result);
+        });
+      };
+      function fetchPlusRequestExecute() {
+        gapi.client.request({
+          path: 'plus/v1/people/me'
+        }).execute(function(response, response2) {
+          console.log("Request request.execute arg1",response);
+          console.log("Request request.execute arg2",response2);
+          var pre = document.getElementById("plusInfo4");
+          pre.innerHTML = JSON.stringify(response);
+        });
+      };
+      function fetchPlusRequestCallback() {
+        function parseResult (response, response2) {
+          console.log("Request callback arg1",response);
+          console.log("Request callback arg2",response2);
+          var pre = document.getElementById("plusInfo5");
+          pre.innerHTML = JSON.stringify(response);
+        }
+        var resp = gapi.client.request({
+          path: 'plus/v1/people/me',
+          callback: parseResult
+        });
+      };
+      function fetchWithFieldsParameter() {
+        gapi.client.request({
+          path: 'plus/v1/people/me',
+          params: {fields: 'nickname,occupation'}
+        }).then(function(response) {
+          console.log("Request request.then arg1",response);
+          var pre = document.getElementById("plusInfo6");
+          pre.innerHTML = JSON.stringify(response.result);
+        });
+      };
+      function fetchWithFieldsInPath() {
+        gapi.client.request({
+          path: 'plus/v1/people/me?fields=nickname,occupation'
+        }).then(function(response) {
+          console.log("Request request.then arg1",response);
+          var pre = document.getElementById("plusInfo7");
+          pre.innerHTML = JSON.stringify(response.result);
+        });
+      };
+    </script>
+    <div id="signin-button"></div>
+
+    <pre id="userInfo"></pre>
+
+    <button onclick=fetchPlusGetThen()>gapi.client.plus.people.get().then()</button>
+    <pre id="plusInfo1"></pre>
+    <button onclick=fetchPlusGetExecute()>gapi.client.plus.people.get().execute()</button>
+    <pre id="plusInfo2"></pre>
+    <button onclick=fetchPlusRequestThen()>gapi.client.request().then()</button>
+    <pre id="plusInfo3"></pre>
+    <button onclick=fetchPlusRequestExecute()>gapi.client.request().execute()</button>
+    <pre id="plusInfo4"></pre>
+    <button onclick=fetchPlusRequestCallback()>gapi.client.request with callback</button>
+    <pre id="plusInfo5"></pre>
+    <button onclick=fetchWithFieldsParameter()>gapi.client.request with fields in params</button>
+    <pre id="plusInfo6"></pre>
+    <button onclick=fetchWithFieldsInPath()>gapi.client.request with fields in path</button>
+    <pre id="plusInfo7"></pre>
+  <script src="https://apis.google.com/js/client:platform.js?onload=startApp"></script>
+  </body>
+</html>

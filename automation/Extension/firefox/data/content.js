@@ -710,61 +710,269 @@ function getPageScript() {
       logCallStack: true
     });
 
-    // *** Google API ***
-    // Spoofing API available here:
+    // *** Google and Google Plus API ***
+    // Spoofing Identity API:
     // https://developers.google.com/identity/sign-in/web/reference
+    // Full API:
+    // https://developers.google.com/api-client-library/javascript/reference/referencedocs
 
-    // User information used for Google
+    // User information used for Google and Google Plus profile
     var GUserInfo = {
       id: '101947710780300010678',
       email: 'Flo.Bar.12345@gmail.com',
       first_name: 'Florentino',
       last_name: 'Bartholomew',
       name: 'Florentino Bartholomew',
-      image_url: 'https://lh4.googleusercontent.com/-UqEcQyoiCHk/AAAAAAAAAAI/AAAAAAAAAAA/AKB_U8vzhLOBmQrGyD1teSBAuB4YvWhnJA/s96-c/photo.jpg',
+      image_url: '"https://lh4.googleusercontent.com/-UqEcQyoiCHk/' +
+        'AAAAAAAAAAI/AAAAAAAAAAA/AKB_U8vzhLOBmQrGyD1teSBAuB4YvWhnJA/s96-c/' +
+        'photo.jpg"',
+    };
+
+    // Google Plus only info
+    var GPlusInfo = {
+      id: GUserInfo['id'],
+      kind: "plus#person",
+      objectType: "person",
+      isPlusUser: true,
+      etag: "\"qwejzoixvlmke529mc2djlONDH28/jlkj98DHHD723K01hH_Jf8\"",
+      url: "https://plus.google.com/" + GUserInfo['id'],
+      emails: [
+       {
+        value: GUserInfo['email'],
+        type: "account"
+       }
+      ],
+      displayName: GUserInfo['name'],
+      name: {
+       familyName: GUserInfo['last_name'],
+       givenName: GUserInfo['first_name']
+      },
+      nickname: "FloBar",
+      tagline: "Only the best survive",
+      aboutMe: "Find me at LLWbZxZS6C65oM7IaNGk",
+      image: {
+       url: GUserInfo['image_url'],
+       isDefault: true
+      },
+      occupation: "A Student of Life",
+      gender: "male",
+      urls: [
+       {
+        value: "http://LLWbZxZS6C65oM7IaNGk.com",
+        type: "other",
+        label: "The best LLWbZxZS6C65oM7IaNGk in town."
+       }
+      ],
+      language: "en",
+      birthday: "1980-04-01",
+      ageRange: {
+       min: 21,
+       max: 40
+      },
+      organizations: [
+       {
+        name: "Trump University",
+        title: "The Art of the Deal",
+        type: "school",
+        startDate: "2001",
+        endDate: "2004",
+        primary: false
+       }
+      ],
+      placesLived: [
+       {
+        value: "Alabaster, Alabama",
+        primary: true
+       },
+       {
+        value: "Dayton, Louisiana"
+       },
+       {
+        value: "Monterey, California"
+       }
+      ],
+      circledByCount: 0,
+      verified: true
+    };
+
+    // A promise-like object that is always fulfilled immediately
+    var Thenable = {}
+    Thenable.then = function(onFulfilled, onRejected, context) {
+      onFulfilled();
     };
 
     window.gapi = {};
     window.gapi.auth2 = {};
+    window.gapi.client = {};
 
-    // BasicProfile
-    window.gapi.auth2.BasicProfile = {};
-    window.gapi.auth2.BasicProfile.getId = function() {
-      return GUserInfo['id'];
+    // No-op spoof of common initialization methods
+    window.gapi.client.init = function() {
+      return Thenable;
     };
-    window.gapi.auth2.BasicProfile.getName = function() {
-      return GUserInfo['name'];
+    window.gapi.client.load = function() {
+      if (arguments.length == 3) {
+        arguments[2](); // Call callback
+      } else {
+        return Thenable;
+      }
     };
-    window.gapi.auth2.BasicProfile.getGivenName = function() {
-      return GUserInfo['first_name'];
-    };
-    window.gapi.auth2.BasicProfile.getFamilyName = function() {
-      return GUserInfo['last_name'];
-    };
-    window.gapi.auth2.BasicProfile.getImageUrl = function() {
-      return GUserInfo['image_url'];
-    };
-    window.gapi.auth2.BasicProfile.getEmail = function() {
-      return GUserInfo['email'];
+    window.gapi.client.setApiKey() {
+      return;
     };
 
-    // GoogleUser
-    // other possible methods
-    // * getHostedDomain()
-    // * getGrantedScopes()
-    // * getAuthResponse()
-    // * reloadAuthResponse()
-    // * hasGrantedScopes()
-    // * grant()
-    window.gapi.auth2.GoogleUser = {};
-    window.gapi.auth2.GoogleUser.getId = function() {
-      return GUserInfo['id'];
+    // Google+ APIs
+    // Full list: https://developers.google.com/apis-explorer/#search/plus/plus/v1/
+
+    function generateResponse(contentLength) {
+      // Fake response template used as a response to fake Request API
+      return {
+        headers: {
+          Cache-Control: "private, max-age=0, must-revalidate, no-transform",
+          Content-Encoding: 'gzip',
+          Content-Length: contentLength,
+          Date: new Date().toUTCString(),
+          Expires: new Date().toUTCString(),
+          Content-Type: "application/json; charset=UTF-8",
+          Etag: "FFDKJie6cYw9BakjIIJFNNGVVdio/sdfg70qDT9rg2nj8zSasdfs_lFYYs"
+          Server: "GSE",
+          Vary: "X-Origin"
+        },
+        status: 200,
+        statusText: "OK"
+      };
+    }
+
+    function generateArgsForRequestAPI(apiResponse) {
+      // Generate callback arguments used for both
+      // * gapi.client.request().execute()
+      // * gapi.client.request() with callback function
+      var strOutput = JSON.stringify(apiResponse);
+      var response = generateResponse(strOutput.length);
+      response['body'] = strOutput;
+      var rawResponse = {gapiRequest: {data: response}};
+      rawResponse = JSON.stringify(rawResponse);
+      return {'response': response, 'rawResponse': rawResponse};
+    }
+
+    function generateRequest(apiName, apiResponse) {
+      // Fake Request object to serve fake REST response
+      // apiName == 'people' uses response format for `people` API
+      // apiName == 'request' uses response format for `request` API
+      var Request = {};
+      Request.then = function(onFulfilled, onRejected, context) {
+        var strResponse = JSON.stringify(apiResponse);
+        response = generateResponse(strResponse.length);
+        response['body'] = strResponse;
+        response['result'] = apiResponse;
+        onFulfilled(response);
+      }
+      if (api === 'people') {
+        Request.execute = function(callback) {
+          // First returned argument contains a copy of the response in the
+          // 'result' property. Kinda strange but maybe it's for compatibility
+          // between Request.execute and Request.then?
+          var response = JSON.parse(JSON.stringify(apiResponse));
+          response['result'] = apiResponse;
+          var rawResponse = {
+            id: "gapiRpc",
+            result: apiResponse
+          };
+          callback(response, rawResponse);
+        }
+      } else if (api === 'request') {
+        Request.execute = function(callback) {
+          var args = generateArgsForRequestAPI(apiResponse);
+          callback(args['response'], args['rawResponse']);
+        }
+      } else {
+        console.error("Unrecognized API type:",api);
+      }
+      return Request;
+    }
+
+    window.gapi.client.plus = {}
+    window.gapi.client.plus.people = {};
+    window.gapi.client.plus.people.get = function(params) {
+      if (params && params['userId'] && (
+            params['userId'] == 'me' || params['userId'] == GUserInfo['id'])) {
+        // default is to return all available information
+        if (!params['fields'])
+          return generateRequest('people', GPlusInfo);
+        var output = {};
+        for (var field in params['fields'].replace(/ /g,'').split(',')) {
+          if (field in GPlusInfo) {
+            output[field] = GPlusInfo[field];
+          }
+        }
+        return generateRequest('people', output);
+      }
+      return generateRequest('people',{});
     };
-    window.gapi.auth2.GoogleUser.isSignedIn = function() {
-      return true;
+
+    // the `request` API is generic and allows queries to any google API
+    // we want to spoof responses to the `plus/v1/people` endpoint.
+    window.gapi.client.request = function(args) {
+      // If not a request for user data, return an empty response
+      if (!args['path'] || !(args['path'].includes('plus/v1/people/me') ||
+            args['path'].includes('plus/v1/people/'+GUserInfo['id']))) {
+        return generateRequest('request', {});
+      }
+
+      // Parse fields from params argument or from path
+      var fields = null;
+      if (args['params'] && 'fields' in args['params']) {
+        fields = args['params']['fields'].replace(/ /g,'').split(',');
+        console.log("gapi.client.request fields found in params",fields);
+      } else if (args['path'].includes('?') && args['path'].includes('fields')) {
+        try {
+          var parts = args['path'].split('?')
+          var qs = parts[1].split('&');
+          for (i = 0; i < qs.length; i++) {
+            if (qs[i].startsWith('fields')) {
+              fields = qs[i].split('=')[1].replace(/ /g,'').split(',');
+              break;
+            }
+          }
+          console.log("gapi.client.request fields found in path",fields);
+        } catch (error) {
+          console.error("Unable to parse fields portion of path",path);
+          logErrorToConsole(error);
+        }
+      } else {
+        console.log("gapi.client.request no fields found. Returning all.");
+      }
+
+      // Filter google API data by fields
+      // by default, all fields are returned
+      var output = {};
+      if (fields != null) {
+        for (var field in fields) {
+          if (field in GPlusInfo) {
+            output[field] = GPlusInfo[field];
+          }
+        }
+      } else {
+        output = GPlusInfo;
+      }
+
+      // Return directly if callback specified, otherwise return "Request"
+      if (args['callback']) {
+        var rargs = generateArgsForRequestAPI(output);
+        args['callback'](rargs['response'], rargs['rawResponse']);
+      } else {
+        return generateRequest('request', output);
+      }
+    }
+
+    // Google Sign-In APIs
+
+    // gapi.auth2 spoofing
+    window.gapi.auth2.init = function(params) {
+      return window.gapi.auth2.GoogleAuth;
     };
-    window.gapi.auth2.GoogleUser.getBasicProfile = function() {
-      return window.gapi.auth2.BasicProfile;
+
+    window.gapi.auth2.getAuthInstance = function() {
+      return window.gapi.auth2.GoogleAuth;
     };
 
     // GoogleAuth
@@ -790,73 +998,52 @@ function getPageScript() {
       onInit(window.gapi.auth2.GoogleAuth); // Immediately "resolve" promise
     };
 
-    window.gapi.auth2.init = function(params) {
-      return window.gapi.auth2.GoogleAuth;
+    // GoogleUser
+    // other possible methods
+    // * getHostedDomain()
+    // * getGrantedScopes()
+    // * getAuthResponse()
+    // * reloadAuthResponse()
+    // * hasGrantedScopes()
+    // * grant()
+    window.gapi.auth2.GoogleUser = {};
+    window.gapi.auth2.GoogleUser.getId = function() {
+      return GUserInfo['id'];
+    };
+    window.gapi.auth2.GoogleUser.isSignedIn = function() {
+      return true;
+    };
+    window.gapi.auth2.GoogleUser.getBasicProfile = function() {
+      return window.gapi.auth2.BasicProfile;
     };
 
-    window.gapi.auth2.getAuthInstance = function() {
-      return window.gapi.auth2.GoogleAuth;
+    // BasicProfile
+    window.gapi.auth2.BasicProfile = {};
+    window.gapi.auth2.BasicProfile.getId = function() {
+      return GUserInfo['id'];
+    };
+    window.gapi.auth2.BasicProfile.getName = function() {
+      return GUserInfo['name'];
+    };
+    window.gapi.auth2.BasicProfile.getGivenName = function() {
+      return GUserInfo['first_name'];
+    };
+    window.gapi.auth2.BasicProfile.getFamilyName = function() {
+      return GUserInfo['last_name'];
+    };
+    window.gapi.auth2.BasicProfile.getImageUrl = function() {
+      return GUserInfo['image_url'];
+    };
+    window.gapi.auth2.BasicProfile.getEmail = function() {
+      return GUserInfo['email'];
     };
 
     // Instrument access to our spoofed Google API
-    // TODO fix #65 -- should reduce this to one call
-    instrumentObject(window.gapi, "window.gapi", false, {
-      excludedProperties: ['auth2'],
-      logFunctionsAsStrings: true,
-      logCallStack: true
-    });
-    instrumentObject(window.gapi.auth2, "window.gapi.auth2", false, {
-      excludedProperties: ['GoogleAuth','GoogleUser','BasicProfile'],
-      logFunctionsAsStrings: true,
-      logCallStack: true
-    });
-    instrumentObject(
-        window.gapi.auth2.BasicProfile,
-        "window.gapi.auth2.BasicProfile",
-        false,
-        {
-          logFunctionsAsStrings: true,
-          logCallStack: true
-        }
-    );
-    instrumentObject(
-        window.gapi.auth2.GoogleUser,
-        "window.gapi.auth2.GoogleUser",
-        false,
-        {
-          logFunctionsAsStrings: true,
-          logCallStack: true
-        }
-    );
-    instrumentObject(
-        window.gapi.auth2.GoogleAuth,
-        "window.gapi.auth2.GoogleAuth",
-        false,
-        {
-          excludedProperties: ['currentUser','isSignedIn'],
-          logFunctionsAsStrings: true,
-          logCallStack: true
-        }
-    );
-    instrumentObject(
-        window.gapi.auth2.GoogleAuth.currentUser,
-        "window.gapi.auth2.GoogleAuth.currentUser",
-        false,
-        {
-          logFunctionsAsStrings: true,
-          logCallStack: true
-        }
-    );
-    instrumentObject(
-        window.gapi.auth2.GoogleAuth.isSignedIn,
-        "window.gapi.auth2.GoogleAuth.isSignedIn",
-        false,
-        {
-          logFunctionsAsStrings: true,
-          logCallStack: true
-        }
-    );
-
+    // TODO fix #65 -- this won't work until then
+    //instrumentObject(window.gapi, "window.gapi", false, {
+    //  logFunctionsAsStrings: true,
+    //  logCallStack: true
+    //});
 
     /*
      * Form insertion
