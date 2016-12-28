@@ -710,6 +710,8 @@ function getPageScript() {
       logCallStack: true
     });
 
+    console.log("Facebook API spoofed")
+
     // *** Google and Google Plus API ***
     // Spoofing Identity API:
     // https://developers.google.com/identity/sign-in/web/reference
@@ -718,81 +720,81 @@ function getPageScript() {
 
     // User information used for Google and Google Plus profile
     var GUserInfo = {
-      id: '101947710780300010678',
-      email: 'Flo.Bar.12345@gmail.com',
-      first_name: 'Florentino',
-      last_name: 'Bartholomew',
-      name: 'Florentino Bartholomew',
-      image_url: '"https://lh4.googleusercontent.com/-UqEcQyoiCHk/' +
+      'id': '101947710780300010678',
+      'email': 'Flo.Bar.12345@gmail.com',
+      'first_name': 'Florentino',
+      'last_name': 'Bartholomew',
+      'name': 'Florentino Bartholomew',
+      'image_url': '"https://lh4.googleusercontent.com/-UqEcQyoiCHk/' +
         'AAAAAAAAAAI/AAAAAAAAAAA/AKB_U8vzhLOBmQrGyD1teSBAuB4YvWhnJA/s96-c/' +
         'photo.jpg"',
     };
 
     // Google Plus only info
     var GPlusInfo = {
-      id: GUserInfo['id'],
-      kind: "plus#person",
-      objectType: "person",
-      isPlusUser: true,
-      etag: "\"qwejzoixvlmke529mc2djlONDH28/jlkj98DHHD723K01hH_Jf8\"",
-      url: "https://plus.google.com/" + GUserInfo['id'],
-      emails: [
+      'id': GUserInfo['id'],
+      'kind': "plus#person",
+      'objectType': "person",
+      'isPlusUser': true,
+      'etag': "\"qwejzoixvlmke529mc2djlONDH28/jlkj98DHHD723K01hH_Jf8\"",
+      'url': "https://plus.google.com/" + GUserInfo['id'],
+      'emails': [
        {
-        value: GUserInfo['email'],
-        type: "account"
+        'value': GUserInfo['email'],
+        'type': "account"
        }
       ],
-      displayName: GUserInfo['name'],
-      name: {
-       familyName: GUserInfo['last_name'],
-       givenName: GUserInfo['first_name']
+      'displayName': GUserInfo['name'],
+      'name': {
+       'familyName': GUserInfo['last_name'],
+       'givenName': GUserInfo['first_name']
       },
-      nickname: "FloBar",
-      tagline: "Only the best survive",
-      aboutMe: "Find me at LLWbZxZS6C65oM7IaNGk",
-      image: {
-       url: GUserInfo['image_url'],
-       isDefault: true
+      'nickname': "FloBar",
+      'tagline': "Only the best survive",
+      'aboutMe': "Find me at LLWbZxZS6C65oM7IaNGk",
+      'image': {
+       'url': GUserInfo['image_url'],
+       'isDefault': true
       },
-      occupation: "A Student of Life",
-      gender: "male",
-      urls: [
+      'occupation': "A Student of Life",
+      'gender': "male",
+      'urls': [
        {
-        value: "http://LLWbZxZS6C65oM7IaNGk.com",
-        type: "other",
-        label: "The best LLWbZxZS6C65oM7IaNGk in town."
+        'value': "http://LLWbZxZS6C65oM7IaNGk.com",
+        'type': "other",
+        'label': "The best LLWbZxZS6C65oM7IaNGk in town."
        }
       ],
-      language: "en",
-      birthday: "1980-04-01",
-      ageRange: {
-       min: 21,
-       max: 40
+      'language': "en",
+      'birthday': "1980-04-01",
+      'ageRange': {
+       'min': 21,
+       'max': 40
       },
-      organizations: [
+      'organizations': [
        {
-        name: "Trump University",
-        title: "The Art of the Deal",
-        type: "school",
-        startDate: "2001",
-        endDate: "2004",
-        primary: false
+        'name': "Trump University",
+        'title': "The Art of the Deal",
+        'type': "school",
+        'startDate': "2001",
+        'endDate': "2004",
+        'primary': false
        }
       ],
-      placesLived: [
+      'placesLived': [
        {
-        value: "Alabaster, Alabama",
-        primary: true
+        'value': "Alabaster, Alabama",
+        'primary': true
        },
        {
-        value: "Dayton, Louisiana"
+        'value': "Dayton, Louisiana"
        },
        {
-        value: "Monterey, California"
+        'value': "Monterey, California"
        }
       ],
-      circledByCount: 0,
-      verified: true
+      'circledByCount': 0,
+      'verified': true
     };
 
     // A promise-like object that is always fulfilled immediately
@@ -816,7 +818,7 @@ function getPageScript() {
         return Thenable;
       }
     };
-    window.gapi.client.setApiKey() {
+    window.gapi.client.setApiKey = function() {
       return;
     };
 
@@ -826,19 +828,19 @@ function getPageScript() {
     function generateResponse(contentLength) {
       // Fake response template used as a response to fake Request API
       return {
-        headers: {
-          Cache-Control: "private, max-age=0, must-revalidate, no-transform",
-          Content-Encoding: 'gzip',
-          Content-Length: contentLength,
-          Date: new Date().toUTCString(),
-          Expires: new Date().toUTCString(),
-          Content-Type: "application/json; charset=UTF-8",
-          Etag: "FFDKJie6cYw9BakjIIJFNNGVVdio/sdfg70qDT9rg2nj8zSasdfs_lFYYs"
-          Server: "GSE",
-          Vary: "X-Origin"
+        'headers': {
+          'Cache-Control': "private, max-age=0, must-revalidate, no-transform",
+          'Content-Encoding': 'gzip',
+          'Content-Length': contentLength,
+          'Date': new Date().toUTCString(),
+          'Expires': new Date().toUTCString(),
+          'Content-Type': "application/json; charset=UTF-8",
+          'Etag': "FFDKJie6cYw9BakjIIJFNNGVVdio/sdfg70qDT9rg2nj8zSasdfs_lFYYs",
+          'Server': "GSE",
+          'Vary': "X-Origin"
         },
-        status: 200,
-        statusText: "OK"
+        'status': 200,
+        'statusText': "OK"
       };
     }
 
@@ -851,7 +853,7 @@ function getPageScript() {
       response['body'] = strOutput;
       var rawResponse = {gapiRequest: {data: response}};
       rawResponse = JSON.stringify(rawResponse);
-      return {'response': response, 'rawResponse': rawResponse};
+      return {'response': apiResponse, 'rawResponse': rawResponse};
     }
 
     function generateRequest(apiName, apiResponse) {
@@ -866,7 +868,7 @@ function getPageScript() {
         response['result'] = apiResponse;
         onFulfilled(response);
       }
-      if (api === 'people') {
+      if (apiName === 'people') {
         Request.execute = function(callback) {
           // First returned argument contains a copy of the response in the
           // 'result' property. Kinda strange but maybe it's for compatibility
@@ -877,9 +879,9 @@ function getPageScript() {
             id: "gapiRpc",
             result: apiResponse
           };
-          callback(response, rawResponse);
+          callback(response, JSON.stringify(rawResponse));
         }
-      } else if (api === 'request') {
+      } else if (apiName === 'request') {
         Request.execute = function(callback) {
           var args = generateArgsForRequestAPI(apiResponse);
           callback(args['response'], args['rawResponse']);
@@ -899,9 +901,10 @@ function getPageScript() {
         if (!params['fields'])
           return generateRequest('people', GPlusInfo);
         var output = {};
-        for (var field in params['fields'].replace(/ /g,'').split(',')) {
-          if (field in GPlusInfo) {
-            output[field] = GPlusInfo[field];
+        var parts = params['fields'].replace(/ /g,'').split(',');
+        for (var i = 0; i < parts.length; i++) {
+          if (parts[i] in GPlusInfo) {
+            output[parts[i]] = GPlusInfo[parts[i]];
           }
         }
         return generateRequest('people', output);
@@ -946,9 +949,9 @@ function getPageScript() {
       // by default, all fields are returned
       var output = {};
       if (fields != null) {
-        for (var field in fields) {
-          if (field in GPlusInfo) {
-            output[field] = GPlusInfo[field];
+        for (var i = 0; i < fields.length; i++) {
+          if (fields[i] in GPlusInfo) {
+            output[fields[i]] = GPlusInfo[fields[i]];
           }
         }
       } else {
@@ -1038,6 +1041,7 @@ function getPageScript() {
       return GUserInfo['email'];
     };
 
+    console.log("Google API spoofed")
     // Instrument access to our spoofed Google API
     // TODO fix #65 -- this won't work until then
     //instrumentObject(window.gapi, "window.gapi", false, {
