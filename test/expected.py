@@ -561,6 +561,7 @@ form_sniffing = set([(FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", FORM_FILL_EMAIL),
                      (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", "Sign Up"),
                      (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", FORM_FILL_PASSWORD)])
 
+
 document_cookie_read = (
     JS_COOKIE_TEST_URL,
     u'8',
@@ -586,3 +587,9 @@ document_cookie_write = (
 
 document_cookie_read_write = set([document_cookie_read,
                                   document_cookie_write])
+
+FORM_SUBMIT_PAGE = u'%s/form/form_submit.html' % BASE_TEST_URL
+form_submission = set([(FORM_SUBMIT_PAGE, HTMLINPUT_VALUE, "get",
+                        FORM_FILL_EMAIL),
+                       (FORM_SUBMIT_PAGE, HTMLINPUT_VALUE, "get",
+                        FORM_FILL_PASSWORD)])
