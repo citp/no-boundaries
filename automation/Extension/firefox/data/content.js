@@ -521,6 +521,7 @@ function getPageScript() {
     });
 
     // Access to canvas
+    /*
     instrumentObject(window.HTMLCanvasElement.prototype,"HTMLCanvasElement", true);
 
     var excludedProperties = [ "quadraticCurveTo", "lineTo", "transform",
@@ -534,7 +535,9 @@ function getPageScript() {
     // Access to webRTC
     instrumentObject(window.RTCPeerConnection.prototype,"RTCPeerConnection", true);
 
+    */
     // Access to Audio API
+    /*
     instrumentObject(window.AudioContext.prototype, "AudioContext", true);
     instrumentObject(window.OfflineAudioContext.prototype, "OfflineAudioContext", true);
     instrumentObject(window.OscillatorNode.prototype, "OscillatorNode", true);
@@ -542,6 +545,7 @@ function getPageScript() {
     instrumentObject(window.GainNode.prototype, "GainNode", true);
     instrumentObject(window.ScriptProcessorNode.prototype, "ScriptProcessorNode", true);
 
+    */
     // Facebook instrumentation
     window.FB = {};
     // Create a dummy FB in page script context
@@ -714,8 +718,9 @@ function getPageScript() {
           logFunctionsAsStrings: true,
           logCallStack: true,
           excludedProperties: [ "nodeType", "nodeName", "parentNode", "checked",
-                                "selectionStart", "selectionEnd", "offsetWidth" ,
-                                "offsetHeight" ]
+                                "selectionStart", "selectionEnd", "offsetWidth",
+                                "offsetHeight", "tagName", "getBoundingClientRect",
+                                "className", "ownerDocument" ]
         });
 
     instrumentObject(window.HTMLFormElement.prototype, "window.HTMLFormElement",
@@ -724,7 +729,8 @@ function getPageScript() {
           logFunctionsAsStrings: true,
           logCallStack: true,
           excludedProperties: [ "nodeType", "nodeName", "parentNode",
-                                "tagName", "contains", "getBoundingClientRect" ]
+                                "tagName", "contains", "getBoundingClientRect",
+                                "className"]
         });
 
     /* Monitor new event listeners to top-level objects */
