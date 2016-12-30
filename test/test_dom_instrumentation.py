@@ -1,4 +1,3 @@
-import pytest  # NOQA
 import os
 from openwpmtest import OpenWPMTest
 from ..automation import TaskManager
@@ -7,22 +6,16 @@ import expected
 
 
 class TestDOMInstrumentation(OpenWPMTest):
-    NUM_BROWSERS = 1
 
-    def get_config(self, data_dir):
-        manager_params, browser_params = TaskManager.load_default_params(self.NUM_BROWSERS)
-        manager_params['data_directory'] = data_dir
-        manager_params['log_directory'] = data_dir
-        browser_params[0]['headless'] = True
+    def get_config(self, data_dir=""):
+        manager_params, browser_params = self.get_test_config(data_dir)
         browser_params[0]['js_instrument'] = True
-        manager_params['db'] = os.path.join(manager_params['data_directory'],
-                                            manager_params['database_name'])
         return manager_params, browser_params
 
-    def test_dom_modification_events(self, tmpdir):
+    def test_dom_modification_events(self):
         """Check if we can detect element insertions and modifications"""
         test_url = os.path.join(utilities.BASE_TEST_URL,'dom_modification.html')
-        db = self.visit(test_url, str(tmpdir), sleep_after=5)
+        db = self.visit(test_url, sleep_after=5)
 
         # check element insertions
         rows = utilities.query_db(db,
