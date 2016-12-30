@@ -223,10 +223,10 @@ function getPageScript() {
           scriptCol: columnNo,
           funcName: funcName,
           scriptLocEval: scriptLocEval,
-          callStack: getCallStack ? trace.slice(3).join("\n") : ""
+          callStack: getCallStack ? trace.slice(3).join("\n").trim() : ""
         };
         return callContext;
-      }catch (e) {
+      } catch (e) {
         console.log("Error parsing the script context", e, callSite);
         return empty_context;
       }
@@ -277,7 +277,8 @@ function getPageScript() {
         scriptCol: callContext.scriptCol,
         funcName: callContext.funcName,
         scriptLocEval: callContext.scriptLocEval,
-        callStack: callContext.callStack
+        callStack: callContext.callStack,
+        timeStamp: new Date().toISOString()
       };
 
       try {
@@ -318,7 +319,8 @@ function getPageScript() {
           scriptCol: callContext.scriptCol,
           funcName: callContext.funcName,
           scriptLocEval: callContext.scriptLocEval,
-          callStack: callContext.callStack
+          callStack: callContext.callStack,
+          timeStamp: new Date().toISOString()
         }
         send('logCall', msg);
       }
@@ -512,6 +514,11 @@ function getPageScript() {
       instrumentObjectProperty(window, "window", property);
     });
     instrumentObject(window.Storage.prototype, "window.Storage", true);
+
+    // Access to document.cookie
+    instrumentObjectProperty(window.document, "window.document", "cookie", {
+      logCallStack: true
+    });
 
     // Access to canvas
     instrumentObject(window.HTMLCanvasElement.prototype,"HTMLCanvasElement", true);
