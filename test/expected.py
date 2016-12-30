@@ -551,16 +551,6 @@ js_stack_calls = (
     (JS_STACK_TEST_URL, u'1', u'1', u'', u'line 8 > eval', u'',
      u'window.navigator.appCodeName', u'get'))
 
-# Form fill test
-FORM_FILL_PAGE = u'%s/form/form_fill.html' % BASE_TEST_URL
-HTMLINPUT_VALUE = "window.HTMLInputElement.value"
-
-form_sniffing = set([(FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", FORM_FILL_EMAIL),
-                     (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", "password"),
-                     (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", "Subscribe"),
-                     (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", "Sign Up"),
-                     (FORM_FILL_PAGE, HTMLINPUT_VALUE, "get", FORM_FILL_PASSWORD)])
-
 
 document_cookie_read = (
     JS_COOKIE_TEST_URL,
@@ -587,9 +577,3 @@ document_cookie_write = (
 
 document_cookie_read_write = set([document_cookie_read,
                                   document_cookie_write])
-
-FORM_SUBMIT_PAGE = u'%s/form/form_submit.html' % BASE_TEST_URL
-form_submission = set([(FORM_SUBMIT_PAGE, HTMLINPUT_VALUE, "get",
-                        FORM_FILL_EMAIL),
-                       (FORM_SUBMIT_PAGE, HTMLINPUT_VALUE, "get",
-                        FORM_FILL_PASSWORD)])
