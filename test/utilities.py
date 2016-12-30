@@ -8,6 +8,7 @@ import os
 import sqlite3
 from random import choice
 from os.path import realpath, dirname
+from ..automation.Commands.utils.form_utils import FORM_SUBMISSION_MARK
 
 
 LOCAL_WEBSERVER_PORT = 8000
@@ -110,3 +111,77 @@ def any_command_failed(db):
             return True
     return False
 
+
+def get_pre_submit_requests(db, crawl_id=1, visit_id=1):
+    query = """SELECT * FROM http_requests WHERE
+                    crawl_id = %d AND
+                    visit_id = %d AND
+                    id < (SELECT id FROM http_requests
+                            WHERE method = "%s")
+            """ % (crawl_id, visit_id, FORM_SUBMISSION_MARK)
+    return query_db(db, query)
+
+
+def get_post_submit_requests(db, crawl_id=1, visit_id=1):
+    query = """SELECT * FROM http_requests WHERE
+                    crawl_id = %d AND
+                    visit_id = %d AND
+                    id > (SELECT id FROM http_requests
+                            WHERE method = "%s")
+            """ % (crawl_id, visit_id, FORM_SUBMISSION_MARK)
+    return query_db(db, query)
+
+
+def get_pre_and_post_submit_requests(db, crawl_id=1, visit_id=1):
+    return (get_pre_submit_requests(db, crawl_id, visit_id),
+            get_post_submit_requests(db, crawl_id, visit_id))
+
+
+def get_pre_submit_responses(db, crawl_id=1, visit_id=1):
+    query = """SELECT * FROM http_responses WHERE
+                    crawl_id = %d AND
+                    visit_id = %d AND
+                    id < (SELECT id FROM http_responses
+                            WHERE method = "%s")
+            """ % (crawl_id, visit_id, FORM_SUBMISSION_MARK)
+    return query_db(db, query)
+
+
+def get_post_submit_responses(db, crawl_id=1, visit_id=1):
+    query = """SELECT * FROM http_responses WHERE
+                    crawl_id = %d AND
+                    visit_id = %d AND
+                    id > (SELECT id FROM http_responses
+                            WHERE method = "%s")
+            """ % (crawl_id, visit_id, FORM_SUBMISSION_MARK)
+    return query_db(db, query)
+
+
+def get_pre_and_post_submit_responses(db, crawl_id=1, visit_id=1):
+    return (get_pre_submit_responses(db, crawl_id, visit_id),
+            get_post_submit_responses(db, crawl_id, visit_id))
+
+
+def get_pre_submit_javascript(db, crawl_id=1, visit_id=1):
+    query = """SELECT * FROM javascript WHERE
+                    crawl_id = %d AND
+                    visit_id = %d AND
+                    id < (SELECT id FROM javascript
+                            WHERE operation = "%s")
+            """ % (crawl_id, visit_id, FORM_SUBMISSION_MARK)
+    return query_db(db, query)
+
+
+def get_post_submit_javascript(db, crawl_id=1, visit_id=1):
+    query = """SELECT * FROM javascript WHERE
+                    crawl_id = %d AND
+                    visit_id = %d AND
+                    id > (SELECT id FROM javascript
+                            WHERE operation = "%s")
+            """ % (crawl_id, visit_id, FORM_SUBMISSION_MARK)
+    return query_db(db, query)
+
+
+def get_pre_and_post_submit_javascript(db, crawl_id=1, visit_id=1):
+    return (get_pre_submit_javascript(db, crawl_id, visit_id),
+            get_post_submit_javascript(db, crawl_id, visit_id))

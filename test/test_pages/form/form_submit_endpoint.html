@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Simple HTTP Test page</title>
+    <link rel='stylesheet' href='../shared/test_style.css' />
+    <link rel='icon' href='../shared/test_favicon.ico' />
+    <script type="application/javascript">
+      function start_test() {
+        console.log("navigator.userAgent", navigator.userAgent);
+        console.log("navigator.platform", navigator.platform);
+        document.cookie = 'test_cookie=Test-0123456789; expires=Tue, 31 Dec 2030 00:00:00 UTC; path=/';
+      }
+  </script>
+  </head>
+  <body onload=start_test()>
+    <p> This test page sources an image, css and favicon resource. It also runs a script.</p>
+    <img src='../shared/test_image.png' />
+  </body>
+</html>

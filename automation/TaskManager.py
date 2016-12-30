@@ -459,6 +459,8 @@ class TaskManager:
                 command += (browser.curr_visit_id,)
             elif command[0] in ['DUMP_FLASH_COOKIES', 'DUMP_PROFILE_COOKIES']:
                 command += (start_time, browser.curr_visit_id,)
+            elif command[0] == 'RUN_CUSTOM_FUNCTION':
+                command += (browser.curr_visit_id,)
             browser.current_timeout = timeout
             # passes off command and waits for a success (or failure signal)
             browser.command_queue.put(command)

@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+  <head>
+  <title>Form submission data isolation test</title>
+  <script type="application/javascript">
+
+  function sniff_forms() {
+    // Access to instrumented properties, we expect this to be isolated from the
+    // JS access of the post-submission page.
+    console.log("navigator.userAgent");
+    var inputs = document.querySelectorAll("input");
+    for (var i=0; i<inputs.length; i++) {
+      inputs[i].addEventListener("blur", function (e) {
+        console.log("Reading value after Blur", this.value);
+      }, false);
+    }
+  }
+
+  </script>
+  </head>
+  <body onload="sniff_forms()">
+    <p>Submitting this form takes the browser to a new page.
+    We test the isolation of HTTP and JS data from this page and the new page.</p>
+    <form action="form_submit_endpoint.html" method="GET">
+      Email: <input type='text' name='email' /><br />
+      Password: <input type='password' value='password' />
+      <input type="submit" value="Subscribe" />
+    </form>
+  </body>
+</html>
