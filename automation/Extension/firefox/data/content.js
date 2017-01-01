@@ -7,6 +7,9 @@ function getPageScript() {
 
   // return a string
   return "(" + function () {
+    // disable fingerprinting instrumentation not needed for the ID sniffing study
+    const disableUnneededInstrumentation = true;
+
     // from Underscore v1.6.0
     function debounce(func, wait, immediate) {
       var timeout, args, context, timestamp, result;
@@ -476,32 +479,35 @@ function getPageScript() {
       instrumentObjectProperty(window.navigator, "window.navigator", property);
     });
 
-    // Access to screen properties
-    //instrumentObject(window.screen, "window.screen");
-    // TODO: why do we instrument only two screen properties
-    var screenProperties =  [ "pixelDepth", "colorDepth" ];
-    screenProperties.forEach(function(property) {
-      instrumentObjectProperty(window.screen, "window.screen", property);
-    });
+    if (!disableUnneededInstrumentation) {
 
-    // Access to plugins
-    var pluginProperties = [ "name", "filename", "description", "version", "length"];
-      for (var i = 0; i < window.navigator.plugins.length; i++) {
-      let pluginName = window.navigator.plugins[i].name;
-      pluginProperties.forEach(function(property) {
-        instrumentObjectProperty(window.navigator.plugins[pluginName],
-            "window.navigator.plugins[" + pluginName + "]", property);
+      // Access to screen properties
+      //instrumentObject(window.screen, "window.screen");
+      // TODO: why do we instrument only two screen properties
+      var screenProperties =  [ "pixelDepth", "colorDepth" ];
+      screenProperties.forEach(function(property) {
+        instrumentObjectProperty(window.screen, "window.screen", property);
       });
-    }
 
-    // Access to MIMETypes
-    var mimeTypeProperties = [ "description", "suffixes", "type"];
-    for (var i = 0; i < window.navigator.mimeTypes.length; i++) {
-      let mimeTypeName = window.navigator.mimeTypes[i].type;
-      mimeTypeProperties.forEach(function(property) {
-        instrumentObjectProperty(window.navigator.mimeTypes[mimeTypeName],
-            "window.navigator.mimeTypes[" + mimeTypeName + "]", property);
-      });
+      // Access to plugins
+      var pluginProperties = [ "name", "filename", "description", "version", "length"];
+        for (var i = 0; i < window.navigator.plugins.length; i++) {
+        let pluginName = window.navigator.plugins[i].name;
+        pluginProperties.forEach(function(property) {
+          instrumentObjectProperty(window.navigator.plugins[pluginName],
+              "window.navigator.plugins[" + pluginName + "]", property);
+        });
+      }
+
+      // Access to MIMETypes
+      var mimeTypeProperties = [ "description", "suffixes", "type"];
+      for (var i = 0; i < window.navigator.mimeTypes.length; i++) {
+        let mimeTypeName = window.navigator.mimeTypes[i].type;
+        mimeTypeProperties.forEach(function(property) {
+          instrumentObjectProperty(window.navigator.mimeTypes[mimeTypeName],
+              "window.navigator.mimeTypes[" + mimeTypeName + "]", property);
+        });
+      }
     }
     // Name, localStorage, and sessionsStorage logging
     // Instrumenting window.localStorage directly doesn't seem to work, so
@@ -521,31 +527,32 @@ function getPageScript() {
     });
 
     // Access to canvas
-    /*
-    instrumentObject(window.HTMLCanvasElement.prototype,"HTMLCanvasElement", true);
+    if (!disableUnneededInstrumentation) {
 
-    var excludedProperties = [ "quadraticCurveTo", "lineTo", "transform",
-                               "globalAlpha", "moveTo", "drawImage",
-                               "setTransform", "clearRect", "closePath",
-                               "beginPath", "canvas", "translate" ];
+      instrumentObject(window.HTMLCanvasElement.prototype,"HTMLCanvasElement", true);
 
-    instrumentObject(window.CanvasRenderingContext2D.prototype,
-        "CanvasRenderingContext2D", true, excludedProperties);
+      var excludedProperties = [ "quadraticCurveTo", "lineTo", "transform",
+                                 "globalAlpha", "moveTo", "drawImage",
+                                 "setTransform", "clearRect", "closePath",
+                                 "beginPath", "canvas", "translate" ];
 
-    // Access to webRTC
-    instrumentObject(window.RTCPeerConnection.prototype,"RTCPeerConnection", true);
+      instrumentObject(window.CanvasRenderingContext2D.prototype,
+          "CanvasRenderingContext2D", true, excludedProperties);
 
-    */
-    // Access to Audio API
-    /*
-    instrumentObject(window.AudioContext.prototype, "AudioContext", true);
-    instrumentObject(window.OfflineAudioContext.prototype, "OfflineAudioContext", true);
-    instrumentObject(window.OscillatorNode.prototype, "OscillatorNode", true);
-    instrumentObject(window.AnalyserNode.prototype, "AnalyserNode", true);
-    instrumentObject(window.GainNode.prototype, "GainNode", true);
-    instrumentObject(window.ScriptProcessorNode.prototype, "ScriptProcessorNode", true);
+      // Access to webRTC
+      instrumentObject(window.RTCPeerConnection.prototype,"RTCPeerConnection", true);
 
-    */
+
+      // Access to Audio API
+
+      instrumentObject(window.AudioContext.prototype, "AudioContext", true);
+      instrumentObject(window.OfflineAudioContext.prototype, "OfflineAudioContext", true);
+      instrumentObject(window.OscillatorNode.prototype, "OscillatorNode", true);
+      instrumentObject(window.AnalyserNode.prototype, "AnalyserNode", true);
+      instrumentObject(window.GainNode.prototype, "GainNode", true);
+      instrumentObject(window.ScriptProcessorNode.prototype, "ScriptProcessorNode", true);
+    }
+
     // Facebook instrumentation
     window.FB = {};
     // Create a dummy FB in page script context
