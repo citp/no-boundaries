@@ -97,6 +97,7 @@ function getPageScript() {
           path += ']';
           return path;
         }
+      }
     }
 
     // Helper for JSONifying objects

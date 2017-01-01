@@ -1,7 +1,6 @@
 import pytest
-from utilities import query_db
+from ..automation.utilities.db_utils import query_db
 from openwpmtest import OpenWPMTest
-from ..automation import TaskManager
 
 
 class TestMITMProxy(OpenWPMTest):

@@ -1,5 +1,4 @@
 import pytest
-import os
 import utilities
 import expected
 from openwpmtest import OpenWPMTest
@@ -21,7 +20,7 @@ class TestExtension(OpenWPMTest):
         test_url = utilities.BASE_TEST_URL + '/property_enumeration.html'
         db = self.visit(test_url)
         rows = db_utils.query_db(db,
-                                  "SELECT script_url, symbol FROM javascript")
+                                 "SELECT script_url, symbol FROM javascript")
         observed_symbols = set()
         for script_url, symbol in rows:
             assert script_url == test_url
@@ -48,8 +47,9 @@ class TestExtension(OpenWPMTest):
         manager.get(url_a)
         manager.get(url_b)
         manager.close()
-        qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id, site_url FROM site_visits")
+        qry_res = db_utils.query_db(
+            manager_params['db'],
+            "SELECT visit_id, site_url FROM site_visits")
 
         # Construct dict mapping site_url to visit_id
         visit_ids = dict()
@@ -57,14 +57,14 @@ class TestExtension(OpenWPMTest):
             visit_ids[row[1]] = row[0]
 
         simple_a_visit_id = db_utils.query_db(
-                                    manager_params['db'],
-                                    "SELECT visit_id FROM javascript WHERE "
-                                    "symbol=?", ("window.navigator.userAgent",))
+            manager_params['db'],
+            "SELECT visit_id FROM javascript WHERE "
+            "symbol=?", ("window.navigator.userAgent",))
 
         simple_b_visit_id = db_utils.query_db(
-                                    manager_params['db'],
-                                    "SELECT visit_id FROM javascript WHERE "
-                                    "symbol=?", ("window.navigator.platform",))
+            manager_params['db'],
+            "SELECT visit_id FROM javascript WHERE "
+            "symbol=?", ("window.navigator.platform",))
 
         assert visit_ids[url_a] == simple_a_visit_id[0][0]
         assert visit_ids[url_b] == simple_b_visit_id[0][0]
@@ -94,7 +94,7 @@ class TestExtension(OpenWPMTest):
                 observed_rows.add(item)
         assert set(expected.webrtc_calls) == observed_rows
 
-    # @pytest.mark.skipif("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true", reason='Flaky on Travis CI')
+    # @pytest.mark.skipif("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true", reason='Flaky on Travis CI')  # noqa
     @pytest.mark.skip("Audio instrumentation is disabled")
     def test_audio_fingerprinting(self):
         db = self.visit('/audio_fingerprinting.html')
@@ -108,10 +108,10 @@ class TestExtension(OpenWPMTest):
     def test_set_property_stack_trace(self):
         # make sure we handle set property on elements properly
         db = self.visit('/set_property/set_property.html')
-        rows = utilities.query_db(db, "SELECT script_url, script_line,"
-                                  " script_col, call_stack, symbol,"
-                                  " operation, value, parameter_index,"
-                                  " parameter_value FROM javascript")
+        rows = db_utils.query_db(db, "SELECT script_url, script_line,"
+                                 " script_col, call_stack, symbol,"
+                                 " operation, value, parameter_index,"
+                                 " parameter_value FROM javascript")
         assert rows == expected.set_property
 
     def test_js_call_stack(self):
