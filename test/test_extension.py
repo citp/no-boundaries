@@ -15,6 +15,7 @@ class TestExtension(OpenWPMTest):
         browser_params[0]['js_instrument'] = True
         return manager_params, browser_params
 
+    @pytest.mark.skip("Screen instrumentation is disabled")
     def test_property_enumeration(self):
         test_url = utilities.BASE_TEST_URL + '/property_enumeration.html'
         db = self.visit(test_url)
