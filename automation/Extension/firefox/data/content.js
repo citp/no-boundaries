@@ -73,85 +73,81 @@ function getPageScript() {
 
     // Recursively generates a path for an element
     function getPathToDomElement(element, visibilityAttr=false) {
-        if(element == document.body)
-            return element.tagName;
-        if(element.parentNode == null)
-            return 'NULL/' + element.tagName;
+      if(element == document.body)
+        return element.tagName;
+      if(element.parentNode == null)
+        return 'NULL/' + element.tagName;
 
-        var siblingIndex = 1;
-        var siblings = element.parentNode.childNodes;
-        for (var i = 0; i < siblings.length; i++) {
-            var sibling = siblings[i];
-            if (sibling == element) {
-                var path = getPathToDomElement(element.parentNode, visibilityAttr);
-                path += '/' + element.tagName + '[' + siblingIndex;
-                path += ',' + element.id;
-                path += ',' + element.className;
-                if (visibilityAttr) {
-                  path += ',' + element.hidden;
-                  path += ',' + element.style.display;
-                  path += ',' + element.style.visibility;
-                }
-                if(element.tagName == 'A')
-                        path += ',' + element.href;
-                path += ']';
-                return path;
-            }
-            if (sibling.nodeType == 1 && sibling.tagName == element.tagName)
-                siblingIndex++;
+      var siblingIndex = 1;
+      var siblings = element.parentNode.childNodes;
+      for (var i = 0; i < siblings.length; i++) {
+        var sibling = siblings[i];
+        if (sibling == element) {
+          var path = getPathToDomElement(element.parentNode, visibilityAttr);
+          path += '/' + element.tagName + '[' + siblingIndex;
+          path += ',' + element.id;
+          path += ',' + element.className;
+          if (visibilityAttr) {
+            path += ',' + element.hidden;
+            path += ',' + element.style.display;
+            path += ',' + element.style.visibility;
+          }
+          if(element.tagName == 'A')
+            path += ',' + element.href;
+          path += ']';
+          return path;
         }
     }
 
     // Helper for JSONifying objects
     function serializeObject(object, stringifyFunctions=false) {
 
-        // Handle permissions errors
-        try {
-            if(object == null)
-                return "null";
-            if(typeof object == "function") {
-              if (stringifyFunctions)
-                return object.toString();
-              else
-                return "FUNCTION";
+      // Handle permissions errors
+      try {
+        if(object == null)
+          return "null";
+        if(typeof object == "function") {
+          if (stringifyFunctions)
+            return object.toString();
+          else
+            return "FUNCTION";
+        }
+        if(typeof object != "object")
+          return object;
+        var seenObjects = [];
+        return JSON.stringify(object, function(key, value) {
+          if(value == null)
+            return "null";
+          if(typeof value == "function") {
+            if (stringifyFunctions)
+              return value.toString();
+            else
+              return "FUNCTION";
+          }
+          if(typeof value == "object") {
+            // Remove wrapping on content objects
+            if("wrappedJSObject" in value) {
+              value = value.wrappedJSObject;
             }
-            if(typeof object != "object")
-                return object;
-            var seenObjects = [];
-            return JSON.stringify(object, function(key, value) {
-                if(value == null)
-                    return "null";
-                if(typeof value == "function") {
-                  if (stringifyFunctions)
-                    return value.toString();
-                  else
-                    return "FUNCTION";
-                }
-                if(typeof value == "object") {
-                    // Remove wrapping on content objects
-                    if("wrappedJSObject" in value) {
-                        value = value.wrappedJSObject;
-                    }
 
-                    // Serialize DOM elements
-                    if(value instanceof HTMLElement)
-                        return getPathToDomElement(value);
+            // Serialize DOM elements
+            if(value instanceof HTMLElement)
+              return getPathToDomElement(value);
 
-                    // Prevent serialization cycles
-                    if(key == "" || seenObjects.indexOf(value) < 0) {
-                        seenObjects.push(value);
-                        return value;
-                    }
-                    else
-                        return typeof value;
-                }
-                return value;
-            });
-        }
-        catch(error) {
-            console.log("SERIALIZATION ERROR: " + error);
-            return "SERIALIZATION ERROR: " + error;
-        }
+            // Prevent serialization cycles
+            if(key == "" || seenObjects.indexOf(value) < 0) {
+              seenObjects.push(value);
+              return value;
+            }
+            else
+              return typeof value;
+          }
+          return value;
+        });
+      } catch(error) {
+        console.log("SERIALIZATION ERROR: " + error);
+        return "SERIALIZATION ERROR: " + error;
+      }
     }
 
     function logErrorToConsole(error) {
