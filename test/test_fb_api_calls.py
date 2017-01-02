@@ -1,6 +1,5 @@
 from openwpmtest import OpenWPMTest
-from ..automation import TaskManager
-import utilities
+from ..automation.utilities import db_utils
 import expected
 
 
@@ -13,7 +12,7 @@ class TestFBAPICalls(OpenWPMTest):
 
     def test_fb_api_calls(self):
         db = self.visit('/fb_api/fb_login.html', sleep_after=20)
-        rows = utilities.get_javascript_entries(db)
+        rows = db_utils.get_javascript_entries(db)
         assert expected.fb_api_calls == rows
 
     def test_fake_first_party_sdk(self):
@@ -22,5 +21,5 @@ class TestFBAPICalls(OpenWPMTest):
         """
         db = self.visit('/fb_api/fb_api_call_no_first_party.html',
                         sleep_after=10)
-        rows = utilities.get_javascript_entries(db)
+        rows = db_utils.get_javascript_entries(db)
         assert expected.fb_api_fake_first_party_sdk_calls == rows
