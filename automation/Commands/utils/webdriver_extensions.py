@@ -140,7 +140,10 @@ def move_to_element(driver, element):
 
 def is_active(input_element):
     """Check if we can interact with the given element."""
-    return (input_element.is_displayed() and input_element.is_enabled())
+    try:
+        return input_element.is_displayed() and input_element.is_enabled()
+    except:
+        return False
 
 
 def get_button_text(element):
