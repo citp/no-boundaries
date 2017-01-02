@@ -5,6 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import ElementNotVisibleException
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import WebDriverException
 from urlparse import urljoin
 import random
 import time
@@ -24,8 +25,10 @@ def scroll_down(driver):
         time.sleep(0.5 + random.random())
 
 def scroll_to_bottom(driver):
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    return
+    try:
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    except WebDriverException:
+        pass
 
 def is_loaded(webdriver):
     return (webdriver.execute_script("return document.readyState") == "complete")
