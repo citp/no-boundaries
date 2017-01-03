@@ -114,7 +114,7 @@ function getPageScript() {
             return "FUNCTION";
         }
         if(typeof object != "object")
-          return object;
+          return String(object);
         var seenObjects = [];
         return JSON.stringify(object, function(key, value) {
           if(value == null)
@@ -138,7 +138,7 @@ function getPageScript() {
             // Prevent serialization cycles
             if(key == "" || seenObjects.indexOf(value) < 0) {
               seenObjects.push(value);
-              return value;
+              return String(value);
             }
             else
               return typeof value;
@@ -604,8 +604,8 @@ function getPageScript() {
     // From: http://stackoverflow.com/a/15203639/6073564
     function isElementVisible(el) {
       var rect     = el.getBoundingClientRect(),
-        vWidth   = window.innerWidth || doc.documentElement.clientWidth,
-        vHeight  = window.innerHeight || doc.documentElement.clientHeight,
+        vWidth   = window.innerWidth || document.documentElement.clientWidth,
+        vHeight  = window.innerHeight || document.documentElement.clientHeight,
         efp      = function (x, y) { return document.elementFromPoint(x, y) };
 
       // Return false if it's not in the viewport
