@@ -97,6 +97,8 @@ function getPageScript() {
           path += ']';
           return path;
         }
+        if (sibling.nodeType == 1 && sibling.tagName == element.tagName)
+            siblingIndex++;
       }
     }
 

@@ -426,12 +426,12 @@ form_insertion_js_calls = {
         (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.id', u'set', u'email', None, None),
         (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.value', u'get', u'randomtestuser.4321@gmail.com', None, None),
         (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.value', u'get', u'_pa$$word123_', None, None),
-        (FORM_SNIFFER_SCRIPT, u'window.HTMLFormElement.attributes', u'get', u'{}', None, None),
+        (FORM_SNIFFER_SCRIPT, u'window.HTMLFormElement.attributes', u'get', u'"[object NamedNodeMap]"', None, None),
         (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.type', u'set', u'email', None, None),
         (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.type', u'set', u'password', None, None),
         (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.id', u'set', u'password', None, None),
         (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.name', u'set', u'email', None, None),
-        (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.attributes', u'get', u'{}', None, None),
+        (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.attributes', u'get', u'"[object NamedNodeMap]"', None, None),
         (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.name', u'set', u'password', None, None),
         (FORM_SNIFFER_SCRIPT, u'window.HTMLFormElement.appendChild', u'call', u'', 0, u'"NULL/INPUT"')
 }
