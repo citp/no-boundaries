@@ -125,14 +125,22 @@ def get_element_type(element):
         return ""
 
 
+def get_placeholder_text(element):
+    try:
+        return element.get_attribute("placeholder")
+    except WebDriverException:
+        return ""
+
+
 def str_element(element):
     """Return a human readable representation of a webelement.
 
     Return empty string if the element is not active anymore."""
     try:
-        return '<%s type="%s" name="%s" value="%s" ...> x:%s y:%s w:%d h:%d' %\
+        return '<%s type="%s" name="%s" value="%s" placeholder="%s" ...> x:%s y:%s w:%d h:%d' %\
             (element.tag_name, get_element_type(element),
              element.get_attribute("name"), element.get_attribute("value"),
+             get_placeholder_text(element),
              element.location["x"], element.location["y"],
              element.size["width"], element.size["height"])
     except:
