@@ -140,7 +140,7 @@ function getPageScript() {
             // Prevent serialization cycles
             if(key == "" || seenObjects.indexOf(value) < 0) {
               seenObjects.push(value);
-              return String(value);
+              return value;
             }
             else
               return typeof value;
