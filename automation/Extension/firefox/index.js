@@ -9,6 +9,7 @@ var jsInstrument        = require("./lib/javascript-instrument.js");
 var cpInstrument        = require("./lib/content-policy-instrument.js");
 var httpInstrument      = require("./lib/http-instrument.js");
 var fakeAutofill        = require("./lib/fake-autofill.js");
+var consoleLogs         = require("./lib/console-logs.js");
 
 
 exports.main = function(options, callbacks) {
@@ -32,6 +33,7 @@ exports.main = function(options, callbacks) {
       http_instrument:true,
       save_javascript:true,
       fake_autofill:true,
+      record_js_errors:true,
       crawl_id:''
     };
   }
@@ -69,5 +71,9 @@ exports.main = function(options, callbacks) {
   if (config['fake_autofill']) {
     console.log("Fake autofill is enabled");
     fakeAutofill.run(config['crawl_id']);
+  }
+  if (config['record_js_errors']) {
+    console.log("Console JS error recording enabled");
+    consoleLogs.run(config['crawl_id']);
   }
 };
