@@ -5,6 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import ElementNotVisibleException
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import WebDriverException
 from urlparse import urljoin
 import random
 import time
@@ -24,8 +25,10 @@ def scroll_down(driver):
         time.sleep(0.5 + random.random())
 
 def scroll_to_bottom(driver):
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    return
+    try:
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    except WebDriverException:
+        pass
 
 def is_loaded(webdriver):
     return (webdriver.execute_script("return document.readyState") == "complete")
@@ -116,31 +119,60 @@ def is_clickable(driver, full_xpath, xpath, timeout = 1):
 
 
 def get_element_type(element):
-    return element.get_attribute("type")
+    try:
+        return element.get_attribute("type")
+    except WebDriverException:
+        return ""
+
+
+def get_placeholder_text(element):
+    try:
+        return element.get_attribute("placeholder")
+    except WebDriverException:
+        return ""
 
 
 def str_element(element):
-    """Return a human readable representation of webelement."""
-    return '<%s type="%s" name="%s" value="%s" ...> x:%s y:%s w:%d h:%d' %\
-        (element.tag_name, get_element_type(element),
-         element.get_attribute("name"), element.get_attribute("value"),
-         element.location["x"], element.location["y"],
-         element.size["width"], element.size["height"])
+    """Return a human readable representation of a webelement.
+
+    Return empty string if the element is not active anymore."""
+    try:
+        return '<%s type="%s" name="%s" value="%s" placeholder="%s" ...> x:%s y:%s w:%d h:%d' %\
+            (element.tag_name, get_element_type(element),
+             element.get_attribute("name"), element.get_attribute("value"),
+             get_placeholder_text(element),
+             element.location["x"], element.location["y"],
+             element.size["width"], element.size["height"])
+    except:
+        return ""
 
 
 def is_text_or_email_input(element):
-    """Check if the given input element is a text or an email field."""
-    element_type = get_element_type(element)
-    return element_type in ["text", "email"]
+    """Check if the given input element is an active text or email field.
+
+    Due to exception handling, returns False for stale elements,
+    regardless of their type.
+    """
+    try:
+        element_type = get_element_type(element)
+        return element_type in ["text", "email"]
+    except WebDriverException:
+        return False
 
 
 def move_to_element(driver, element):
-    ActionChains(driver).move_to_element(element).perform()
+    try:
+        ActionChains(driver).move_to_element(element).perform()
+    except WebDriverException:
+        pass
 
 
 def is_active(input_element):
     """Check if we can interact with the given element."""
-    return (input_element.is_displayed() and input_element.is_enabled())
+    try:
+        return input_element.is_displayed() and input_element.is_enabled()
+    except WebDriverException:
+        return False
 
 
 def get_button_text(element):
