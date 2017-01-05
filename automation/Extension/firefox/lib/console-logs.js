@@ -1,5 +1,7 @@
-const { Cu, Ci } = require("chrome");
-const { gDevTools } = Cu.import("resource:///modules/devtools/gDevTools.jsm", {});
+const {Cu, Ci} = require("chrome");
+// Based on https://github.com/firebug/devtools-extension-examples/tree/master/ConsoleListener
+// See, https://developer.mozilla.org/en-US/docs/Tools/DevToolsAPI
+const {gDevTools} = Cu.import("resource:///modules/devtools/gDevTools.jsm", {});
 const {devtools} = Cu.import("resource://gre/modules/devtools/Loader.jsm", {});
 Cu.import("resource://devtools/client/framework/gDevTools.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
