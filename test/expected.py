@@ -211,9 +211,9 @@ fb_api_calls = [(FB_API_JS_TEST_URL,
                  u'FUNCTION'),
                 (FB_API_TEST_URL,
                  u'window.FB.init', u'call', u'', 0,
-                 '{"appId":"012345678901234","cookie":true,"xfbml":true,"version":"v2.5"}'),  # noqa
+                 u'{"appId":"012345678901234","cookie":true,"xfbml":true,"version":"v2.5"}'),  # noqa
                 (FB_API_TEST_URL,
-                 u'window.FB.getLoginStatus', u'call', u'', 0, "FUNCTION"),
+                 u'window.FB.getLoginStatus', u'call', u'', 0, u"FUNCTION"),
                 (FB_API_TEST_URL, u'window.FB.api', u'call', u'', 0, u'/me'),
                 (FB_API_TEST_URL, u'window.FB.api', u'call', u'', 1,
                  u'FUNCTION')]
@@ -336,6 +336,7 @@ form_insertion_js_calls = {
         (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.name', u'set', u'email', None, None),
         (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.attributes', u'get', u'{}', None, None),
         (FORM_SNIFFER_SCRIPT, u'window.HTMLInputElement.name', u'set', u'password', None, None),
+        (FORM_SNIFFER_SCRIPT, u'window.HTMLFormElement.appendChild', u'get', u'function appendChild() {\n    [native code]\n}', None, None),
         (FORM_SNIFFER_SCRIPT, u'window.HTMLFormElement.appendChild', u'call', u'', 0, u'"NULL/INPUT"')
 }
 

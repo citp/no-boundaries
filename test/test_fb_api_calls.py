@@ -13,7 +13,12 @@ class TestFBAPICalls(OpenWPMTest):
     def test_fb_api_calls(self):
         db = self.visit('/fb_api/fb_login.html', sleep_after=20)
         rows = db_utils.get_javascript_entries(db)
-        assert expected.fb_api_calls == rows
+        observed_calls = set()
+        for row in rows:
+            if row[2] != 'call':
+                continue
+            observed_calls.add(row)
+        assert set(expected.fb_api_calls) == observed_calls
 
     def test_fake_first_party_sdk(self):
         """Make sure we can fake a first party that loads and initializes
@@ -22,4 +27,10 @@ class TestFBAPICalls(OpenWPMTest):
         db = self.visit('/fb_api/fb_api_call_no_first_party.html',
                         sleep_after=10)
         rows = db_utils.get_javascript_entries(db)
-        assert expected.fb_api_fake_first_party_sdk_calls == rows
+        observed_calls = set()
+        for row in rows:
+            if row[2] != 'call':
+                continue
+            observed_calls.add(row)
+        assert (set(expected.fb_api_fake_first_party_sdk_calls) ==
+                observed_calls)
