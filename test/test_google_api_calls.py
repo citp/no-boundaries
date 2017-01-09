@@ -11,8 +11,8 @@ ei = {  # Expected user info
     u'last_name': u'Bartholomew',
     u'name': u'Florentino Bartholomew',
     u'image_url': u'"https://lh4.googleusercontent.com/-UqEcQyoiCHk/'
-                 'AAAAAAAAAAI/AAAAAAAAAAA/AKB_U8vzhLOBmQrGyD1teSBAuB4YvWhnJA/'
-                 's96-c/photo.jpg"',
+                  'AAAAAAAAAAI/AAAAAAAAAAA/AKB_U8vzhLOBmQrGyD1teSBAuB4YvWhnJA/'
+                  's96-c/photo.jpg"',
 }
 epi = {  # Expected plus info
   u"id": ei['id'],
@@ -90,6 +90,7 @@ HTTPResponseHeaders = {
     'Vary': "X-Origin"
 }
 
+
 class TestGoogleAPICalls(OpenWPMTest):
     NUM_BROWSERS = 1
 
@@ -100,11 +101,12 @@ class TestGoogleAPICalls(OpenWPMTest):
         manager_params['log_directory'] = data_dir
         browser_params[0]['headless'] = True
         browser_params[0]['js_instrument'] = True
+        browser_params[0]['spoof_social_login'] = True
         manager_params['db'] = os.path.join(manager_params['data_directory'],
                                             manager_params['database_name'])
         return manager_params, browser_params
 
-    #TODO test instrumentation monitoring with and without real SDK present
+    # TODO test instrumentation monitoring with and without real SDK present
 
     def test_spoofed_google_api(self, tmpdir):
         """Verify that `gapi` spoofing works as expected"""
@@ -248,11 +250,11 @@ class TestGoogleAPICalls(OpenWPMTest):
                     resp['headers'],
                     HTTPResponseHeaders.keys()) == HTTPResponseHeaders
                 assert resp['headers']['Content-Length'] == len(resp['body'])
-                assert resp['headers'].has_key('Date')
-                assert resp['headers'].has_key('Expires')
+                assert 'Date' in resp['headers']
+                assert 'Expires' in resp['headers']
 
             ###
-            ### People API
+            # People API
             ###
 
             # Verify `people.get().then()` response body
@@ -302,8 +304,10 @@ class TestGoogleAPICalls(OpenWPMTest):
             """ % epi['id'])
 
             # Query `people` with `me` using fields
-            resp = util.filter_dict(epi,
-                                    ['kind','displayName','birthday','emails'])
+            resp = util.filter_dict(
+                epi,
+                ['kind', 'displayName', 'birthday', 'emails']
+            )
             assert resp == driver.execute_async_script("""
                 callback = arguments[0];
                 gapi.client.plus.people.get({
@@ -315,7 +319,7 @@ class TestGoogleAPICalls(OpenWPMTest):
             """)
 
             # Query `people` with `{user-id}` using fields
-            resp = util.filter_dict(epi, ['gender','url','id','ageRange'])
+            resp = util.filter_dict(epi, ['gender', 'url', 'id', 'ageRange'])
             assert resp == driver.execute_async_script("""
                 callback = arguments[0];
                 gapi.client.plus.people.get({
@@ -327,7 +331,7 @@ class TestGoogleAPICalls(OpenWPMTest):
             """ % epi['id'])
 
             # Verify `people` .then() body property with params
-            resp = util.filter_dict(epi, ['kind','displayName'])
+            resp = util.filter_dict(epi, ['kind', 'displayName'])
             assert resp == driver.execute_async_script("""
                 callback = arguments[0];
                 gapi.client.plus.people.get({
@@ -361,7 +365,7 @@ class TestGoogleAPICalls(OpenWPMTest):
             """)
 
             ###
-            ### Request API
+            # Request API
             ###
 
             # Verify `request().then()` response
@@ -431,7 +435,7 @@ class TestGoogleAPICalls(OpenWPMTest):
             """ % epi['id'])
 
             # Query `request` with `me` using fields in `path`
-            resp = util.filter_dict(epi, ['id','tagline'])
+            resp = util.filter_dict(epi, ['id', 'tagline'])
             assert resp == driver.execute_async_script("""
                 callback = arguments[0];
                 gapi.client.request({
@@ -442,7 +446,7 @@ class TestGoogleAPICalls(OpenWPMTest):
             """)
 
             # Query `request` with `me` using fields in `params`
-            resp = util.filter_dict(epi, ['id','occupation','verified'])
+            resp = util.filter_dict(epi, ['id', 'occupation', 'verified'])
             assert resp == driver.execute_async_script("""
                 callback = arguments[0];
                 gapi.client.request({

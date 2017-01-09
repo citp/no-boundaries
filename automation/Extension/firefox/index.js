@@ -24,6 +24,7 @@ exports.main = function(options, callbacks) {
       sqlite_address:null,
       leveldb_address:null,
       disable_webdriver_self_id:true,
+      spoof_social_login:true,
       cookie_instrument:true,
       js_instrument:true,
       cp_instrument:true,
@@ -45,6 +46,15 @@ exports.main = function(options, callbacks) {
       include: "*",
       contentScriptWhen: "start",
       contentScriptFile: data.url("remove_webdriver_attributes.js")
+    });
+  }
+  // Spoof third-party social login services
+  if (config['spoof_social_login']) {
+    console.log("Disabling webdriver self identification");
+    pageMod.PageMod({
+      include: "*",
+      contentScriptWhen: "start",
+      contentScriptFile: data.url("spoof_social_login.js")
     });
   }
   if (config['cookie_instrument']) {

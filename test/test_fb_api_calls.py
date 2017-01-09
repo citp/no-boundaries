@@ -58,6 +58,7 @@ ei = {  # Expected user info
   'timezone': -5
 }
 
+
 class TestFBAPICalls(OpenWPMTest):
     NUM_BROWSERS = 1
 
@@ -68,6 +69,7 @@ class TestFBAPICalls(OpenWPMTest):
         manager_params['log_directory'] = data_dir
         browser_params[0]['headless'] = True
         browser_params[0]['js_instrument'] = True
+        browser_params[0]['spoof_social_login'] = True
         manager_params['db'] = os.path.join(manager_params['data_directory'],
                                             manager_params['database_name'])
         return manager_params, browser_params
@@ -79,7 +81,7 @@ class TestFBAPICalls(OpenWPMTest):
         observed_api_calls = set()
         observed_subscribe_events = set()
         for script_url, symbol, operation, value, pindex, pvalue in rows:
-            observed_api_calls.add((script_url,symbol))
+            observed_api_calls.add((script_url, symbol))
             if (script_url == FB_API_JS_TEST_URL and symbol == u'window.FB.api'
                     and pindex != 2):
                 observed_api_args.add(pvalue)
@@ -101,7 +103,7 @@ class TestFBAPICalls(OpenWPMTest):
         observed_api_calls = set()
         observed_api_args = set()
         for script_url, symbol, operation, value, pindex, pvalue in rows:
-            observed_api_calls.add((script_url,symbol))
+            observed_api_calls.add((script_url, symbol))
             if (script_url == FB_API_JS_TEST_URL and symbol == u'window.FB.api'
                     and pindex != 2):
                 observed_api_args.add(pvalue)
@@ -123,9 +125,9 @@ class TestFBAPICalls(OpenWPMTest):
               'authResponse': {
                   'accessToken': "U8vg8ZV00pRrZ2dJfb7S4hBnlL9lcwKvedNvdktnCb"
                                  "Oh4gzmQ4HHsWYv41bjbr9f",
-                  'expiresIn':'7022',
-                  'signedRequest':"8EL2IVSYzwyD8Z16qPsTEbnUkd7MACokcqJgB9TPB"
-                                  "s0TVr24fzRpl03oNwYc1870",
+                  'expiresIn': '7022',
+                  'signedRequest': "8EL2IVSYzwyD8Z16qPsTEbnUkd7MACokcqJgB9TPB"
+                                   "s0TVr24fzRpl03oNwYc1870",
                   'userID': ei['id']
               }
             }
@@ -183,7 +185,7 @@ class TestFBAPICalls(OpenWPMTest):
         def query_FB_api(**kwargs):
             driver = kwargs['driver']
 
-            default_resp = util.filter_dict(ei,['id','name'])
+            default_resp = util.filter_dict(ei, ['id', 'name'])
             # Query with /me shortcut
             assert default_resp == driver.execute_async_script("""
                 callback = arguments[0];
@@ -225,8 +227,9 @@ class TestFBAPICalls(OpenWPMTest):
             """)
 
             # Query with params
-            resp = util.filter_dict(ei,
-                ['id','name','email','gender','third_party_id']
+            resp = util.filter_dict(
+                ei,
+                ['id', 'name', 'email', 'gender', 'third_party_id']
             )
             assert resp == driver.execute_async_script("""
                 callback = arguments[0];
@@ -236,8 +239,9 @@ class TestFBAPICalls(OpenWPMTest):
             """)
 
             # Query with compound params object
-            resp = util.filter_dict(ei,
-                ['id','verified','first_name','last_name','link']
+            resp = util.filter_dict(
+                ei,
+                ['id', 'verified', 'first_name', 'last_name', 'link']
             )
             assert resp == driver.execute_async_script("""
                 callback = arguments[0];
@@ -249,8 +253,9 @@ class TestFBAPICalls(OpenWPMTest):
             """)
 
             # Query with query string in path
-            resp = util.filter_dict(ei,
-                ['id','email','first_name','last_name']
+            resp = util.filter_dict(
+                ei,
+                ['id', 'email', 'first_name', 'last_name']
             )
             assert resp == driver.execute_async_script("""
                 callback = arguments[0];
@@ -260,8 +265,9 @@ class TestFBAPICalls(OpenWPMTest):
             """)
 
             # Query with query string in path and method
-            resp = util.filter_dict(ei,
-                ['id','email','age_range','religion']
+            resp = util.filter_dict(
+                ei,
+                ['id', 'email', 'age_range', 'religion']
             )
             assert resp == driver.execute_async_script("""
                 callback = arguments[0];
