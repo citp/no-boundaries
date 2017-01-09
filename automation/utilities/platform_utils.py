@@ -250,7 +250,7 @@ def fetch_adblockplus_list(output_directory, wait_time=20):
         display.stop()
 
 
-def contains_email_regex(self, text):
+def contains_email_regex(text):
     """Check if the given text contains a string that looks like email.
     Regular expression from http://emailregex.com
     """

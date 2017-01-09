@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Console error example</title>
+  <script type="application/javascript">
+    function start_test() {
+      if ("FB" in window){
+        var a = window.FB.nonexistent_func();  // trigger error
+      }
+    }
+  </script>
+ </head>
+ <body onload="start_test()">
+ </body></html>
