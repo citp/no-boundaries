@@ -62,7 +62,7 @@ exports.main = function(options, callbacks) {
   //       see the correct request).
   if (config['spoof_social_login']) {
     console.log("Spoofing Social Login SDKs.");
-    spoofSocialLogin.run();
+    spoofSocialLogin.run(config['testing']);
   }
   if (config['cookie_instrument']) {
     loggingDB.logDebug("Cookie instrumentation enabled");

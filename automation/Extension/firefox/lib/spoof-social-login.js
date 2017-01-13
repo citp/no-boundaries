@@ -5,7 +5,7 @@ const data              = require("sdk/self").data;
 
 Cu.import("resource://gre/modules/Services.jsm");
 
-exports.run = function() {
+exports.run = function(testing) {
 
   // Content script to inject the dummy SDK objects
   pageMod.PageMod({
@@ -24,8 +24,15 @@ exports.run = function() {
   function redirectToDummyScript(respEvent) {
     var channel = respEvent.subject;
     if (channel instanceof Ci.nsIHttpChannel && shouldRedirect(channel.URI.spec)) {
-      var newResponse  = encodeURIComponent(
-        "console.log('noop of " + channel.URI.spec + "!')");
+      var newResponse = "";
+      if (testing) {
+        newResponse = encodeURIComponent(
+          "console.log('Replaced script " + channel.URI.spec + "!'); " +
+          "window.script_replaced = true;")
+      } else {
+        var newResponse  = encodeURIComponent(
+          "console.log('noop of " + channel.URI.spec + "!')");
+      }
       var redirectURI = "data:text/html," + newResponse;
       channel.redirectTo(Services.io.newURI(redirectURI, null, null));
     }
