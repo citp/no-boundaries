@@ -9,6 +9,7 @@ var jsInstrument        = require("./lib/javascript-instrument.js");
 var cpInstrument        = require("./lib/content-policy-instrument.js");
 var httpInstrument      = require("./lib/http-instrument.js");
 var fakeAutofill        = require("./lib/fake-autofill.js");
+var spoofSocialLogin    = require("./lib/spoof-social-login.js");
 
 exports.main = function(options, callbacks) {
 
@@ -49,13 +50,13 @@ exports.main = function(options, callbacks) {
     });
   }
   // Spoof third-party social login services
+  // NOTE: This *must* run before the http instrument as it registers an
+  //       observer to spoof to redirect some script requests. Observers
+  //       registered first will run last (so the http request observer will
+  //       see the correct request).
   if (config['spoof_social_login']) {
-    console.log("Disabling webdriver self identification");
-    pageMod.PageMod({
-      include: "*",
-      contentScriptWhen: "start",
-      contentScriptFile: data.url("spoof_social_login.js")
-    });
+    console.log("Spoofing Social Login SDKs.");
+    spoofSocialLogin.run();
   }
   if (config['cookie_instrument']) {
     console.log("Cookie instrumentation enabled");

@@ -106,6 +106,24 @@ class TestGoogleAPICalls(OpenWPMTest):
                                             manager_params['database_name'])
         return manager_params, browser_params
 
+    def test_real_script_interception(self, tmpdir):
+        """Verify that we redirect requests to platform.js to a noop"""
+        # TODO since intercepted redirects don't trigger a response, we need
+        # to check something in the DOM instead.
+        manager_params, browser_params = self.get_config(str(tmpdir))
+        browser_params[0]['http_instrument'] = True
+        browser_params[0]['save_javascript'] = True
+        manager = TaskManager.TaskManager(manager_params, browser_params)
+        test_url = util.BASE_TEST_URL + '/google_api/google_login.html'
+        manager.get(test_url, sleep=2)
+        manager.close()
+        db = manager_params['db']
+
+        # Verify that request still exists in http_requests
+        rows = util.query_db(db, "SELECT * FROM http_requests WHERE url = ?",
+                             ("https://apis.google.com/js/platform.js",))
+        assert len(rows) == 1
+
     # TODO test instrumentation monitoring with and without real SDK present
 
     def test_spoofed_google_api(self, tmpdir):
