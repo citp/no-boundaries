@@ -459,6 +459,8 @@ class TaskManager:
                 command += (browser.curr_visit_id,)
             elif command[0] in ['DUMP_FLASH_COOKIES', 'DUMP_PROFILE_COOKIES']:
                 command += (start_time, browser.curr_visit_id,)
+            elif command[0] == 'RUN_CUSTOM_FUNCTION':
+                command += (browser.curr_visit_id,)
             browser.current_timeout = timeout
             # passes off command and waits for a success (or failure signal)
             browser.command_queue.put(command)
@@ -548,7 +550,7 @@ class TaskManager:
     def browse(self, url, num_links=2, sleep=0, index=None, timeout=60, reset=False):
         """ browse a website and visit <num_links> links on the page """
         command_sequence = CommandSequence.CommandSequence(url)
-        command_sequence.get(sleep=sleep, timeout=timeout)
+        command_sequence.browse(num_links=num_links, sleep=sleep, timeout=timeout)
         command_sequence.reset = reset
         self.execute_command_sequence(command_sequence, index=index)
 

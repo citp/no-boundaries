@@ -8,6 +8,7 @@
     "save_javascript": false,
     "fake_autofill": false,
     "spoof_social_login": false,
+    "record_js_errors": false,
 
     "random_attributes": false,
     "bot_mitigation": false,

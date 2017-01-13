@@ -7,6 +7,9 @@ function getPageScript() {
 
   // return a string
   return "(" + function () {
+    // disable fingerprinting instrumentation not needed for the ID sniffing study
+    const disableUnneededInstrumentation = true;
+
     // from Underscore v1.6.0
     function debounce(func, wait, immediate) {
       var timeout, args, context, timestamp, result;
@@ -68,87 +71,89 @@ function getPageScript() {
      * Instrumentation helpers
      */
 
+    var testing = document.currentScript.getAttribute('data-testing');
+    console.log("Currently testing?",testing);
+
     // Recursively generates a path for an element
     function getPathToDomElement(element, visibilityAttr=false) {
-        if(element == document.body)
-            return element.tagName;
-        if(element.parentNode == null)
-            return 'NULL/' + element.tagName;
+      if(element == document.body)
+        return element.tagName;
+      if(element.parentNode == null)
+        return 'NULL/' + element.tagName;
 
-        var siblingIndex = 1;
-        var siblings = element.parentNode.childNodes;
-        for (var i = 0; i < siblings.length; i++) {
-            var sibling = siblings[i];
-            if (sibling == element) {
-                var path = getPathToDomElement(element.parentNode, visibilityAttr);
-                path += '/' + element.tagName + '[' + siblingIndex;
-                path += ',' + element.id;
-                path += ',' + element.className;
-                if (visibilityAttr) {
-                  path += ',' + element.hidden;
-                  path += ',' + element.style.display;
-                  path += ',' + element.style.visibility;
-                }
-                if(element.tagName == 'A')
-                        path += ',' + element.href;
-                path += ']';
-                return path;
-            }
-            if (sibling.nodeType == 1 && sibling.tagName == element.tagName)
-                siblingIndex++;
+      var siblingIndex = 1;
+      var siblings = element.parentNode.childNodes;
+      for (var i = 0; i < siblings.length; i++) {
+        var sibling = siblings[i];
+        if (sibling == element) {
+          var path = getPathToDomElement(element.parentNode, visibilityAttr);
+          path += '/' + element.tagName + '[' + siblingIndex;
+          path += ',' + element.id;
+          path += ',' + element.className;
+          if (visibilityAttr) {
+            path += ',' + element.hidden;
+            path += ',' + element.style.display;
+            path += ',' + element.style.visibility;
+          }
+          if(element.tagName == 'A')
+            path += ',' + element.href;
+          path += ']';
+          return path;
         }
+        if (sibling.nodeType == 1 && sibling.tagName == element.tagName)
+            siblingIndex++;
+      }
     }
 
     // Helper for JSONifying objects
     function serializeObject(object, stringifyFunctions=false) {
 
-        // Handle permissions errors
-        try {
-            if(object == null)
-                return "null";
-            if(typeof object == "function") {
-              if (stringifyFunctions)
-                return object.toString();
-              else
-                return "FUNCTION";
+      // Handle permissions errors
+      try {
+        if(object == null)
+          return "null";
+        if(typeof object == "function") {
+          if (stringifyFunctions)
+            return object.toString();
+          else
+            return "FUNCTION";
+        }
+        if(typeof object != "object")
+          return String(object);
+        var seenObjects = [];
+        return JSON.stringify(object, function(key, value) {
+          if(value == null)
+            return "null";
+          if(typeof value == "function") {
+            if (stringifyFunctions)
+              return value.toString();
+            else
+              return "FUNCTION";
+          }
+          if(typeof value == "object") {
+            // Remove wrapping on content objects
+            if("wrappedJSObject" in value) {
+              value = value.wrappedJSObject;
             }
-            if(typeof object != "object")
-                return object;
-            var seenObjects = [];
-            return JSON.stringify(object, function(key, value) {
-                if(value == null)
-                    return "null";
-                if(typeof value == "function") {
-                  if (stringifyFunctions)
-                    return value.toString();
-                  else
-                    return "FUNCTION";
-                }
-                if(typeof value == "object") {
-                    // Remove wrapping on content objects
-                    if("wrappedJSObject" in value) {
-                        value = value.wrappedJSObject;
-                    }
 
-                    // Serialize DOM elements
-                    if(value instanceof HTMLElement)
-                        return getPathToDomElement(value);
+            // Serialize DOM elements
+            if(value instanceof HTMLElement)
+              return getPathToDomElement(value);
 
-                    // Prevent serialization cycles
-                    if(key == "" || seenObjects.indexOf(value) < 0) {
-                        seenObjects.push(value);
-                        return value;
-                    }
-                    else
-                        return typeof value;
-                }
-                return value;
-            });
-        }
-        catch(error) {
-            console.log("SERIALIZATION ERROR: " + error);
-            return "SERIALIZATION ERROR: " + error;
-        }
+            // Prevent serialization cycles
+            if(key == "" || seenObjects.indexOf(value) < 0) {
+              seenObjects.push(value);
+              return value;
+            }
+            else
+              return typeof value;
+          }
+          return value;
+        });
+      } catch(error) {
+        console.log("SERIALIZATION ERROR: " + error);
+        return "SERIALIZATION ERROR: " + error;
+      }
     }
 
     function logErrorToConsole(error) {
@@ -223,10 +228,10 @@ function getPageScript() {
           scriptCol: columnNo,
           funcName: funcName,
           scriptLocEval: scriptLocEval,
-          callStack: getCallStack ? trace.slice(3).join("\n") : ""
+          callStack: getCallStack ? trace.slice(3).join("\n").trim() : ""
         };
         return callContext;
-      }catch (e) {
+      } catch (e) {
         console.log("Error parsing the script context", e, callSite);
         return empty_context;
       }
@@ -262,16 +267,23 @@ function getPageScript() {
         return;
       }
 
+      var serializedValue = serializeObject(value, !!logSettings.logFunctionsAsStrings);
+      if (instrumentedVariableName.indexOf("Storage") != -1) {
+        const maxStorageLength = 1024;
+        serializedValue = serializedValue.substring(0, maxStorageLength);  // truncate JS value entries
+      }
+
       var msg = {
         operation: operation,
         symbol: instrumentedVariableName,
-        value: serializeObject(value, !!logSettings.logFunctionsAsStrings),
+        value: serializedValue,
         scriptUrl: callContext.scriptUrl,
         scriptLine: callContext.scriptLine,
         scriptCol: callContext.scriptCol,
         funcName: callContext.funcName,
         scriptLocEval: callContext.scriptLocEval,
-        callStack: callContext.callStack
+        callStack: callContext.callStack,
+        timeStamp: new Date().toISOString()
       };
 
       try {
@@ -312,7 +324,8 @@ function getPageScript() {
           scriptCol: callContext.scriptCol,
           funcName: callContext.funcName,
           scriptLocEval: callContext.scriptLocEval,
-          callStack: callContext.callStack
+          callStack: callContext.callStack,
+          timeStamp: new Date().toISOString()
         }
         send('logCall', msg);
       }
@@ -350,19 +363,57 @@ function getPageScript() {
      *  Direct instrumentation of javascript objects
      */
 
-    // Use for objects or object prototypes
-    // Set the `prototype` flag for prototypes
-    // logSettings options
-    // -------------------
-    //   propertiesToInstrument : Array
-    //     An array of properties to instrument on this object. Default is all properties.
-    //   excludedProperties : Array
-    //     Properties excluded from instrumentation. Default is an empty array.
-    //   logCallStack : boolean
-    //     Set to true save the call stack info with each property call. Default is false.
-    //   logFunctionsAsStrings : boolean
-    //     Set to true to save functional arguments as strings during argument serialization. Default is false.
-    function instrumentObject(object, objectName, prototype=false, logSettings={}) {
+    function isObject(object, propertyName) {
+      try {
+        var property = object[propertyName];
+      } catch(error) {
+        return false;
+      }
+      if (property === null) { // null is type "object"
+        return false;
+      }
+      return typeof property === 'object';
+    }
+
+    function instrumentObject(object, objectName, logSettings={}) {
+      // Use for objects or object prototypes
+      //
+      // Parameters
+      // ----------
+      //   object : Object
+      //     Object to instrument
+      //   objectName : String
+      //     Name of the object to be instrumented (saved to database)
+      //   logSettings : Object
+      //     (optional) object that can be used to specify additional logging
+      //     configurations. See available options below.
+      //
+      // logSettings options (all optional)
+      // -------------------
+      //   propertiesToInstrument : Array
+      //     An array of properties to instrument on this object. Default is
+      //     all properties.
+      //   excludedProperties : Array
+      //     Properties excluded from instrumentation. Default is an empty
+      //     array.
+      //   logCallStack : boolean
+      //     Set to true save the call stack info with each property call.
+      //     Default is `false`.
+      //   logFunctionsAsStrings : boolean
+      //     Set to true to save functional arguments as strings during
+      //     argument serialization. Default is `false`.
+      //   recursive : boolean
+      //     Set to `true` to recursively instrument all object properties of
+      //     the given `object`. Default is `false`
+      //     NOTE:
+      //       (1)`logSettings['propertiesToInstrument']` does not propagate
+      //           to sub-objects.
+      //       (2) Sub-objects of prototypes can not be instrumented
+      //           recursively as these properties can not be accessed
+      //           until an instance of the prototype is created.
+      //   depth : integer
+      //     Recursion limit when instrumenting object recursively.
+      //     Default is `5`.
       var properties = logSettings.propertiesToInstrument ?
         logSettings.propertiesToInstrument : Object.getPropertyNames(object);
       for (var i = 0; i < properties.length; i++) {
@@ -370,86 +421,125 @@ function getPageScript() {
             logSettings.excludedProperties.indexOf(properties[i]) > -1) {
           continue;
         }
-        if (prototype) {
-          instrumentPrototypeProperty(object, objectName, properties[i], logSettings);
-        } else {
+        // If `recursive` flag set we want to recursively instrument any
+        // object properties that aren't the prototype object. Only recurse if
+        // depth not set (at which point its set to default) or not at limit.
+        if (!!logSettings.recursive && properties[i] != '__proto__' &&
+            isObject(object, properties[i]) &&
+            (!('depth' in logSettings) || logSettings.depth > 0)) {
+
+          // set recursion limit to default if not specified
+          if (!('depth' in logSettings)) {
+            logSettings['depth'] = 5;
+          }
+          instrumentObject(object[properties[i]], objectName + '.' + properties[i], {
+                'excludedProperties': logSettings['excludedProperties'],
+                'logCallStack': logSettings['logCallStack'],
+                'logFunctionsAsStrings': logSettings['logFunctionsAsStrings'],
+                'recursive': logSettings['recursive'],
+                'depth': logSettings['depth'] - 1
+          });
+        }
+        try {
           instrumentObjectProperty(object, objectName, properties[i], logSettings);
+        } catch(error) {
+          logErrorToConsole(error);
         }
       }
     }
-
-    function instrumentObjectProperty(object, objectName, propertyName, logSettings={}) {
-      try {
-        var property = object[propertyName];
-        if (typeof property == 'function') {
-          logFunction(object, objectName, propertyName, logSettings);
-        } else {
-          logProperty(object, objectName, propertyName, logSettings);
-        }
-      } catch(error) {
-        logErrorToConsole(error);
-        }
-      }
-
-    function instrumentPrototypeProperty(object, objectName, propertyName, logSettings={}) {
-      try {
-        var property = object[propertyName];
-        if (typeof property == 'function') {
-          logFunction(object, objectName, propertyName, logSettings);
-        }
-      } catch(err) {
-        // can't access static properties on prototypes
-        logProperty(object, objectName, propertyName, logSettings);
-      }
+    if (testing) {
+      window.instrumentObject = instrumentObject;
     }
 
-    // Log calls to object/prototype methods
-    function logFunction(object, objectName, method, logSettings) {
-      var originalMethod = object[method];
-      object[method] = function () {
+    // Log calls to a given function
+    // This helper function returns a wrapper around `func` which logs calls
+    // to `func`. `objectName` and `methodName` are used strictly to identify
+    // which object method `func` is coming from in the logs
+    function instrumentFunction(objectName, methodName, func, logSettings) {
+      return function () {
         var callContext = getOriginatingScriptContext(!!logSettings.logCallStack);
-        logCall(objectName + '.' + method, arguments, callContext, logSettings);
-        return originalMethod.apply(this, arguments);
+        logCall(objectName + '.' + methodName, arguments, callContext, logSettings);
+        return func.apply(this, arguments);
       };
     }
 
     // Log properties of prototypes and objects
-    function logProperty(object, objectName, property, logSettings) {
-      var propDesc = Object.getPropertyDescriptor(object, property);
+    function instrumentObjectProperty(object, objectName, propertyName, logSettings={}) {
+
+      // Store original descriptor in closure
+      var propDesc = Object.getPropertyDescriptor(object, propertyName);
       if (!propDesc){
-        console.log("logProperty error", objectName, property, object);
+        console.error("Property descriptor not found for", objectName, propertyName, object);
         return;
       }
-      // store the original getter in the closure
+
+      // Instrument data or accessor property descriptors
       var originalGetter = propDesc.get;
       var originalSetter = propDesc.set;
-      // TODO what if the getter is undefined
-      Object.defineProperty(object, property, {
+      var originalValue = propDesc.value;
+
+      // We overwrite both data and accessor properties as an instrumented
+      // accessor property
+      Object.defineProperty(object, propertyName, {
         configurable: true,
         get: (function() {
-          return function(){
+          return function() {
+            var origProperty;
             var callContext = getOriginatingScriptContext(!!logSettings.logCallStack);
-            if (!originalGetter){
-              console.log("originalGetter is undefined!", object, property);
-              logValue(objectName + '.' + property, "", "get(failed)", callContext, logSettings);
+
+            // get original value
+            if (originalGetter) { // if accessor property
+              origProperty = originalGetter.call(this);
+            } else if ('value' in propDesc) { // if data property
+              origProperty = originalValue;
+            } else {
+              console.error("Property descriptor for",
+                            objectName + '.' + propertyName,
+                            "doesn't have getter or value?");
+              logValue(objectName + '.' + propertyName, "",
+                  "get(failed)", callContext, logSettings);
               return;
             }
-            var origProperty = originalGetter.call(this);
-            logValue(objectName + '.' + property, origProperty, "get", callContext, logSettings);
-            return origProperty;
-          }
 
+            // log get
+            logValue(objectName + '.' + propertyName, origProperty,
+                "get", callContext, logSettings);
+
+            // return original value or an instrumented wrapper if a function
+            if (typeof origProperty == 'function') {
+              return instrumentFunction(objectName, propertyName, origProperty, logSettings);
+            } else {
+              return origProperty;
+            }
+          }
         })(),
         set: (function() {
-         return function(value) {
-           var callContext = getOriginatingScriptContext(!!logSettings.logCallStack);
-           if (!originalSetter) {
-             logValue(objectName + '.' + property, value, "set(failed)", callContext, logSettings);
-             return value;
-           }
-           logValue(objectName + '.' + property, value, "set", callContext, logSettings);
-           return originalSetter.call(this, value);
-         }
+          return function(value) {
+            var callContext = getOriginatingScriptContext(!!logSettings.logCallStack);
+            var returnValue;
+
+            // set new value to original setter/location
+            if (originalSetter) { // if accessor property
+              returnValue = originalSetter.call(this, value);
+            } else if ('value' in propDesc) { // if data property
+              originalValue = value;
+              returnValue = value;
+            } else {
+              console.error("Property descriptor for",
+                            objectName + '.' + propertyName,
+                            "doesn't have setter or value?");
+              logValue(objectName + '.' + propertyName, value,
+                  "set(failed)", callContext, logSettings);
+              return value;
+            }
+
+            // log set
+            logValue(objectName + '.' + propertyName, value,
+                "set", callContext, logSettings);
+
+            // return new value
+            return returnValue;
+          }
         })()
       });
     }
@@ -461,40 +551,48 @@ function getPageScript() {
 
     // Access to navigator properties
     var navigatorProperties = [ "appCodeName", "appName", "appVersion",
-        "buildID", "cookieEnabled", "doNotTrack", "geolocation", "language",
-        "languages", "onLine", "oscpu", "platform", "product", "productSub",
-        "userAgent", "vendorSub", "vendor" ];
+                                "buildID", "cookieEnabled", "doNotTrack",
+                                "geolocation", "language", "languages",
+                                "onLine", "oscpu", "platform", "product",
+                                "productSub", "userAgent", "vendorSub",
+                                "vendor" ];
     navigatorProperties.forEach(function(property) {
       instrumentObjectProperty(window.navigator, "window.navigator", property);
     });
 
-    // Access to screen properties
-    //instrumentObject(window.screen, "window.screen");
-    // TODO: why do we instrument only two screen properties
-    var screenProperties =  [ "pixelDepth", "colorDepth" ];
-    screenProperties.forEach(function(property) {
-      instrumentObjectProperty(window.screen, "window.screen", property);
-    });
+    if (!disableUnneededInstrumentation) {
 
-    // Access to plugins
-    var pluginProperties = [ "name", "filename", "description", "version", "length"];
-      for (var i = 0; i < window.navigator.plugins.length; i++) {
-      let pluginName = window.navigator.plugins[i].name;
-      pluginProperties.forEach(function(property) {
-        instrumentObjectProperty(window.navigator.plugins[pluginName],
-            "window.navigator.plugins[" + pluginName + "]", property);
+      // Access to screen properties
+      //instrumentObject(window.screen, "window.screen");
+      // TODO: why do we instrument only two screen properties
+      var screenProperties =  [ "pixelDepth", "colorDepth" ];
+      screenProperties.forEach(function(property) {
+        instrumentObjectProperty(window.screen, "window.screen", property);
       });
+
+      // Access to plugins
+      var pluginProperties = [ "name", "filename", "description", "version", "length"];
+        for (var i = 0; i < window.navigator.plugins.length; i++) {
+        let pluginName = window.navigator.plugins[i].name;
+        pluginProperties.forEach(function(property) {
+          instrumentObjectProperty(
+              window.navigator.plugins[pluginName],
+              "window.navigator.plugins[" + pluginName + "]", property);
+        });
+      }
+
+      // Access to MIMETypes
+      var mimeTypeProperties = [ "description", "suffixes", "type"];
+      for (var i = 0; i < window.navigator.mimeTypes.length; i++) {
+        let mimeTypeName = window.navigator.mimeTypes[i].type;
+        mimeTypeProperties.forEach(function(property) {
+          instrumentObjectProperty(
+              window.navigator.mimeTypes[mimeTypeName],
+              "window.navigator.mimeTypes[" + mimeTypeName + "]", property);
+        });
+      }
     }
 
-    // Access to MIMETypes
-    var mimeTypeProperties = [ "description", "suffixes", "type"];
-    for (var i = 0; i < window.navigator.mimeTypes.length; i++) {
-      let mimeTypeName = window.navigator.mimeTypes[i].type;
-      mimeTypeProperties.forEach(function(property) {
-        instrumentObjectProperty(window.navigator.mimeTypes[mimeTypeName],
-            "window.navigator.mimeTypes[" + mimeTypeName + "]", property);
-      });
-    }
     // Name, localStorage, and sessionsStorage logging
     // Instrumenting window.localStorage directly doesn't seem to work, so
     // the Storage prototype must be instrumented instead. Unfortunately this
@@ -505,29 +603,39 @@ function getPageScript() {
     windowProperties.forEach(function(property) {
       instrumentObjectProperty(window, "window", property);
     });
-    instrumentObject(window.Storage.prototype, "window.Storage", true);
+    instrumentObject(window.Storage.prototype, "window.Storage");
+
+    // Access to document.cookie
+    instrumentObjectProperty(window.document, "window.document", "cookie", {
+      logCallStack: true
+    });
 
     // Access to canvas
-    instrumentObject(window.HTMLCanvasElement.prototype,"HTMLCanvasElement", true);
+    if (!disableUnneededInstrumentation) {
 
-    var excludedProperties = [ "quadraticCurveTo", "lineTo", "transform",
-                               "globalAlpha", "moveTo", "drawImage",
-                               "setTransform", "clearRect", "closePath",
-                               "beginPath", "canvas", "translate" ];
+      instrumentObject(window.HTMLCanvasElement.prototype,"HTMLCanvasElement");
 
-    instrumentObject(window.CanvasRenderingContext2D.prototype,
-        "CanvasRenderingContext2D", true, excludedProperties);
+      var excludedProperties = [ "quadraticCurveTo", "lineTo", "transform",
+                                 "globalAlpha", "moveTo", "drawImage",
+                                 "setTransform", "clearRect", "closePath",
+                                 "beginPath", "canvas", "translate" ];
+      instrumentObject(
+          window.CanvasRenderingContext2D.prototype,
+          "CanvasRenderingContext2D",
+          {'excludedProperties': excludedProperties}
+      );
 
-    // Access to webRTC
-    instrumentObject(window.RTCPeerConnection.prototype,"RTCPeerConnection", true);
+      // Access to webRTC
+      instrumentObject(window.RTCPeerConnection.prototype,"RTCPeerConnection");
 
-    // Access to Audio API
-    instrumentObject(window.AudioContext.prototype, "AudioContext", true);
-    instrumentObject(window.OfflineAudioContext.prototype, "OfflineAudioContext", true);
-    instrumentObject(window.OscillatorNode.prototype, "OscillatorNode", true);
-    instrumentObject(window.AnalyserNode.prototype, "AnalyserNode", true);
-    instrumentObject(window.GainNode.prototype, "GainNode", true);
-    instrumentObject(window.ScriptProcessorNode.prototype, "ScriptProcessorNode", true);
+      // Access to Audio API
+      instrumentObject(window.AudioContext.prototype, "AudioContext");
+      instrumentObject(window.OfflineAudioContext.prototype, "OfflineAudioContext");
+      instrumentObject(window.OscillatorNode.prototype, "OscillatorNode");
+      instrumentObject(window.AnalyserNode.prototype, "AnalyserNode");
+      instrumentObject(window.GainNode.prototype, "GainNode");
+      instrumentObject(window.ScriptProcessorNode.prototype, "ScriptProcessorNode");
+    }
 
     /*
      * Third-party service instrumentation
@@ -564,8 +672,8 @@ function getPageScript() {
     // From: http://stackoverflow.com/a/15203639/6073564
     function isElementVisible(el) {
       var rect     = el.getBoundingClientRect(),
-        vWidth   = window.innerWidth || doc.documentElement.clientWidth,
-        vHeight  = window.innerHeight || doc.documentElement.clientHeight,
+        vWidth   = window.innerWidth || document.documentElement.clientWidth,
+        vHeight  = window.innerHeight || document.documentElement.clientHeight,
         efp      = function (x, y) { return document.elementFromPoint(x, y) };
 
       // Return false if it's not in the viewport
@@ -582,47 +690,94 @@ function getPageScript() {
       );
     }
 
-    function checkFormProperties(form, callContext, elementType) {
+    function addGUID(element) {
+      var guid;
+      if (element.hasAttribute('openwpm-guid'))
+        return element.getAttribute('openwpm-guid');
+
+      guid = Math.random();
+      element.setAttribute("openwpm-guid", guid);
+      return guid;
+    }
+
+    function checkElementProperties(element, callContext, elementType) {
       var data = {};
+      var guid = addGUID(element);
+      if (guid)
+        data['guid'] = guid;
       data['scriptUrl'] = callContext.scriptUrl;
       data['scriptLine'] = callContext.scriptLine;
       data['scriptCol'] = callContext.scriptCol;
       data['callStack'] = callContext.callStack;
-      data['isVisible'] = isElementVisible(form);
-      data['nodePath'] = getPathToDomElement(form, true);
+      data['isVisible'] = isElementVisible(element);
+      data['nodePath'] = getPathToDomElement(element, true);
       var serializer = new XMLSerializer();
-      data['serializedElement'] = serializer.serializeToString(form);
+      data['serializedElement'] = serializer.serializeToString(element);
       data['elementType'] = elementType;
-      send('formInserted', data)
-      console.log("formInserted",data);
+      var current_time = new Date();
+      data["timeStamp"] = current_time.toISOString();
+      return data;
     }
 
-    // NOTE: The current instrumentation may not have all of the properties if
-    // script were to first add a form, and then add properties to that form
-    // in separate calls.
-    document.addEventListener("DOMNodeInserted", function (ev) {
+    document.addEventListener("DOMNodeInserted", function(ev) {
+      inLog = true;
       let callContext = getOriginatingScriptContext(true);
-
       var target = ev.target;
-      var form_found = false;
-      if (target.tagName == 'FORM') {
-        checkFormProperties(target, callContext, "form");
-        form_found = true;
+
+      if (!target.tagName) {
+        inLog = false;
+        return;
       }
-      var forms = target.getElementsByTagName('form');
-      for (var i=0; i < forms.length; i++) {
-        checkFormProperties(forms[i], callContext, "form");
-        form_found = true;
+
+      if (target.tagName == 'FORM' ||
+          target.tagName == 'INPUT') {
+        var data = checkElementProperties(target, callContext, target.tagName);
+        send('elementInserted', data);
+        console.log('elementInserted',data);
       }
-      if (!form_found){
-        if (target.tagName == 'INPUT') {
-          checkFormProperties(target, callContext, "input");
+
+      // Search within the inserted Node
+      function searchWithin(target, tagName) {
+        var elements = target.getElementsByTagName(tagName);
+        for (var i=0; i < elements.length; i++) {
+          var data = checkElementProperties(elements[i], callContext, tagName);
+          send('elementInserted', data);
+          console.log('elementInserted',data);
         }
-        var inputs = target.getElementsByTagName('input');
-        for (var i=0; i < inputs.length; i++) {
-          checkFormProperties(inputs[i], callContext, "input");
-        }
       }
+      searchWithin(target, "FORM");
+      searchWithin(target, "INPUT");
+      inLog = false;
+    }, false);
+
+    document.addEventListener("DOMAttrModified", function(event) {
+      if (inLog) {
+        return;
+      }
+      inLog = true;
+      let callContext = getOriginatingScriptContext(true);
+      var target = event.target;
+
+      if (!target.tagName) {
+        inLog = false;
+        return;
+      }
+
+      if (event.attrName == 'openwpm-guid') {
+        inLog = false;
+        return;
+      }
+
+      if (target.tagName == 'FORM' ||
+          target.tagName == 'INPUT') {
+        var data = checkElementProperties(target, callContext, target.tagName);
+        data['attribute'] = event.attrName;
+        data['prevValue'] = event.prevValue;
+        data['newValue'] = event.newValue;
+        send('elementModified', data);
+        console.log('elementModified',data);
+      }
+      inLog = false;
     }, false);
 
     /*
@@ -630,22 +785,22 @@ function getPageScript() {
      */
 
     instrumentObject(window.HTMLInputElement.prototype, "window.HTMLInputElement",
-        true,
         {
           logFunctionsAsStrings: true,
           logCallStack: true,
           excludedProperties: [ "nodeType", "nodeName", "parentNode", "checked",
-                                "selectionStart", "selectionEnd", "offsetWidth" ,
-                                "offsetHeight" ]
+                                "selectionStart", "selectionEnd", "offsetWidth",
+                                "offsetHeight", "tagName", "getBoundingClientRect",
+                                "className", "ownerDocument" ]
         });
 
     instrumentObject(window.HTMLFormElement.prototype, "window.HTMLFormElement",
-        true,
         {
           logFunctionsAsStrings: true,
           logCallStack: true,
           excludedProperties: [ "nodeType", "nodeName", "parentNode",
-                                "tagName", "contains", "getBoundingClientRect" ]
+                                "tagName", "contains", "getBoundingClientRect",
+                                "className"]
         });
 
     /* Monitor new event listeners to top-level objects */
@@ -657,13 +812,13 @@ function getPageScript() {
     };
 
     instrumentObject(window.HTMLBodyElement.prototype, "window.HTMLBodyElement",
-        true, listenerLogSettings);
+        listenerLogSettings);
 
     instrumentObject(window.document, "window.document",
-        false, listenerLogSettings);
+        listenerLogSettings);
 
     instrumentObject(window, "window",
-        false, listenerLogSettings);
+        listenerLogSettings);
 
     console.log("Successfully started all instrumentation.");
   } + "());";
@@ -704,5 +859,6 @@ document.addEventListener(event_id, function (e) {
 });
 
 insertScript(getPageScript(), {
-  event_id: event_id
+  event_id: event_id,
+  testing: self.options.testing
 });

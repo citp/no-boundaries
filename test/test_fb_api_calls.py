@@ -1,7 +1,6 @@
-import pytest # NOQA
-import os
 from openwpmtest import OpenWPMTest
 from ..automation import TaskManager, CommandSequence
+from ..automation.utilities import db_utils
 import utilities as util
 
 FB_API_JS_TEST_URL = u"%s/fb_api/fb_steal.js" % util.BASE_TEST_URL
@@ -60,23 +59,16 @@ ei = {  # Expected user info
 
 
 class TestFBAPICalls(OpenWPMTest):
-    NUM_BROWSERS = 1
 
-    def get_config(self, data_dir):
-        manager_params, browser_params = TaskManager.load_default_params(
-            self.NUM_BROWSERS)
-        manager_params['data_directory'] = data_dir
-        manager_params['log_directory'] = data_dir
-        browser_params[0]['headless'] = True
+    def get_config(self, data_dir=""):
+        manager_params, browser_params = self.get_test_config(data_dir)
         browser_params[0]['js_instrument'] = True
         browser_params[0]['spoof_social_login'] = True
-        manager_params['db'] = os.path.join(manager_params['data_directory'],
-                                            manager_params['database_name'])
         return manager_params, browser_params
 
-    def test_fb_api_calls(self, tmpdir):
-        db = self.visit('/fb_api/fb_login.html', str(tmpdir), sleep_after=20)
-        rows = util.get_javascript_entries(db)
+    def test_fb_api_calls(self):
+        db = self.visit('/fb_api/fb_login.html', sleep_after=20)
+        rows = db_utils.get_javascript_entries(db)
         observed_api_args = set()
         observed_api_calls = set()
         observed_subscribe_events = set()
@@ -93,13 +85,13 @@ class TestFBAPICalls(OpenWPMTest):
         assert observed_api_args == fb_api_args
         assert observed_subscribe_events == fb_subscribed_events
 
-    def test_fake_first_party_sdk(self, tmpdir):
+    def test_fake_first_party_sdk(self):
         """Make sure we can fake a first party that loads and initializes
         the FB SDK.
         """
-        db = self.visit('/fb_api/fb_api_call_no_first_party.html', str(tmpdir),
+        db = self.visit('/fb_api/fb_api_call_no_first_party.html',
                         sleep_after=10)
-        rows = util.get_javascript_entries(db)
+        rows = db_utils.get_javascript_entries(db)
         observed_api_calls = set()
         observed_api_args = set()
         for script_url, symbol, operation, value, pindex, pvalue in rows:
@@ -174,7 +166,7 @@ class TestFBAPICalls(OpenWPMTest):
         cs.run_custom_function(check_if_connected)
         manager.execute_command_sequence(cs)
         manager.close()
-        assert not util.any_command_failed(manager_params['db'])
+        assert not db_utils.any_command_failed(manager_params['db'])
 
     def test_graph_api(self, tmpdir):
         """Verify that our graph API spoofing works as expected"""
@@ -282,4 +274,4 @@ class TestFBAPICalls(OpenWPMTest):
         cs.run_custom_function(query_FB_api)
         manager.execute_command_sequence(cs)
         manager.close()
-        assert not util.any_command_failed(manager_params['db'])
+        assert not db_utils.any_command_failed(manager_params['db'])

@@ -12,6 +12,7 @@ import subprocess
 import shutil
 import json
 import time
+import sys
 import os
 import httplib
 import signal
@@ -79,12 +80,22 @@ def get_version():
 
     ff_ini = os.path.join(os.path.dirname(__file__),
             '../../firefox-bin/application.ini')
-    with open(ff_ini, 'r') as f:
-        ff = None
-        for line in f:
-            if line.startswith('Version='):
-                ff = line[8:].strip()
-                break
+    try:
+        with open(ff_ini, 'r') as f:
+            ff = None
+            for line in f:
+                if line.startswith('Version='):
+                    ff = line[8:].strip()
+                    break
+    except IOError as e:
+        raise IOError, \
+              IOError("%s \n Did you run `./install.sh`? OpenWPM "
+                      "requires a Firefox package installed within "
+                      "a `firefox-bin` directory in the root "
+                      "directory of the platform. \n The `application.ini` "
+                      "file is used to determine the version of Firefox "
+                      "present in that directory." % str(e)), \
+              sys.exc_info()[2]
     return openwpm, ff
 
 
@@ -239,7 +250,7 @@ def fetch_adblockplus_list(output_directory, wait_time=20):
         display.stop()
 
 
-def contains_email_regex(self, text):
+def contains_email_regex(text):
     """Check if the given text contains a string that looks like email.
     Regular expression from http://emailregex.com
     """

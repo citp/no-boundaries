@@ -10,6 +10,8 @@ var cpInstrument        = require("./lib/content-policy-instrument.js");
 var httpInstrument      = require("./lib/http-instrument.js");
 var fakeAutofill        = require("./lib/fake-autofill.js");
 var spoofSocialLogin    = require("./lib/spoof-social-login.js");
+var consoleLogs         = require("./lib/console-logs.js");
+
 
 exports.main = function(options, callbacks) {
 
@@ -17,13 +19,14 @@ exports.main = function(options, callbacks) {
   var path = system.pathFor("ProfD") + '/browser_params.json';
   if (fileIO.exists(path)) {
     var config = JSON.parse(fileIO.read(path, 'r'));
-    console.log("Browser Config:",config);
+    console.log("Browser Config:", config);
   } else {
     console.log("WARNING: config not found. Assuming this is a test run of",
                 "the extension. Outputting all queries to console.");
     var config = {
       sqlite_address:null,
       leveldb_address:null,
+      logger_address:null,
       disable_webdriver_self_id:true,
       spoof_social_login:true,
       cookie_instrument:true,
@@ -32,17 +35,20 @@ exports.main = function(options, callbacks) {
       http_instrument:true,
       save_javascript:true,
       fake_autofill:true,
+      testing:true,
+      record_js_errors:true,
       crawl_id:''
     };
   }
 
   loggingDB.open(config['sqlite_address'],
                  config['leveldb_address'],
+                 config['logger_address'],
                  config['crawl_id']);
 
   // Prevent the webdriver from identifying itself in the DOM. See #91
   if (config['disable_webdriver_self_id']) {
-    console.log("Disabling webdriver self identification");
+    loggingDB.logDebug("Disabling webdriver self identification");
     pageMod.PageMod({
       include: "*",
       contentScriptWhen: "start",
@@ -59,23 +65,27 @@ exports.main = function(options, callbacks) {
     spoofSocialLogin.run();
   }
   if (config['cookie_instrument']) {
-    console.log("Cookie instrumentation enabled");
+    loggingDB.logDebug("Cookie instrumentation enabled");
     cookieInstrument.run(config['crawl_id']);
   }
   if (config['js_instrument']) {
-    console.log("Javascript instrumentation enabled");
-    jsInstrument.run(config['crawl_id']);
+    loggingDB.logDebug("Javascript instrumentation enabled");
+    jsInstrument.run(config['crawl_id'], config['testing']);
   }
   if (config['cp_instrument']) {
-    console.log("Content Policy instrumentation enabled");
+    loggingDB.logDebug("Content Policy instrumentation enabled");
     cpInstrument.run(config['crawl_id']);
   }
   if (config['http_instrument']) {
-    console.log("HTTP Instrumentation enabled");
+    loggingDB.logDebug("HTTP Instrumentation enabled");
     httpInstrument.run(config['crawl_id'], config['save_javascript']);
   }
   if (config['fake_autofill']) {
     console.log("Fake autofill is enabled");
     fakeAutofill.run(config['crawl_id']);
+  }
+  if (config['record_js_errors']) {
+    console.log("Console JS error recording enabled");
+    consoleLogs.run(config['crawl_id']);
   }
 };

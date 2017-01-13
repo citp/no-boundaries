@@ -57,4 +57,4 @@ def execute_command(command, webdriver, proxy_queue, browser_settings, browser_p
                     "browser_params": browser_params,
                     "manager_params": manager_params,
                     "extension_socket": extension_socket}
-        command[1](*command[2], **arg_dict)
+        command[1](*command[2], visit_id=command[3], **arg_dict)

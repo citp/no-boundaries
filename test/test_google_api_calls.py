@@ -1,7 +1,7 @@
-import os
 import json
 from openwpmtest import OpenWPMTest
 from ..automation import TaskManager, CommandSequence
+from ..automation.utilities import db_utils
 import utilities as util
 
 ei = {  # Expected user info
@@ -94,23 +94,17 @@ HTTPResponseHeaders = {
 class TestGoogleAPICalls(OpenWPMTest):
     NUM_BROWSERS = 1
 
-    def get_config(self, data_dir):
-        manager_params, browser_params = TaskManager.load_default_params(
-            self.NUM_BROWSERS)
-        manager_params['data_directory'] = data_dir
-        manager_params['log_directory'] = data_dir
-        browser_params[0]['headless'] = True
+    def get_config(self, data_dir=""):
+        manager_params, browser_params = self.get_test_config(data_dir)
         browser_params[0]['js_instrument'] = True
         browser_params[0]['spoof_social_login'] = True
-        manager_params['db'] = os.path.join(manager_params['data_directory'],
-                                            manager_params['database_name'])
         return manager_params, browser_params
 
-    def test_real_script_interception(self, tmpdir):
+    def test_real_script_interception(self):
         """Verify that we redirect requests to platform.js to a noop"""
         # TODO since intercepted redirects don't trigger a response, we need
         # to check something in the DOM instead.
-        manager_params, browser_params = self.get_config(str(tmpdir))
+        manager_params, browser_params = self.get_config()
         browser_params[0]['http_instrument'] = True
         browser_params[0]['save_javascript'] = True
         manager = TaskManager.TaskManager(manager_params, browser_params)
@@ -120,15 +114,18 @@ class TestGoogleAPICalls(OpenWPMTest):
         db = manager_params['db']
 
         # Verify that request still exists in http_requests
-        rows = util.query_db(db, "SELECT * FROM http_requests WHERE url = ?",
-                             ("https://apis.google.com/js/platform.js",))
+        rows = db_utils.query_db(
+            db,
+            "SELECT * FROM http_requests WHERE url = ?",
+            ("https://apis.google.com/js/platform.js",)
+        )
         assert len(rows) == 1
 
     # TODO test instrumentation monitoring with and without real SDK present
 
-    def test_spoofed_google_api(self, tmpdir):
+    def test_spoofed_google_api(self):
         """Verify that `gapi` spoofing works as expected"""
-        manager_params, browser_params = self.get_config(str(tmpdir))
+        manager_params, browser_params = self.get_config()
         manager = TaskManager.TaskManager(manager_params, browser_params)
         test_url = util.BASE_TEST_URL + '/simple_a.html'
 
@@ -234,9 +231,9 @@ class TestGoogleAPICalls(OpenWPMTest):
         cs.run_custom_function(check_api)
         manager.execute_command_sequence(cs)
         manager.close()
-        assert not util.any_command_failed(manager_params['db'])
+        assert not db_utils.any_command_failed(manager_params['db'])
 
-    def test_spoofed_plus_api(self, tmpdir):
+    def test_spoofed_plus_api(self):
         """Verify that Google Plus API spoofing works as expected
 
         There are two "plus" API points to test, the first is
@@ -252,7 +249,7 @@ class TestGoogleAPICalls(OpenWPMTest):
         Both APIs return all information by default, and only return the
         available information when fields are specified.
         """
-        manager_params, browser_params = self.get_config(str(tmpdir))
+        manager_params, browser_params = self.get_config()
         manager = TaskManager.TaskManager(manager_params, browser_params)
         test_url = util.BASE_TEST_URL + '/simple_a.html'
 
@@ -502,4 +499,4 @@ class TestGoogleAPICalls(OpenWPMTest):
         cs.run_custom_function(check_api)
         manager.execute_command_sequence(cs)
         manager.close()
-        assert not util.any_command_failed(manager_params['db'])
+        assert not db_utils.any_command_failed(manager_params['db'])
