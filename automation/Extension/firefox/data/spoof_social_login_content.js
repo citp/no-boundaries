@@ -123,7 +123,7 @@ function getPageScript() {
       if (parts.length >= 2 && parts[1].includes('fields')) {
         try {
           var qs = parts[1].split('&');
-          for (i = 0; i < qs.length; i++) {
+          for (var i = 0; i < qs.length; i++) {
             if (qs[i].startsWith('fields')) {
               fields = fields.concat(qs[i].split('=')[1].replace(/ /g,'').split(','));
               break;
@@ -146,7 +146,7 @@ function getPageScript() {
       // Facebook leaves unavailable fields blank, so we can do the same.
       // Alternatively we could return some random value for the field.
       var response = {};
-      for (i = 0; i < fields.length; i++) {
+      for (var i = 0; i < fields.length; i++) {
         if (fields[i] in FBUserInfo) {
           response[fields[i]] = FBUserInfo[fields[i]];
         }
@@ -390,7 +390,7 @@ function getPageScript() {
         try {
           var parts = args['path'].split('?')
           var qs = parts[1].split('&');
-          for (i = 0; i < qs.length; i++) {
+          for (var i = 0; i < qs.length; i++) {
             if (qs[i].startsWith('fields')) {
               fields = qs[i].split('=')[1].replace(/ /g,'').split(',');
               break;

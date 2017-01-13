@@ -642,27 +642,22 @@ function getPageScript() {
      */
 
     // Instrument access to spoofed FB API (if exists)
-    // TODO this can be one line when #65 is fixed
     if (window.FB) {
-      instrumentObject(window.FB, "window.FB", false, {
-        excludedProperties: ['Event'],
+      instrumentObject(window.FB, "window.FB", {
         logFunctionsAsStrings: true,
-        logCallStack: true
-      });
-      instrumentObject(window.FB.Event, "window.FB.Event", false, {
-        logFunctionsAsStrings: true,
-        logCallStack: true
+        logCallStack: true,
+        recursive: true
       });
     }
 
     // Instrument access to our spoofed Google API (if exists)
-    // TODO fix #65 -- this won't work until then
-    //if (window.gapi) {
-    //  instrumentObject(window.gapi, "window.gapi", false, {
-    //    logFunctionsAsStrings: true,
-    //    logCallStack: true
-    //  });
-    //}
+    if (window.gapi) {
+      instrumentObject(window.gapi, "window.gapi", {
+        logFunctionsAsStrings: true,
+        logCallStack: true,
+        recursive: true
+      });
+    }
 
     /*
      * Form insertion

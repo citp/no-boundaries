@@ -73,6 +73,8 @@ class TestFBAPICalls(OpenWPMTest):
         observed_api_calls = set()
         observed_subscribe_events = set()
         for script_url, symbol, operation, value, pindex, pvalue in rows:
+            if operation != 'call':
+                continue
             observed_api_calls.add((script_url, symbol))
             if (script_url == FB_API_JS_TEST_URL and symbol == u'window.FB.api'
                     and pindex != 2):
@@ -95,6 +97,8 @@ class TestFBAPICalls(OpenWPMTest):
         observed_api_calls = set()
         observed_api_args = set()
         for script_url, symbol, operation, value, pindex, pvalue in rows:
+            if operation != 'call':
+                continue
             observed_api_calls.add((script_url, symbol))
             if (script_url == FB_API_JS_TEST_URL and symbol == u'window.FB.api'
                     and pindex != 2):
