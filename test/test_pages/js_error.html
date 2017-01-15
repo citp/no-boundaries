@@ -5,9 +5,8 @@
   <title>Console error example</title>
   <script type="application/javascript">
     function start_test() {
-      if ("FB" in window){
-        var a = window.FB.nonexistent_func();  // trigger error
-      }
+      window.FB = {};
+      window.FB.nonexistent_func();  // trigger error
     }
   </script>
  </head>

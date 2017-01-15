@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 MAX_TIMEDELTA = 30  # max time diff in seconds
-CONSOLE_ERR_CLIPBOARD_TEXT = u'TypeError: window.FB.nonexistent_func is not a function\nstart_test() js_error.html:9\nonload() js_error.html:1\n1 js_error.html:9:17\n'  # noqa
+CONSOLE_ERR_CLIPBOARD_TEXT = u'TypeError: window.FB.nonexistent_func is not a function\nstart_test() js_error.html:9\nonload() js_error.html:1\n1 js_error.html:9:7\n'  # noqa
 
 
 class TestConsoleErrorLogging(OpenWPMTest):
