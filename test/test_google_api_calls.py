@@ -510,3 +510,89 @@ class TestGoogleAPICalls(OpenWPMTest):
         manager.execute_command_sequence(cs)
         manager.close()
         assert not db_utils.any_command_failed(manager_params['db'])
+
+    def test_noop_calls(self):
+        manager_params, browser_params = self.get_config()
+        manager = TaskManager.TaskManager(manager_params, browser_params)
+        test_url = util.BASE_TEST_URL + '/simple_a.html'
+
+        def call_noops(**kwargs):
+            driver = kwargs['driver']
+            assert driver.execute_script("""
+                return window.gapi.client.setApiKey() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.gapi.client.newBatch() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.gapi.client.Batch.add() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.gapi.client.Batch.then() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.gapi.client.Batch.execute() === undefined;
+            """)
+            assert driver.execute_script("""
+                var GoogleAuth = window.gapi.auth2.GoogleAuth;
+                return GoogleAuth.signIn() === undefined;
+            """)
+            assert driver.execute_script("""
+                var GoogleAuth = window.gapi.auth2.GoogleAuth;
+                return GoogleAuth.signOut() === undefined;
+            """)
+            assert driver.execute_script("""
+                var GoogleAuth = window.gapi.auth2.GoogleAuth;
+                return GoogleAuth.disconnect() === undefined;
+            """)
+            assert driver.execute_script("""
+                var GoogleAuth = window.gapi.auth2.GoogleAuth;
+                return GoogleAuth.grantOfflineAccess() === undefined;
+            """)
+            assert driver.execute_script("""
+                var GoogleAuth = window.gapi.auth2.GoogleAuth;
+                return GoogleAuth.attachClickHandler() === undefined;
+            """)
+            assert driver.execute_script("""
+                var GoogleUser = window.gapi.auth2.GoogleUser;
+                return GoogleUser.getHostedDomain() === undefined;
+            """)
+            assert driver.execute_script("""
+                var GoogleUser = window.gapi.auth2.GoogleUser;
+                return GoogleUser.getGrantedScopes() === undefined;
+            """)
+            assert driver.execute_script("""
+                var GoogleUser = window.gapi.auth2.GoogleUser;
+                return GoogleUser.getAuthResponse() === undefined;
+            """)
+            assert driver.execute_script("""
+                var GoogleUser = window.gapi.auth2.GoogleUser;
+                return GoogleUser.reloadAuthResponse() === undefined;
+            """)
+            assert driver.execute_script("""
+                var GoogleUser = window.gapi.auth2.GoogleUser;
+                return GoogleUser.hasGrantedScopes() === undefined;
+            """)
+            assert driver.execute_script("""
+                var GoogleUser = window.gapi.auth2.GoogleUser;
+                return GoogleUser.grant() === undefined;
+            """)
+            assert driver.execute_script("""
+                var GoogleUser = window.gapi.auth2.GoogleUser;
+                return GoogleUser.grantOfflineAccess() === undefined;
+            """)
+            assert driver.execute_script("""
+                var GoogleUser = window.gapi.auth2.GoogleUser;
+                return GoogleUser.disconnect() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.gapi.signin2.render() === undefined;
+            """)
+
+        cs = CommandSequence.CommandSequence(test_url, blocking=True)
+        cs.get(sleep=2, timeout=60)
+        cs.run_custom_function(call_noops)
+        manager.execute_command_sequence(cs)
+        manager.close()
+        assert not db_utils.any_command_failed(manager_params['db'])
+        # TODO inspect database for noop calls

@@ -154,6 +154,29 @@ function getPageScript() {
       callback(response);
     };
 
+    // No-op spoof other API methods
+    window.FB.ui = function() { return; };
+    window.FB.login = function() { return; };
+    window.FB.logout = function() { return; };
+    window.FB.Event.unsubscribe = function() { return; };
+    window.FB.AppEvents = {}
+    window.FB.AppEvents.LogEvent = function() { return; };
+    window.FB.AppEvents.logPurchase = function() { return; };
+    window.FB.AppEvents.activateApp = function() { return; };
+    window.FB.XFBML = {};
+    window.FB.XFBML.parse = function() { return; };
+    window.FB.Canvas = {};
+    window.FB.Canvas.Prefetcher = {};
+    window.FB.Canvas.Prefetcher.addStaticResource = function() { return; };
+    window.FB.Canvas.Prefetcher.setCollectionMode = function() { return; };
+    window.FB.Canvas.scrollTo = function() { return; };
+    window.FB.Canvas.setAutoGrow = function() { return; };
+    window.FB.Canvas.setSize = function() { return; };
+    window.FB.Canvas.setUrlHandler = function() { return; };
+    window.FB.Canvas.setDoneLoading = function() { return; };
+    window.FB.Canvas.startTimer = function() { return; };
+    window.FB.Canvas.stopTimer = function() { return; };
+
     var fb_inited = function(){
       // Don't fire fbAsyncInit until the document is complete
       if (document.readyState !== "complete"){
@@ -439,8 +462,6 @@ function getPageScript() {
     };
 
     // GoogleAuth
-    // other possible methods
-    //  * GoogleAuth.signIn()
     window.gapi.auth2.GoogleAuth = {};
     window.gapi.auth2.GoogleAuth.currentUser = {};
     window.gapi.auth2.GoogleAuth.currentUser.get = function() {
@@ -462,13 +483,6 @@ function getPageScript() {
     };
 
     // GoogleUser
-    // other possible methods
-    // * getHostedDomain()
-    // * getGrantedScopes()
-    // * getAuthResponse()
-    // * reloadAuthResponse()
-    // * hasGrantedScopes()
-    // * grant()
     window.gapi.auth2.GoogleUser = {};
     window.gapi.auth2.GoogleUser.getId = function() {
       return GUserInfo['id'];
@@ -500,6 +514,29 @@ function getPageScript() {
     window.gapi.auth2.BasicProfile.getEmail = function() {
       return GUserInfo['email'];
     };
+
+    // No-op spoof remaining methods
+    window.gapi.client.setApiKey = function() { return; };
+    window.gapi.client.newBatch = function() { return; };
+    window.gapi.client.Batch = {};
+    window.gapi.client.Batch.add = function() { return; };
+    window.gapi.client.Batch.then = function() { return; };
+    window.gapi.client.Batch.execute = function() { return; };
+    window.gapi.auth2.GoogleAuth.signIn = function() { return; };
+    window.gapi.auth2.GoogleAuth.signOut = function() { return; };
+    window.gapi.auth2.GoogleAuth.disconnect = function() { return; };
+    window.gapi.auth2.GoogleAuth.grantOfflineAccess = function() { return; };
+    window.gapi.auth2.GoogleAuth.attachClickHandler = function() { return; };
+    window.gapi.auth2.GoogleUser.getHostedDomain = function() { return; };
+    window.gapi.auth2.GoogleUser.getGrantedScopes = function() { return; };
+    window.gapi.auth2.GoogleUser.getAuthResponse = function() { return; };
+    window.gapi.auth2.GoogleUser.reloadAuthResponse = function() { return; };
+    window.gapi.auth2.GoogleUser.hasGrantedScopes = function() { return; };
+    window.gapi.auth2.GoogleUser.grant = function() { return; };
+    window.gapi.auth2.GoogleUser.grantOfflineAccess = function() { return; };
+    window.gapi.auth2.GoogleUser.disconnect = function() { return; };
+    window.gapi.signin2 = {};
+    window.gapi.signin2.render = function() { return; };
 
     console.log("Google API spoofed")
   } + "());";

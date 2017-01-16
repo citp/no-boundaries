@@ -106,9 +106,9 @@ class TestFBAPICalls(OpenWPMTest):
         assert observed_api_calls == set(fb_api_fake_first_party_sdk_calls)
         assert observed_api_args == fb_api_args
 
-    def test_login_status(self, tmpdir):
+    def test_login_status(self):
         """Verify that our login status spoofing works as expected"""
-        manager_params, browser_params = self.get_config(str(tmpdir))
+        manager_params, browser_params = self.get_config()
         manager = TaskManager.TaskManager(manager_params, browser_params)
         test_url = util.BASE_TEST_URL + '/simple_a.html'
 
@@ -279,3 +279,71 @@ class TestFBAPICalls(OpenWPMTest):
         manager.execute_command_sequence(cs)
         manager.close()
         assert not db_utils.any_command_failed(manager_params['db'])
+
+    def test_noop_calls(self):
+        manager_params, browser_params = self.get_config()
+        manager = TaskManager.TaskManager(manager_params, browser_params)
+        test_url = util.BASE_TEST_URL + '/simple_a.html'
+
+        def call_noops(**kwargs):
+            driver = kwargs['driver']
+            assert driver.execute_script("""
+                return window.FB.ui() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.FB.login() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.FB.logout() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.FB.Event.unsubscribe() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.FB.AppEvents.LogEvent() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.FB.AppEvents.logPurchase() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.FB.AppEvents.activateApp() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.FB.XFBML.parse() === undefined;
+            """)
+            assert driver.execute_script("""
+                var Prefetcher = window.FB.Canvas.Prefetcher;
+                return Prefetcher.addStaticResource() === undefined;
+            """)
+            assert driver.execute_script("""
+                var Prefetcher = window.FB.Canvas.Prefetcher;
+                return Prefetcher.setCollectionMode() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.FB.Canvas.scrollTo() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.FB.Canvas.setAutoGrow() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.FB.Canvas.setSize() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.FB.Canvas.setUrlHandler() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.FB.Canvas.setDoneLoading() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.FB.Canvas.startTimer() === undefined;
+            """)
+            assert driver.execute_script("""
+                return window.FB.Canvas.stopTimer() === undefined;
+            """)
+        cs = CommandSequence.CommandSequence(test_url, blocking=True)
+        cs.get(sleep=2, timeout=60)
+        cs.run_custom_function(call_noops)
+        manager.execute_command_sequence(cs)
+        manager.close()
+        assert not db_utils.any_command_failed(manager_params['db'])
+        # TODO inspect database for noop calls
