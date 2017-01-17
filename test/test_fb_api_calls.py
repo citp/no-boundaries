@@ -112,6 +112,16 @@ class TestFBAPICalls(OpenWPMTest):
         manager = TaskManager.TaskManager(manager_params, browser_params)
         test_url = util.BASE_TEST_URL + '/simple_a.html'
 
+        expected_calls = {
+            (u'window.FB.getLoginStatus', u'get'),
+            (u'window.FB.getLoginStatus', u'call'),
+            (u'window.FB.getAuthResponse', u'get'),
+            (u'window.FB.getAuthResponse', u'call'),
+            (u'window.FB.Event', u'get'),
+            (u'window.FB.Event.subscribe', u'get'),
+            (u'window.FB.Event.subscribe', u'call')
+        }
+
         def check_if_connected(**kwargs):
             driver = kwargs['driver']
 
@@ -166,17 +176,45 @@ class TestFBAPICalls(OpenWPMTest):
             """)
 
         cs = CommandSequence.CommandSequence(test_url, blocking=True)
-        cs.get(sleep=5, timeout=60)
+        cs.get(sleep=2, timeout=60)
         cs.run_custom_function(check_if_connected)
         manager.execute_command_sequence(cs)
         manager.close()
         assert not db_utils.any_command_failed(manager_params['db'])
+
+        # Verify all expected calls are logged
+        rows = db_utils.query_db(
+            manager_params['db'],
+            "SELECT symbol, operation FROM javascript"
+        )
+        observed_calls = set()
+        for row in rows:
+            if row[0].startswith('window.FB'):
+                observed_calls.add(row)
+        assert expected_calls == observed_calls
 
     def test_graph_api(self, tmpdir):
         """Verify that our graph API spoofing works as expected"""
         manager_params, browser_params = self.get_config(str(tmpdir))
         manager = TaskManager.TaskManager(manager_params, browser_params)
         test_url = util.BASE_TEST_URL + '/simple_a.html'
+
+        expected_calls = {
+            (u'window.FB.api', u'call', u'/me'),
+            (u'window.FB.api', u'call', u'function...'),
+            (u'window.FB.api', u'call', u'/558780400999395'),
+            (u'window.FB.api', u'call', u'GET'),
+            (u'window.FB.api', u'call', u'{}'),
+            (u'window.FB.api', u'call',
+             u'{"fields":"name,email,gender,third_party_id"}'),
+            (u'window.FB.api', u'call', u'{"locale":"en_US","fields":" '
+             'id, verified, first_name, last_name, link "}'),
+            (u'window.FB.api', u'call',
+             u'/me?fields=id,email,first_name,last_name'),
+            (u'window.FB.api', u'call',
+             u'/me?fields=email,age_range,religion'),
+            (u'window.FB.api', u'call', u'get')
+        }
 
         def query_FB_api(**kwargs):
             driver = kwargs['driver']
@@ -280,10 +318,65 @@ class TestFBAPICalls(OpenWPMTest):
         manager.close()
         assert not db_utils.any_command_failed(manager_params['db'])
 
+        # Verify all expected calls are logged
+        rows = db_utils.query_db(
+            manager_params['db'],
+            "SELECT symbol, operation, parameter_value FROM javascript"
+        )
+        observed_calls = set()
+        for row in rows:
+            if row[0].startswith('window.FB') and row[1] == 'call':
+                if row[2].startswith('function'):
+                    observed_calls.add((row[0], row[1], 'function...'))
+                else:
+                    observed_calls.add(row)
+        assert expected_calls == observed_calls
+
     def test_noop_calls(self):
         manager_params, browser_params = self.get_config()
         manager = TaskManager.TaskManager(manager_params, browser_params)
         test_url = util.BASE_TEST_URL + '/simple_a.html'
+        expected_calls = {
+            (u'window.FB.ui', u'get'),
+            (u'window.FB.ui', u'call'),
+            (u'window.FB.login', u'get'),
+            (u'window.FB.login', u'call'),
+            (u'window.FB.logout', u'get'),
+            (u'window.FB.logout', u'call'),
+            (u'window.FB.Event', u'get'),
+            (u'window.FB.Event.unsubscribe', u'get'),
+            (u'window.FB.Event.unsubscribe', u'call'),
+            (u'window.FB.AppEvents', u'get'),
+            (u'window.FB.AppEvents.LogEvent', u'get'),
+            (u'window.FB.AppEvents.LogEvent', u'call'),
+            (u'window.FB.AppEvents.logPurchase', u'get'),
+            (u'window.FB.AppEvents.logPurchase', u'call'),
+            (u'window.FB.AppEvents.activateApp', u'get'),
+            (u'window.FB.AppEvents.activateApp', u'call'),
+            (u'window.FB.XFBML', u'get'),
+            (u'window.FB.XFBML.parse', u'get'),
+            (u'window.FB.XFBML.parse', u'call'),
+            (u'window.FB.Canvas', u'get'),
+            (u'window.FB.Canvas.Prefetcher', u'get'),
+            (u'window.FB.Canvas.Prefetcher.addStaticResource', u'get'),
+            (u'window.FB.Canvas.Prefetcher.addStaticResource', u'call'),
+            (u'window.FB.Canvas.Prefetcher.setCollectionMode', u'get'),
+            (u'window.FB.Canvas.Prefetcher.setCollectionMode', u'call'),
+            (u'window.FB.Canvas.scrollTo', u'get'),
+            (u'window.FB.Canvas.scrollTo', u'call'),
+            (u'window.FB.Canvas.setAutoGrow', u'get'),
+            (u'window.FB.Canvas.setAutoGrow', u'call'),
+            (u'window.FB.Canvas.setSize', u'get'),
+            (u'window.FB.Canvas.setSize', u'call'),
+            (u'window.FB.Canvas.setUrlHandler', u'get'),
+            (u'window.FB.Canvas.setUrlHandler', u'call'),
+            (u'window.FB.Canvas.setDoneLoading', u'get'),
+            (u'window.FB.Canvas.setDoneLoading', u'call'),
+            (u'window.FB.Canvas.startTimer', u'get'),
+            (u'window.FB.Canvas.startTimer', u'call'),
+            (u'window.FB.Canvas.stopTimer', u'get'),
+            (u'window.FB.Canvas.stopTimer', u'call')
+        }
 
         def call_noops(**kwargs):
             driver = kwargs['driver']
@@ -346,4 +439,14 @@ class TestFBAPICalls(OpenWPMTest):
         manager.execute_command_sequence(cs)
         manager.close()
         assert not db_utils.any_command_failed(manager_params['db'])
-        # TODO inspect database for noop calls
+
+        # Verify all expected calls are logged
+        rows = db_utils.query_db(
+            manager_params['db'],
+            "SELECT symbol, operation FROM javascript"
+        )
+        observed_calls = set()
+        for row in rows:
+            if row[0].startswith('window.FB'):
+                observed_calls.add(row)
+        assert expected_calls == observed_calls

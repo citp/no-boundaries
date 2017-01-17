@@ -643,6 +643,7 @@ function getPageScript() {
 
     // Instrument access to spoofed FB API (if exists)
     if (window.FB) {
+      console.log("Instrumenting window.FB");
       instrumentObject(window.FB, "window.FB", {
         logFunctionsAsStrings: true,
         logCallStack: true,
@@ -652,6 +653,7 @@ function getPageScript() {
 
     // Instrument access to our spoofed Google API (if exists)
     if (window.gapi) {
+      console.log("Instrumenting window.gapi");
       instrumentObject(window.gapi, "window.gapi", {
         logFunctionsAsStrings: true,
         logCallStack: true,

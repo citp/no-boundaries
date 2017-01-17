@@ -104,7 +104,6 @@ class TestGoogleAPICalls(OpenWPMTest):
         """Verify that we redirect requests to platform.js to a noop"""
         manager_params, browser_params = self.get_config()
         browser_params[0]['http_instrument'] = True
-        browser_params[0]['save_javascript'] = True
         manager_params['testing'] = True
         manager = TaskManager.TaskManager(manager_params, browser_params)
         test_url = util.BASE_TEST_URL + '/google_api/google_login.html'
@@ -138,6 +137,47 @@ class TestGoogleAPICalls(OpenWPMTest):
         manager_params, browser_params = self.get_config()
         manager = TaskManager.TaskManager(manager_params, browser_params)
         test_url = util.BASE_TEST_URL + '/simple_a.html'
+
+        expected_calls = {
+            (u'window.gapi.auth2.init', u'call'),
+            (u'window.gapi.auth2.BasicProfile.getEmail', u'call'),
+            (u'window.gapi.auth2.GoogleAuth', u'get'),
+            (u'window.gapi.auth2.GoogleAuth.currentUser.listen', u'get'),
+            (u'window.gapi.auth2.GoogleAuth.currentUser.get', u'get'),
+            (u'window.gapi.auth2.BasicProfile.getId', u'get'),
+            (u'window.gapi.auth2.GoogleUser.isSignedIn', u'call'),
+            (u'window.gapi.auth2.GoogleUser.getBasicProfile', u'get'),
+            (u'window.gapi.auth2.BasicProfile.getId', u'call'),
+            (u'window.gapi.auth2.GoogleAuth.then', u'call'),
+            (u'window.gapi.auth2.GoogleAuth.currentUser.listen', u'call'),
+            (u'window.gapi.auth2', u'get'),
+            (u'window.gapi.auth2.BasicProfile.getImageUrl', u'call'),
+            (u'window.gapi.auth2.BasicProfile.getName', u'call'),
+            (u'window.gapi.auth2.BasicProfile.getGivenName', u'call'),
+            (u'window.gapi.auth2.BasicProfile.getEmail', u'get'),
+            (u'window.gapi.auth2.BasicProfile.getFamilyName', u'call'),
+            (u'window.gapi.auth2.BasicProfile.getGivenName', u'get'),
+            (u'window.gapi.auth2.GoogleAuth.then', u'get'),
+            (u'window.gapi.auth2.BasicProfile', u'get'),
+            (u'window.gapi.auth2.GoogleUser.getBasicProfile', u'call'),
+            (u'window.gapi.auth2.BasicProfile.getName', u'get'),
+            (u'window.gapi.auth2.init', u'get'),
+            (u'window.gapi.auth2.GoogleAuth.currentUser', u'get'),
+            (u'window.gapi.auth2.BasicProfile.getImageUrl', u'get'),
+            (u'window.gapi.auth2.getAuthInstance', u'get'),
+            (u'window.gapi.auth2.GoogleAuth.isSignedIn.listen', u'get'),
+            (u'window.gapi.auth2.GoogleAuth.currentUser.get', u'call'),
+            (u'window.gapi.auth2.GoogleUser.getId', u'get'),
+            (u'window.gapi.auth2.GoogleAuth.isSignedIn.listen', u'call'),
+            (u'window.gapi.auth2.GoogleUser.isSignedIn', u'get'),
+            (u'window.gapi.auth2.GoogleAuth.isSignedIn.get', u'get'),
+            (u'window.gapi.auth2.GoogleAuth.isSignedIn', u'get'),
+            (u'window.gapi.auth2.GoogleUser.getId', u'call'),
+            (u'window.gapi.auth2.BasicProfile.getFamilyName', u'get'),
+            (u'window.gapi.auth2.GoogleUser', u'get'),
+            (u'window.gapi.auth2.getAuthInstance', u'call'),
+            (u'window.gapi.auth2.GoogleAuth.isSignedIn.get', u'call')
+        }
 
         def check_api(**kwargs):
             driver = kwargs['driver']
@@ -243,6 +283,17 @@ class TestGoogleAPICalls(OpenWPMTest):
         manager.close()
         assert not db_utils.any_command_failed(manager_params['db'])
 
+        # Verify all expected calls are logged
+        rows = db_utils.query_db(
+            manager_params['db'],
+            "SELECT symbol, operation FROM javascript"
+        )
+        observed_calls = set()
+        for row in rows:
+            if row[0].startswith('window.gapi'):
+                observed_calls.add(row)
+        assert observed_calls == expected_calls
+
     def test_spoofed_plus_api(self):
         """Verify that Google Plus API spoofing works as expected
 
@@ -262,6 +313,16 @@ class TestGoogleAPICalls(OpenWPMTest):
         manager_params, browser_params = self.get_config()
         manager = TaskManager.TaskManager(manager_params, browser_params)
         test_url = util.BASE_TEST_URL + '/simple_a.html'
+
+        expected_calls = {
+            (u'window.gapi.client.request', u'call'),
+            (u'window.gapi.client.plus.people', u'get'),
+            (u'window.gapi.client', u'get'),
+            (u'window.gapi.client.plus.people.get', u'call'),
+            (u'window.gapi.client.plus', u'get'),
+            (u'window.gapi.client.plus.people.get', u'get'),
+            (u'window.gapi.client.request', u'get')
+        }
 
         def check_api(**kwargs):
             driver = kwargs['driver']
@@ -511,10 +572,68 @@ class TestGoogleAPICalls(OpenWPMTest):
         manager.close()
         assert not db_utils.any_command_failed(manager_params['db'])
 
+        # Verify all expected calls are logged
+        rows = db_utils.query_db(
+            manager_params['db'],
+            "SELECT symbol, operation FROM javascript"
+        )
+        observed_calls = set()
+        for row in rows:
+            if row[0].startswith('window.gapi'):
+                observed_calls.add(row)
+        assert observed_calls == expected_calls
+
     def test_noop_calls(self):
         manager_params, browser_params = self.get_config()
         manager = TaskManager.TaskManager(manager_params, browser_params)
         test_url = util.BASE_TEST_URL + '/simple_a.html'
+
+        expected_calls = {
+            (u'window.gapi.client.Batch.execute', u'call'),
+            (u'window.gapi.auth2.GoogleUser.getHostedDomain', u'get'),
+            (u'window.gapi.client.newBatch', u'get'),
+            (u'window.gapi.auth2.GoogleAuth.grantOfflineAccess', u'get'),
+            (u'window.gapi.auth2.GoogleUser.grantOfflineAccess', u'call'),
+            (u'window.gapi.signin2.render', u'get'),
+            (u'window.gapi.auth2.GoogleAuth', u'get'),
+            (u'window.gapi.auth2.GoogleUser.grant', u'get'),
+            (u'window.gapi.auth2.GoogleUser.getAuthResponse', u'call'),
+            (u'window.gapi.auth2.GoogleUser.hasGrantedScopes', u'call'),
+            (u'window.gapi.auth2.GoogleUser.reloadAuthResponse', u'get'),
+            (u'window.gapi.auth2.GoogleAuth.grantOfflineAccess', u'call'),
+            (u'window.gapi.auth2', u'get'),
+            (u'window.gapi.auth2.GoogleAuth.signIn', u'call'),
+            (u'window.gapi.client.Batch.then', u'get'),
+            (u'window.gapi.auth2.GoogleUser.reloadAuthResponse', u'call'),
+            (u'window.gapi.auth2.GoogleAuth.attachClickHandler', u'call'),
+            (u'window.gapi.auth2.GoogleAuth.attachClickHandler', u'get'),
+            (u'window.gapi.auth2.GoogleUser.hasGrantedScopes', u'get'),
+            (u'window.gapi.client.newBatch', u'call'),
+            (u'window.gapi.auth2.GoogleAuth.signIn', u'get'),
+            (u'window.gapi.signin2', u'get'),
+            (u'window.gapi.auth2.GoogleUser.getAuthResponse', u'get'),
+            (u'window.gapi.auth2.GoogleUser.grantOfflineAccess', u'get'),
+            (u'window.gapi.signin2.render', u'call'),
+            (u'window.gapi.auth2.GoogleUser.grant', u'call'),
+            (u'window.gapi.client', u'get'),
+            (u'window.gapi.auth2.GoogleAuth.signOut', u'call'),
+            (u'window.gapi.client.setApiKey', u'get'),
+            (u'window.gapi.client.Batch.execute', u'get'),
+            (u'window.gapi.auth2.GoogleAuth.disconnect', u'call'),
+            (u'window.gapi.client.Batch.add', u'get'),
+            (u'window.gapi.client.setApiKey', u'call'),
+            (u'window.gapi.auth2.GoogleUser.getHostedDomain', u'call'),
+            (u'window.gapi.auth2.GoogleUser.disconnect', u'call'),
+            (u'window.gapi.client.Batch', u'get'),
+            (u'window.gapi.auth2.GoogleAuth.signOut', u'get'),
+            (u'window.gapi.auth2.GoogleUser.disconnect', u'get'),
+            (u'window.gapi.auth2.GoogleUser.getGrantedScopes', u'get'),
+            (u'window.gapi.client.Batch.add', u'call'),
+            (u'window.gapi.auth2.GoogleAuth.disconnect', u'get'),
+            (u'window.gapi.auth2.GoogleUser', u'get'),
+            (u'window.gapi.auth2.GoogleUser.getGrantedScopes', u'call'),
+            (u'window.gapi.client.Batch.then', u'call')
+        }
 
         def call_noops(**kwargs):
             driver = kwargs['driver']
@@ -595,4 +714,14 @@ class TestGoogleAPICalls(OpenWPMTest):
         manager.execute_command_sequence(cs)
         manager.close()
         assert not db_utils.any_command_failed(manager_params['db'])
-        # TODO inspect database for noop calls
+
+        # Verify all expected calls are logged
+        rows = db_utils.query_db(
+            manager_params['db'],
+            "SELECT symbol, operation FROM javascript"
+        )
+        observed_calls = set()
+        for row in rows:
+            if row[0].startswith('window.gapi'):
+                observed_calls.add(row)
+        assert expected_calls == observed_calls
