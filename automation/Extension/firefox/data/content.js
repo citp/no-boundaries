@@ -107,14 +107,20 @@ function getPageScript() {
 
     // Helper for JSONifying objects
     function serializeObject(object, stringifyFunctions=false) {
-
+      if (object instanceof HTMLDocument){
+        return "HTMLDocument - " + object.location;
+      }
       // Handle permissions errors
       try {
         if(object == null)
           return "null";
         if(typeof object == "function") {
           if (stringifyFunctions)
-            return object.toString();
+            try{
+              return object.toString();
+            }catch (error) {
+              return "FUNCTION SERIALIZATION ERROR: " + error;
+            }
           else
             return "FUNCTION";
         }
@@ -122,13 +128,22 @@ function getPageScript() {
           return String(object);
         var seenObjects = [];
         return JSON.stringify(object, function(key, value) {
+          if (value instanceof HTMLDocument){
+            return "HTMLDocument - " + value.location;
+          }
           if(value == null)
             return "null";
           if(typeof value == "function") {
-            if (stringifyFunctions)
-              return value.toString();
-            else
+            if (stringifyFunctions){
+              try{
+                return value.toString();
+              }catch (error) {
+                return "JSON FUNCTION SERIALIZATION ERROR: " + error;
+              }
+
+            }else{
               return "FUNCTION";
+            }
           }
           if(typeof value == "object") {
             // Remove wrapping on content objects
