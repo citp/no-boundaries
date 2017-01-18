@@ -35,10 +35,9 @@ sites = crawl_utils.get_top_1m(location=manager_params['data_directory'])
 
 for i in xrange(NUM_BROWSERS):
     browser_params[i]['headless'] = True
-    browser_params[i]['proxy'] = True
     browser_params[i]['js_instrument'] = True
     browser_params[i]['cookie_instrument'] = True
-    browser_params[i]['http_instrument'] = True # Using this + proxy so we can compare
+    browser_params[i]['http_instrument'] = True
     browser_params[i]['save_javascript'] = True
     browser_params[i]['spoof_social_login'] = True
     browser_params[i]['record_js_errors'] = True
