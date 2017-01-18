@@ -8,12 +8,8 @@ A stateless crawl of 50,000 sites to test current instrumentation
 * HTTP Proxy
 * Autofill enabled
 
-Note: Crawl files are weird. We run the crawl with a bash script to allow the
-python interpreter to close after each batch. The bash script will also reboot
-the machine if the crawl is crashing too often. A cronjob starts things up when
-the machine restarts. Note that OpenWPM has some instability during very
-long-running jobs, so this procedure let's us hit 1 million sites despite the
-current issues.
+XXX: You MUST update the xpi manually. I have to disable it in this branch
+     because the cronjob I use to run the crawl doesn't find jpm.
 """
 from automation import TaskManager
 from automation.Errors import CommandExecutionError

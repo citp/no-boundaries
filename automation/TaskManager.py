@@ -89,10 +89,11 @@ class TaskManager:
         self.process_watchdog = process_watchdog
 
         # Build instrumentation extension
-        rv = create_xpi()
-        if rv[0] != 0:
-            raise RuntimeError("OpenWPM Extension failed to "
-                               "build with error: %s" % rv[1])
+        # TODO cronjob doesn't find this?
+        #rv = create_xpi()
+        #if rv[0] != 0:
+        #    raise RuntimeError("OpenWPM Extension failed to "
+        #                       "build with error: %s" % rv[1])
 
         # sets up the crawl data database
         db_path = manager_params['database_name']
