@@ -11,7 +11,7 @@ A stateless crawl of 50,000 sites to test current instrumentation
 XXX: You MUST update the xpi manually. I have to disable it in this branch
      because the cronjob I use to run the crawl doesn't find jpm.
 """
-from automation import TaskManager
+from automation import TaskManager, CommandSequence
 from automation.Errors import CommandExecutionError
 import crawl_utils
 import time

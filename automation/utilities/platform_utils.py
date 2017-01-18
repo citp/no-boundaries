@@ -17,8 +17,19 @@ import os
 import httplib
 import signal
 from os.path import join, realpath, dirname
+from contextlib import contextmanager
 import commands
 import traceback
+
+
+@contextmanager
+def cd(newdir):
+    prevdir = os.getcwd()
+    os.chdir(os.path.expanduser(newdir))
+    try:
+        yield
+    finally:
+        os.chdir(prevdir)
 
 
 def parse_http_stack_trace_str(trace_str):
@@ -72,7 +83,8 @@ def create_xpi():
 def get_version():
     """Return OpenWPM version tag/current commit and Firefox version """
     try:
-        openwpm = subprocess.check_output(["git","describe","--tags","--always"]).strip()
+        with cd(dirname(realpath(__file__))):
+            openwpm = subprocess.check_output(["git","describe","--tags","--always"]).strip()
     except subprocess.CalledProcessError:
         ver = os.path.join(os.path.dirname(__file__), '../../VERSION')
         with open(ver, 'r') as f:
