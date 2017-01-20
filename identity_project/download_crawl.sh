@@ -20,7 +20,7 @@ if ssh -i ~/.ssh/$keyname -q $host [[ -f /tmp/crawl_running ]]; then
 fi
 
 printf '\nCrawls to archive: \n'
-crawl_dirs=( $(ssh -i ~/.ssh/$keyname $host 'ls -1 --ignore "*.tar.bz2" | grep 2016') )
+crawl_dirs=( $(ssh -i ~/.ssh/$keyname $host 'ls -1 --ignore "*.tar.bz2" | grep 2017') )
 for dir in ${crawl_dirs[@]}; do
     echo '  *'$dir
 done
