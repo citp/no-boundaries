@@ -136,7 +136,7 @@ SET_PROPERTY = [(SET_PROP_TEST_PAGE,
                  u'set_window_name@%s:5:3\n'
                  '@%s:8:1' % (SET_PROP_TEST_PAGE, SET_PROP_TEST_PAGE),
                  u'window.HTMLFormElement.action',
-                 u'set', u'TEST-ACTION', None, None)]
+                 u'set', u'TEST-ACTION', None)]
 
 
 JS_COOKIE_TEST_URL = u'%s/js_cookie.html' % utilities.BASE_TEST_URL
@@ -275,8 +275,8 @@ class TestExtension(OpenWPMTest):
         db = self.visit('/set_property/set_property.html')
         rows = db_utils.query_db(db, "SELECT script_url, script_line,"
                                  " script_col, call_stack, symbol,"
-                                 " operation, value, parameter_index,"
-                                 " parameter_value FROM javascript")
+                                 " operation, value, arguments "
+                                 "FROM javascript")
         assert rows == SET_PROPERTY
 
     def test_js_call_stack(self):

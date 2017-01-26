@@ -46,3 +46,17 @@ def rand_str(size=8):
 def filter_dict(dct, keys):
     """Filter dictionary to specifed keys"""
     return {key: dct[key] for key in keys}
+
+
+def replace_functions(dct):
+    """Replace function strings in dct values with 'function...' (in place).
+
+    Many argument lists have a long function argument. To avoid clutter we
+    cut these down to 'function...' when checking against expected values.
+    """
+    if not type(dct) == dict:
+        raise TypeError("dct argument must be of type `dict`")
+    for key, value in dct.items():
+        if value.startswith('function'):
+            dct[key] = 'function...'
+    return dct
