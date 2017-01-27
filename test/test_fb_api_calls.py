@@ -67,7 +67,8 @@ class TestFBAPICalls(OpenWPMTest):
     def get_config(self, data_dir=""):
         manager_params, browser_params = self.get_test_config(data_dir)
         browser_params[0]['js_instrument'] = True
-        browser_params[0]['spoof_social_login'] = True
+        browser_params[0]['spoof_identity']['enabled'] = True
+        browser_params[0]['spoof_identity']['facebook'] = True
         return manager_params, browser_params
 
     def test_fb_api_calls(self):

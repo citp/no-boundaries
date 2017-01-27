@@ -7,9 +7,6 @@ A stateless crawl of 50,000 sites to test current instrumentation
 * JS bodies
 * HTTP Proxy
 * Autofill enabled
-
-XXX: You MUST update the xpi manually. I have to disable it in this branch
-     because the cronjob I use to run the crawl doesn't find jpm.
 """
 from automation import TaskManager, CommandSequence
 from automation.Errors import CommandExecutionError
@@ -39,7 +36,9 @@ for i in xrange(NUM_BROWSERS):
     browser_params[i]['cookie_instrument'] = True
     browser_params[i]['http_instrument'] = True
     browser_params[i]['save_javascript'] = True
-    browser_params[i]['spoof_social_login'] = True
+    browser_params[i]['spoof_identity']['enabled'] = True
+    browser_params[i]['spoof_identity']['facebook'] = True
+    browser_params[i]['spoof_identity']['google'] = True
     browser_params[i]['record_js_errors'] = True
     #browser_params[i]['custom_prefs'] = {"signon.rememberSignons": True}
     #browser_params[i]['extension']['fakeAutofill'] = True
