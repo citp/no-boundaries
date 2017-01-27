@@ -85,7 +85,7 @@ def start_webdriver(with_extension=False):
         webdriver.Firefox(firefox_binary=fb, firefox_profile=fp))
 
 
-def start_manual_test():
+def start_jpm():
     cmd_jpm_run = "jpm run --binary-args 'url %s' -b %s" % (BASE_TEST_URL,
                                                             FF_BIN_PATH)
     server, thread = start_server()
@@ -101,4 +101,22 @@ def start_manual_test():
 
 
 if __name__ == '__main__':
-    start_manual_test()
+    import IPython
+    import sys
+
+    # TODO use some real parameter handling library
+    if len(sys.argv) == 1:
+        start_jpm()
+    elif len(sys.argv) >= 2 and sys.argv[1] == '--selenium':
+        if len(sys.argv) == 3 and sys.argv[2] == '--no-extension':
+            driver = start_webdriver(False)
+        else:
+            driver = start_webdriver(True)
+        print "\nDropping into ipython shell...."
+        print "  * Interact with the webdriver instance using `driver`"
+        print "  * The webdriver and test page server will close automatically"
+        print "  * Use `exit` to quit the ipython shell\n"
+        IPython.embed()
+    else:
+        print ("Unrecognized arguments. Usage:\n"
+               "python manual_test.py ('--selenium')? ('--no-extension')?")
