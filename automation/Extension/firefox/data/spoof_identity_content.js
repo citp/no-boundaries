@@ -547,33 +547,59 @@ function getPageScript() {
     /*
      * Spoof identity in the DOM
      */
+    function insertDOMIdentity() {
+      if (!document.body) {
+        window.setTimeout(insertDOMIdentity, 100);
+        return;
+      }
+      var div = document.createElement('div');
+      div.style = 'display:none'
+      div.innerHTML = '<p>' +
+                      'Welcome ' + domName + '!</p>' +
+                      '<p>' + domEmail + '</p>';
+      document.body.appendChild(div);
+    }
     var domSpoof = document.currentScript.getAttribute('data-dom');
     if (domSpoof) {
       console.log("Spoofing identifying information in the DOM.");
       var domName = 'Jerome Cisco';
       var domEmail = 'jeromecisco@hotmail.com';
-      function insertDOMIdentity() {
-        if (!document.body) {
-          window.setTimeout(insertDOMIdentity, 100);
-          return;
-        }
-        var div = document.createElement('div');
-        div.style = 'display:none'
-        div.innerHTML = '<p>' +
-                        'Welcome ' + domName + '!</p>' +
-                        '<p>' + domEmail + '</p>';
-        document.body.appendChild(div);
-      }
       window.setTimeout(insertDOMIdentity, 100);
     }
 
     /*
      * Spoof identity in first-party browser storage
+     *
+     * We only inject into inject cookies in the main frame.
      */
+    function inIframe() {
+      try {
+        return window.self !== window.top;
+      } catch (e) {
+        return true;
+      }
+    }
+    function writeCookie(key, value) {
+      var expiry = new Date();
+      expiry.setDate(expiry.getDate() + 180);
+      var str = 'xxx-' + key + '=' + value + ';expires=' + expiry.toUTCString();
+      document.cookie = str;
+    }
     var storage_spoof = document.currentScript.getAttribute('data-storage');
-    if (storage_spoof) {
-      console.log("Spoofing identifying information in storage.");
-      //TODO spoof storage identity
+    console.log("window.self",window.self);
+    console.log("window.top",window.top);
+    console.log("inIframe",inIframe());
+    if (storage_spoof && !inIframe()) {
+      console.log("Spoofing identifying information in storage for", window.self);
+      var storageId = {
+        'uid': '36732d0b-a127-4903-83a9-482cbcb56aef',
+        'email': 'chief_wiggins@hotmail.com',
+        'name': 'ChiefWiggins'
+      }
+      var props = Object.getOwnPropertyNames(storageId);
+      for (var i = 0; i < props.length; i++) {
+        writeCookie(props[i], storageId[props[i]]);
+      }
     }
 
   } + "());";
