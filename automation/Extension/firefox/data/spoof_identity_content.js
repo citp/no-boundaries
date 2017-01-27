@@ -550,7 +550,21 @@ function getPageScript() {
     var domSpoof = document.currentScript.getAttribute('data-dom');
     if (domSpoof) {
       console.log("Spoofing identifying information in the DOM.");
-      //TODO spoof DOM identity
+      var domName = 'Jerome Cisco';
+      var domEmail = 'jeromecisco@hotmail.com';
+      function insertDOMIdentity() {
+        if (!document.body) {
+          window.setTimeout(insertDOMIdentity, 100);
+          return;
+        }
+        var div = document.createElement('div');
+        div.style = 'display:none'
+        div.innerHTML = '<p>' +
+                        'Welcome ' + domName + '!</p>' +
+                        '<p>' + domEmail + '</p>';
+        document.body.appendChild(div);
+      }
+      window.setTimeout(insertDOMIdentity, 100);
     }
 
     /*
