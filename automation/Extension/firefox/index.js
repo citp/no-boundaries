@@ -9,7 +9,7 @@ var jsInstrument        = require("./lib/javascript-instrument.js");
 var cpInstrument        = require("./lib/content-policy-instrument.js");
 var httpInstrument      = require("./lib/http-instrument.js");
 var fakeAutofill        = require("./lib/fake-autofill.js");
-var spoofSocialLogin    = require("./lib/spoof-social-login.js");
+var spoofIdentity    = require("./lib/spoof-identity.js");
 var consoleLogs         = require("./lib/console-logs.js");
 
 
@@ -28,7 +28,13 @@ exports.main = function(options, callbacks) {
       leveldb_address:null,
       logger_address:null,
       disable_webdriver_self_id:true,
-      spoof_social_login:true,
+      spoof_identity: {
+        'enabled': true,
+        'facebook': true,
+        'google': true,
+        'dom': true,
+        'storage': true
+      },
       cookie_instrument:true,
       js_instrument:true,
       cp_instrument:true,
@@ -60,9 +66,9 @@ exports.main = function(options, callbacks) {
   //       observer to spoof to redirect some script requests. Observers
   //       registered first will run last (so the http request observer will
   //       see the correct request).
-  if (config['spoof_social_login']) {
-    console.log("Spoofing Social Login SDKs.");
-    spoofSocialLogin.run(config['testing']);
+  if (config['spoof_identity']['enabled']) {
+    console.log("Spoofing Identity.");
+    spoofIdentity.run(config['spoof_identity'], config['testing']);
   }
   if (config['cookie_instrument']) {
     loggingDB.logDebug("Cookie instrumentation enabled");
