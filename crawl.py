@@ -18,17 +18,17 @@ from automation.Commands.utils.form_utils import fill_input_elements_and_submit
 # The list of sites that we wish to crawl
 NUM_BROWSERS = 15
 NUM_BATCH = 5000
-TOTAL_NUM_SITES = 5000
+TOTAL_NUM_SITES = 35000
 
 manager_params, browser_params = TaskManager.load_default_params(NUM_BROWSERS)
 
-prefix = '2017-01_social_spoofing_and_form_filling'
+prefix = '2017-02-01_all_identity_spoofing_test'
 manager_params['database_name'] = prefix + '.sqlite'
 manager_params['data_directory'] = '~/' + prefix
 manager_params['log_directory'] = '~/' + prefix
 
 # Read the site list
-sites = crawl_utils.get_top_1m(location=manager_params['data_directory'])
+sites = crawl_utils.sample_top_sites(location=manager_params['data_directory'])
 
 for i in xrange(NUM_BROWSERS):
     browser_params[i]['headless'] = True
@@ -39,6 +39,8 @@ for i in xrange(NUM_BROWSERS):
     browser_params[i]['spoof_identity']['enabled'] = True
     browser_params[i]['spoof_identity']['facebook'] = True
     browser_params[i]['spoof_identity']['google'] = True
+    browser_params[i]['spoof_identity']['dom'] = True
+    browser_params[i]['spoof_identity']['storage'] = True
     browser_params[i]['record_js_errors'] = True
     #browser_params[i]['custom_prefs'] = {"signon.rememberSignons": True}
     #browser_params[i]['extension']['fakeAutofill'] = True
