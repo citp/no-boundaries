@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+<title>Simple Frame</title>
+  <script type="application/javascript">
+    function canAccessTop() {
+      try {
+        window.top.document;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+    function changeDomain() {
+      console.log("Trying to access window.top BEFORE domain change");
+      console.log("Current document.domain:", document.domain);
+      console.log("Can access top document?",canAccessTop());
+      document.domain = 'localtest.me';
+      console.log("Trying to access window.top AFTER domain change");
+      console.log("Current document.domain:", document.domain);
+      console.log("Can access top document?",canAccessTop());
+    }
+  </script>
+ </head>
+ <body onload="changeDomain()">
+   <p> A simple frame which tries to access the top-level window before and
+   after a document.domain change </p>
+ </body>
+</html>
