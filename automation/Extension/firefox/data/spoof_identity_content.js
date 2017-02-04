@@ -586,9 +586,6 @@ function getPageScript() {
       document.cookie = str;
     }
     var storage_spoof = document.currentScript.getAttribute('data-storage');
-    console.log("window.self",window.self);
-    console.log("window.top",window.top);
-    console.log("inIframe",inIframe());
     if (storage_spoof && !inIframe()) {
       console.log("Spoofing identifying information in storage for", window.self);
       var storageId = {

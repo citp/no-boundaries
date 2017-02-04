@@ -852,6 +852,17 @@ function getPageScript() {
     instrumentObject(window, "window",
         listenerLogSettings);
 
+    /*
+     * document.domain usage
+     *
+     * For motivation see Issue #98
+     */
+    instrumentObject(document, "document", {
+      logCallStack: true,
+      propertiesToInstrument: [ "domain" ]
+    });
+
+
     console.log("Successfully started all instrumentation.");
   } + "());";
 }

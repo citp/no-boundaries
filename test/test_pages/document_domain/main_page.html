@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Simple Page With an Iframe</title>
+  </head>
+  <body>
+    <p> This is a simple test page with an embedded iframe hosted on a
+    subdomain of the same domain as the main page. Note this is possible
+    because localtest.me sends all subdomain traffic to localhost at the
+    port specified.</p>
+
+    <p>This page's document.domain: <pre id="domain"></pre></p>
+    <script>
+      document.domain = 'localtest.me';
+      var pre = document.getElementById('domain');
+      pre.innerHTML = document.domain;
+    </script>
+
+    <iframe src='http://frame.localtest.me:8000/test_pages/document_domain/child_iframe.html'></iframe>
+  </body>
+</html>
