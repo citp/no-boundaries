@@ -5,7 +5,8 @@ import codecs
 import os
 
 BASE_DIR = os.path.dirname(__file__)
-PSL_CACHE_LOC = os.path.join(BASE_DIR,'../data/public_suffix_list.dat')
+PSL_CACHE_LOC = os.path.join(BASE_DIR, '../data/public_suffix_list.dat')
+
 
 def get_psl():
     """
@@ -19,6 +20,7 @@ def get_psl():
     psl_cache = codecs.open(PSL_CACHE_LOC, encoding='utf8')
     return PublicSuffixList(psl_cache)
 
+
 def is_ip_address(hostname):
     """
     Check if the given string is a valid IP address
@@ -28,6 +30,7 @@ def is_ip_address(hostname):
         return True
     except ValueError:
         return False
+
 
 def get_ps_plus_1(url, psl):
     """
@@ -41,9 +44,11 @@ def get_ps_plus_1(url, psl):
     else:
         return psl.get_public_suffix(hostname)
 
+
 def hostname_subparts(url, psl, include_ps=False):
     """
-    Returns a list of slices of a url's hostname down to the PS+1 (or PS if include_ps)
+    Returns a list of slices of a url's hostname down to the PS+1
+    (or PS if include_ps)
 
     For example: http://a.b.c.d.com/path?query#frag would yield:
         [a.b.c.d.com, b.c.d.com, c.d.com, d.com] if include_ps == False
@@ -76,6 +81,7 @@ def hostname_subparts(url, psl, include_ps=False):
             pass
     return subparts
 
+
 def get_stripped_url(url, scheme=False):
     """Returns a url stripped to (scheme)?+hostname+path"""
     purl = urlparse(url)
@@ -89,6 +95,7 @@ def get_stripped_url(url, scheme=False):
         return surl + purl.hostname + purl.path
     else:
         return surl + purl.hostname
+
 
 def get_stripped_urls(urls, scheme=False):
     """ Returns a set (or list) of urls stripped to (scheme)?+hostname+path """
