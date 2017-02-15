@@ -64,6 +64,8 @@ manager = TaskManager.TaskManager(manager_params, browser_params, process_watchd
 current_index = 0
 for i in range(start_index, end_index):
     current_index = i
+    if current_index >= TOTAL_NUM_SITES:
+        break
     try:
         cs = CommandSequence.CommandSequence('http://'+sites[i], reset=True)
         cs.get(sleep=10, timeout=120)
@@ -74,8 +76,6 @@ for i in range(start_index, end_index):
     except CommandExecutionError:
         with open(os.path.expanduser('~/.openwpm/reboot'), 'w') as f:
             f.write(str(1))
-        break
-    if current_index >= TOTAL_NUM_SITES:
         break
 
 print "CLOSING TaskManager after batch"
