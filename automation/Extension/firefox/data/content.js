@@ -692,6 +692,7 @@ function getPageScript() {
       instrumentObject(window.gapi, "window.gapi", {
         logFunctionsAsStrings: true,
         logCallStack: true,
+        preventSets: true,
         recursive: true
       });
     }
