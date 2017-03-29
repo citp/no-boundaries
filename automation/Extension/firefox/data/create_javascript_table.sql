@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS javascript(
     func_name TEXT,
     script_loc_eval TEXT,
     call_stack TEXT,
+    document_url TEXT,
+    top_level_url TEXT,
     symbol TEXT,
     operation TEXT,
     value TEXT,

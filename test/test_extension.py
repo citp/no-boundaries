@@ -276,7 +276,7 @@ class TestExtension(OpenWPMTest):
         rows = db_utils.query_db(db, "SELECT script_url, script_line,"
                                  " script_col, call_stack, symbol,"
                                  " operation, value, arguments "
-                                 "FROM javascript")
+                                 "FROM javascript", as_tuple=True)
         assert rows == SET_PROPERTY
 
     def test_js_call_stack(self):
@@ -284,8 +284,11 @@ class TestExtension(OpenWPMTest):
         # Check that all stack info are recorded
         rows = db_utils.get_javascript_entries(db, all_columns=True)
         observed_rows = set()
-        for item in rows:
-            observed_rows.add(item[3:11])
+        for row in rows:
+            item = (row['script_url'], row['script_line'], row['script_col'],
+                    row['func_name'], row['script_loc_eval'],
+                    row['call_stack'], row['symbol'], row['operation'])
+            observed_rows.add(item)
         assert JS_STACK_CALLS == observed_rows
 
     def test_js_time_stamp(self):
@@ -296,7 +299,8 @@ class TestExtension(OpenWPMTest):
         rows = db_utils.get_javascript_entries(db, all_columns=True)
         assert len(rows)  # make sure we have some JS events captured
         for row in rows:
-            js_time = datetime.strptime(row[13], "%Y-%m-%dT%H:%M:%S.%fZ")
+            js_time = datetime.strptime(row['time_stamp'],
+                                        "%Y-%m-%dT%H:%M:%S.%fZ")
             # compare UTC now and the timestamp recorded at the visit
             assert (utc_now - js_time).seconds < MAX_TIMEDELTA
         assert not db_utils.any_command_failed(db)
@@ -304,6 +308,11 @@ class TestExtension(OpenWPMTest):
     def test_document_cookie_instrumentation(self):
         db = self.visit(utilities.BASE_TEST_URL + "/js_cookie.html")
         rows = db_utils.get_javascript_entries(db, all_columns=True)
-        # [3:12] exclude id and empty columns
-        captured_cookie_calls = set([row[3:12] for row in rows])
+        captured_cookie_calls = set()
+        for row in rows:
+            item = (row['script_url'], row['script_line'], row['script_col'],
+                    row['func_name'], row['script_loc_eval'],
+                    row['call_stack'], row['symbol'], row['operation'],
+                    row['value'])
+            captured_cookie_calls.add(item)
         assert captured_cookie_calls == DOCUMENT_COOKIE_READ_WRITE

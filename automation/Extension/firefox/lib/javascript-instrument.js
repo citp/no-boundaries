@@ -22,7 +22,6 @@ exports.run = function(crawlID, testing) {
       'testing': testing
     },
     onAttach: function onAttach(worker) {
-      var url = worker.url;
 
       function processCallsAndValues(data) {
         var update = {};
@@ -51,6 +50,11 @@ exports.run = function(crawlID, testing) {
           update["arguments"] = loggingDB.escapeString(JSON.stringify(args));
         }
 
+        // document_url is the current frame's document href
+        // top_level_url is the top-level frame's document href
+        update["document_url"] = loggingDB.escapeString(worker.url);
+        update["top_level_url"] = loggingDB.escapeString(worker.tab.url);
+
         loggingDB.executeSQL(loggingDB.createInsert("javascript", update), true);
       }
       worker.port.on("logCall", function(data){processCallsAndValues(data)});
@@ -68,6 +72,12 @@ exports.run = function(crawlID, testing) {
         update["element_type"] = loggingDB.escapeString(data.elementType);
         update["guid"] = loggingDB.escapeString(data.guid);
         update["time_stamp"] = loggingDB.escapeString(data.timeStamp);
+
+        // document_url is the current frame's document href
+        // top_level_url is the top-level frame's document href
+        update["document_url"] = loggingDB.escapeString(worker.url);
+        update["top_level_url"] = loggingDB.escapeString(worker.tab.url);
+
         loggingDB.executeSQL(loggingDB.createInsert("inserted_elements", update), true);
       });
       worker.port.on("elementModified", function(data) {
@@ -85,6 +95,12 @@ exports.run = function(crawlID, testing) {
         update["new_value"] = loggingDB.escapeString(data.newValue);
         update["guid"] = loggingDB.escapeString(data.guid);
         update["time_stamp"] = loggingDB.escapeString(data.timeStamp);
+
+        // document_url is the current frame's document href
+        // top_level_url is the top-level frame's document href
+        update["document_url"] = loggingDB.escapeString(worker.url);
+        update["top_level_url"] = loggingDB.escapeString(worker.tab.url);
+
         loggingDB.executeSQL(loggingDB.createInsert("modified_elements", update), true);
       });
     }

@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS modified_elements(
     script_line TEXT,
     script_col TEXT,
     call_stack TEXT,
+    document_url TEXT,
+    top_level_url TEXT,
     node_path TEXT,
     serialized_element TEXT,
     element_type TEXT,
