@@ -3,13 +3,183 @@ import os
 import json
 
 import utilities
-import expected
 from openwpmtest import OpenWPMTest
 from ..automation import TaskManager
 from ..automation.utilities.platform_utils import parse_http_stack_trace_str
 from ..automation.utilities import db_utils
 from ..automation import CommandSequence
 from time import sleep
+
+# HTTP Requests and Responses Instrumentation
+# NOTE: The [System Principal] favicon request will change in future versions
+#       of FF. See Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1277803.
+# (request_url,
+#     top_level_url,
+#     is_XHR, is_frame_load, is_full_page, is_tp_content, is_tp_window,
+#     triggering_origin,
+#     loading_origin, content_policy_type)
+HTTP_REQUESTS = {
+    (u'http://localtest.me:8000/test_pages/http_test_page.html',
+        None,
+        0, 0, 1, None, None,
+        u'[System Principal]',
+        u'chrome://browser/content/browser.xul', 6),
+    (u'http://localtest.me:8000/test_pages/shared/test_favicon.ico',
+        None,
+        0, None, None, None, None,
+        u'[System Principal]',
+        u'chrome://browser/content/browser.xul', 3),
+    (u'http://localtest.me:8000/test_pages/shared/test_favicon.ico',
+        None,
+        0, None, None, None, None,
+        u'http://localtest.me:8000',
+        u'undefined', 3),
+    (u'http://localtest.me:8000/test_pages/shared/test_image_2.png',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        0, None, None, 0, 0,
+        u'http://localtest.me:8000',
+        u'http://localtest.me:8000/test_pages/http_test_page_2.html', 3),
+    (u'http://localtest.me:8000/test_pages/shared/test_script_2.js',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        0, None, None, 0, 0,
+        u'http://localtest.me:8000',
+        u'http://localtest.me:8000/test_pages/http_test_page_2.html', 2),
+    (u'http://localtest.me:8000/test_pages/shared/test_script.js',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        0, None, None, 0, 0,
+        u'http://localtest.me:8000',
+        u'http://localtest.me:8000/test_pages/http_test_page.html', 2),
+    (u'http://localtest.me:8000/test_pages/shared/test_image.png',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        0, None, None, 0, 0,
+        u'http://localtest.me:8000',
+        u'http://localtest.me:8000/test_pages/http_test_page.html', 3),
+    (u'http://localtest.me:8000/test_pages/http_test_page_2.html',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        0, 1, 0, 0, 0,
+        u'http://localtest.me:8000',
+        u'http://localtest.me:8000/test_pages/http_test_page.html', 7),
+    (u'http://localtest.me:8000/test_pages/shared/test_style.css',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        0, None, None, 0, 0,
+        u'http://localtest.me:8000',
+        u'http://localtest.me:8000/test_pages/http_test_page.html', 4)
+}
+
+# format: (request_url, referrer, location)
+HTTP_RESPONSES = {
+    (u'http://localtest.me:8000/test_pages/http_test_page.html',
+        u'',
+        u''),
+    (u'http://localtest.me:8000/test_pages/shared/test_favicon.ico',
+        u'',
+        u''),
+    (u'http://localtest.me:8000/test_pages/shared/test_style.css',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        u''),
+    (u'http://localtest.me:8000/test_pages/shared/test_script.js',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        u''),
+    (u'http://localtest.me:8000/test_pages/shared/test_image.png',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        u''),
+    (u'http://localtest.me:8000/test_pages/http_test_page_2.html',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        u''),
+    (u'http://localtest.me:8000/test_pages/shared/test_image_2.png',
+        u'http://localtest.me:8000/test_pages/http_test_page_2.html',
+        u''),
+    (u'http://localtest.me:8000/test_pages/shared/test_script_2.js',
+        u'http://localtest.me:8000/test_pages/http_test_page_2.html',
+        u'')
+}
+
+HTTP_CACHED_REQUESTS = {
+    (u'http://localtest.me:8000/test_pages/http_test_page.html',
+        None,
+        0, 0, 1, None, None,
+        u'[System Principal]',
+        u'chrome://browser/content/browser.xul', 6),
+    (u'http://localtest.me:8000/test_pages/shared/test_script_2.js',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        0, None, None, 0, 0,
+        u'http://localtest.me:8000',
+        u'http://localtest.me:8000/test_pages/http_test_page_2.html', 2),
+    (u'http://localtest.me:8000/test_pages/shared/test_script.js',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        0, None, None, 0, 0,
+        u'http://localtest.me:8000',
+        u'http://localtest.me:8000/test_pages/http_test_page.html', 2),
+    (u'http://localtest.me:8000/test_pages/http_test_page_2.html',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        0, 1, 0, 0, 0,
+        u'http://localtest.me:8000',
+        u'http://localtest.me:8000/test_pages/http_test_page.html', 7),
+    (u'http://localtest.me:8000/test_pages/shared/test_style.css',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        0, None, None, 0, 0,
+        u'http://localtest.me:8000',
+        u'http://localtest.me:8000/test_pages/http_test_page.html', 4)
+}
+
+# format: (request_url, referrer, is_cached)
+HTTP_CACHED_RESPONSES = {
+    (u'http://localtest.me:8000/test_pages/http_test_page.html',
+        u'',
+        1),
+    (u'http://localtest.me:8000/test_pages/shared/test_style.css',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        1),
+    (u'http://localtest.me:8000/test_pages/shared/test_script.js',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        1),
+    (u'http://localtest.me:8000/test_pages/http_test_page_2.html',
+        u'http://localtest.me:8000/test_pages/http_test_page.html',
+        1),
+    (u'http://localtest.me:8000/test_pages/shared/test_script_2.js',
+        u'http://localtest.me:8000/test_pages/http_test_page_2.html',
+        1)
+}
+
+# HTTP request call stack instrumentation
+# Expected stack frames
+HTTP_STACKTRACE_TEST_URL = utilities.BASE_TEST_URL + "/http_stacktrace.html"
+STACK_TRACE_INJECT_IMAGE =\
+    "inject_image@" + HTTP_STACKTRACE_TEST_URL + ":18:7;null\n"\
+    "inject_all@" + HTTP_STACKTRACE_TEST_URL + ":22:7;null\n"\
+    "onload@" + HTTP_STACKTRACE_TEST_URL + ":1:1;null"
+
+RAWGIT_HTTP_STACKTRACE_TEST_URL = "https://rawgit.com/gunesacar/b927d3fe69f3e7bf456da5192f74beea/raw/8d3e490b5988c633101ec45ef1443e61b1fd495e/inject_pixel.js"  # noqa
+# https://gist.github.com/gunesacar/b927d3fe69f3e7bf456da5192f74beea
+STACK_TRACE_INJECT_PIXEL =\
+    "inject_pixel@" + RAWGIT_HTTP_STACKTRACE_TEST_URL + ":4:3;null\n"\
+    "null@" + RAWGIT_HTTP_STACKTRACE_TEST_URL + ":6:1;null"
+
+STACK_TRACE_INJECT_JS =\
+    "inject_js@" + HTTP_STACKTRACE_TEST_URL + ":13:7;null\n"\
+    "inject_all@" + HTTP_STACKTRACE_TEST_URL + ":21:7;null\n"\
+    "onload@" + HTTP_STACKTRACE_TEST_URL + ":1:1;null"
+
+HTTP_STACKTRACES = set((STACK_TRACE_INJECT_IMAGE,
+                        STACK_TRACE_INJECT_PIXEL,
+                        STACK_TRACE_INJECT_JS))
+# parsed HTTP call stack dict
+CALL_STACK_INJECT_IMAGE =\
+    [{"func_name": "inject_image",
+      "filename": HTTP_STACKTRACE_TEST_URL,
+      "line_no": "18",
+      "col_no": "7",
+      "async_cause": "null"},
+     {"func_name": "inject_all",
+      "filename": HTTP_STACKTRACE_TEST_URL,
+      "line_no": "22",
+      "col_no": "7",
+      "async_cause": "null"},
+     {"func_name": "onload",
+      "filename": HTTP_STACKTRACE_TEST_URL,
+      "line_no": "1",
+      "col_no": "1",
+      "async_cause": "null"}]
 
 
 class TestHTTPInstrument(OpenWPMTest):
@@ -25,22 +195,29 @@ class TestHTTPInstrument(OpenWPMTest):
         db = self.visit(test_url)
 
         # HTTP Requests
-        rows = db_utils.query_db(db, (
+        rows = db_utils.query_db(
+            db,
             "SELECT url, top_level_url, is_XHR, is_frame_load, is_full_page, "
             "is_third_party_channel, is_third_party_window, triggering_origin "
-            "loading_origin, loading_href, content_policy_type FROM http_requests"))
+            "loading_origin, loading_href, content_policy_type"
+            "FROM http_requests",
+            as_tuple=True
+        )
         observed_records = set()
         for row in rows:
             observed_records.add(row)
-        assert expected.http_requests == observed_records
+        assert HTTP_REQUESTS == observed_records
 
         # HTTP Responses
-        rows = db_utils.query_db(db,
-            "SELECT url, referrer, location FROM http_responses")
+        rows = db_utils.query_db(
+            db,
+            "SELECT url, referrer, location FROM http_responses",
+            as_tuple=True
+        )
         observed_records = set()
         for row in rows:
             observed_records.add(row)
-        assert expected.http_responses == observed_records
+        assert HTTP_RESPONSES == observed_records
 
     def test_cache_hits_recorded(self):
         """Verify all http responses are recorded, including cached responses
@@ -59,15 +236,18 @@ class TestHTTPInstrument(OpenWPMTest):
         db = manager_params['db']
 
         # HTTP Requests
-        rows = db_utils.query_db(db, (
+        rows = db_utils.query_db(
+            db,
             "SELECT url, top_level_url, is_XHR, is_frame_load, is_full_page, "
             "is_third_party_channel, is_third_party_window, triggering_origin "
             "loading_origin, loading_href, content_policy_type "
-            "FROM http_requests WHERE visit_id = 2"))
+            "FROM http_requests WHERE visit_id = 2",
+            as_tuple=True
+        )
         observed_records = set()
         for row in rows:
             observed_records.add(row)
-        assert expected.http_cached_requests == observed_records
+        assert HTTP_CACHED_REQUESTS == observed_records
 
         # HTTP Responses
         rows = db_utils.query_db(db, (
@@ -76,7 +256,7 @@ class TestHTTPInstrument(OpenWPMTest):
         observed_records = set()
         for row in rows:
             observed_records.add(row)
-        assert expected.http_cached_responses == observed_records
+        assert HTTP_CACHED_RESPONSES == observed_records
 
     def test_http_stacktrace(self):
         test_url = utilities.BASE_TEST_URL + '/http_stacktrace.html'
@@ -87,15 +267,15 @@ class TestHTTPInstrument(OpenWPMTest):
         for row in rows:
             url, stacktrace = row
             if (url.endswith("inject_pixel.js") or
-                url.endswith("test_image.png") or
-                url.endswith("Blank.gif")):
+                    url.endswith("test_image.png") or
+                    url.endswith("Blank.gif")):
                 observed_records.add(stacktrace)
-        assert observed_records == expected.http_stacktraces
+        assert observed_records == HTTP_STACKTRACES
 
     def test_parse_http_stack_trace_str(self):
-        stacktrace = expected.stack_trace_inject_image
+        stacktrace = STACK_TRACE_INJECT_IMAGE
         stack_frames = parse_http_stack_trace_str(stacktrace)
-        assert stack_frames == expected.call_stack_inject_image
+        assert stack_frames == CALL_STACK_INJECT_IMAGE
 
     def test_http_stacktrace_nonjs_loads(self):
         # stacktrace should be empty for requests NOT triggered by scripts
