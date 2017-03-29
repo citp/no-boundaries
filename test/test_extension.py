@@ -4,6 +4,7 @@ from openwpmtest import OpenWPMTest
 from ..automation import TaskManager
 from ..automation.utilities import db_utils
 from datetime import datetime
+import os
 
 # Expected Navigator and Screen properties
 PROPERTIES = {
@@ -167,6 +168,21 @@ DOCUMENT_COOKIE_WRITE = (
 DOCUMENT_COOKIE_READ_WRITE = set([DOCUMENT_COOKIE_READ,
                                   DOCUMENT_COOKIE_WRITE])
 
+CONTEXT_PARENT_URL = utilities.BASE_TEST_URL + '/nested_iframes/'
+CONTEXT_CHILD_1_URL = u'http://iframe.localtest.me:8000/test_pages/nested_iframes/' # noqa
+CONTEXT_CHILD_2_URL = u'http://iframe2.localtest.me:8000/test_pages/nested_iframes/' # noqa
+CONTEXT_URLS = {
+    (CONTEXT_PARENT_URL + u'shared_script.js',
+     CONTEXT_PARENT_URL + u'parent_page.html',
+     CONTEXT_PARENT_URL + u'parent_page.html'),
+    (CONTEXT_PARENT_URL + u'shared_script.js',
+     CONTEXT_CHILD_1_URL + u'child_page_1.html',
+     CONTEXT_PARENT_URL + u'parent_page.html'),
+    (CONTEXT_PARENT_URL + u'shared_script.js',
+     CONTEXT_CHILD_2_URL + u'child_page_2.html',
+     CONTEXT_PARENT_URL + u'parent_page.html')
+}
+
 
 class TestExtension(OpenWPMTest):
 
@@ -316,3 +332,49 @@ class TestExtension(OpenWPMTest):
                     row['value'])
             captured_cookie_calls.add(item)
         assert captured_cookie_calls == DOCUMENT_COOKIE_READ_WRITE
+
+    def test_document_and_top_level_url(self):
+        """Ensure document and top-level urls are set in all js instruments"""
+        test_url = os.path.join(utilities.BASE_TEST_URL, 'nested_iframes',
+                                'parent_page.html')
+        db = self.visit(test_url, sleep_after=5)
+
+        # check javascript entries
+        observed_js = set()
+        for row in db_utils.get_javascript_entries(db, all_columns=True):
+            observed_js.add((row['script_url'],
+                             row['document_url'],
+                             row['top_level_url']))
+        assert observed_js == CONTEXT_URLS
+
+        # check element insertions
+        rows = db_utils.query_db(
+            db,
+            "SELECT * FROM inserted_elements AS f LEFT JOIN site_visits as v"
+            " ON f.visit_id = v.visit_id"
+            " WHERE guid NOT NULL AND guid != ''"
+        )
+        observed_inserts = set()
+        for row in rows:
+            observed_inserts.add((row['script_url'],
+                                  row['document_url'],
+                                  row['top_level_url']))
+        assert observed_inserts == CONTEXT_URLS
+
+        # check element modifications
+        rows = db_utils.query_db(
+            db,
+            "SELECT * FROM modified_elements AS f LEFT JOIN site_visits as v"
+            " ON f.visit_id = v.visit_id"
+            " WHERE guid NOT NULL AND guid != ''"
+        )
+        observed_modifications = set()
+        for row in rows:
+            # row['script_url'] gives incorrect url. See #126.
+            script_url = ':'.join(
+                row['call_stack'].split('@')[-1].split(':')[0:-2])
+
+            observed_modifications.add((script_url,
+                                        row['document_url'],
+                                        row['top_level_url']))
+        assert observed_modifications == CONTEXT_URLS
