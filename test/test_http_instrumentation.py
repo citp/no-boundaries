@@ -250,9 +250,12 @@ class TestHTTPInstrument(OpenWPMTest):
         assert HTTP_CACHED_REQUESTS == observed_records
 
         # HTTP Responses
-        rows = db_utils.query_db(db, (
+        rows = db_utils.query_db(
+            db,
             "SELECT url, referrer, is_cached FROM http_responses "
-            "WHERE visit_id = 2"))
+            "WHERE visit_id = 2",
+            as_tuple=True
+        )
         observed_records = set()
         for row in rows:
             observed_records.add(row)
@@ -324,7 +327,7 @@ class TestPOSTInstrument(OpenWPMTest):
     def get_post_request_body_from_db(self, db):
         """Return the body of the first POST request in crawl db."""
         posts = self.get_post_requests_from_db(db)
-        return posts[0][18]  # Column 18 is post body
+        return posts[0]['post_body']
 
     def test_record_post_data_x_www_form_urlencoded(self):
         encoding_type = "application/x-www-form-urlencoded"
@@ -344,11 +347,11 @@ class TestPOSTInstrument(OpenWPMTest):
         post_body = self.get_post_request_body_from_db(db)
         assert post_body == self.post_data_multiline
         post_row = self.get_post_requests_from_db(db)[0]
-        headers = post_row[7]
+        headers = post_row['headers']
         # make sure the "request headers from upload stream" are stored in db
         assert "Content-Type" in headers
         assert encoding_type in headers
-        assert "Content-Length" in post_row[7]
+        assert "Content-Length" in post_row['headers']
 
     def test_record_post_data_ajax(self, tmpdir):
         post_format = "object"
