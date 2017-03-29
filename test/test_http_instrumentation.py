@@ -199,7 +199,7 @@ class TestHTTPInstrument(OpenWPMTest):
             db,
             "SELECT url, top_level_url, is_XHR, is_frame_load, is_full_page, "
             "is_third_party_channel, is_third_party_window, triggering_origin "
-            "loading_origin, loading_href, content_policy_type"
+            "loading_origin, loading_href, content_policy_type "
             "FROM http_requests",
             as_tuple=True
         )
