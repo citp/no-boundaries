@@ -550,7 +550,7 @@ function getPageScript() {
                 typeof originalValue === 'object')) {
               logValue(objectName + '.' + propertyName, value,
                   "set(prevented)", callContext, logSettings);
-              return value;
+              return originalValue;
             }
 
             // set new value to original setter/location
