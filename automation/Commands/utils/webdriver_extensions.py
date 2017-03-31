@@ -6,6 +6,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import ElementNotVisibleException
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import StaleElementReferenceException
 from urlparse import urljoin
 import random
 import time
@@ -216,3 +217,92 @@ def iter_frames(driver):
         driver.switch_to_default_content()
         yield iframe
     driver.switch_to_default_content()
+
+
+def switch_to_parent_frame(driver, frame_stack):
+    """Switch driver to parent frame
+
+    Selenium doesn't provide a method to switch up to a parent frame.
+    Any frame handles collected in a parent frame can't be used in the
+    child frame, so the only way to switch to a parent frame is to
+    switch back to the top-level frame and then switch back down to the
+    parent through all iframes.
+
+    Parameters
+    ----------
+    driver : selenium.webdriver
+        A Selenium webdriver instance.
+    frame_stack : list of selenium.webdriver.remote.webelement.WebElement
+        list of parent frame handles (including current frame)
+    """
+    driver.switch_to_default_content()  # start at top frame
+    # First item is 'default', last item is current frame
+    for frame in frame_stack[1:-1]:
+        driver.switch_to_frame(frame)
+
+
+def execute_in_all_frames(driver, func, kwargs={}, frame_stack=['default'],
+                          max_depth=5):
+    """Recursively apply `func` within each iframe
+
+    When called at each level, `func` will be passed the webdriver instance
+    as an argument as well as any named arguments given in `kwargs`. If you
+    require a return value from `func` it should be stored in a mutable
+    argument. Function returns and positional arguments are not supported.
+    `func` should be defined with the following structure:
+
+    >>> def print_and_gather_links(driver, frame_stack,
+    >>>                            print_prefix='', links=[]):
+    >>>     elems = driver.find_elements_by_tag_name('a')
+    >>>     for elem in elems:
+    >>>         link = elem.get_attribute('href')
+    >>>         print print_prefix + link
+    >>>         links.append(link)
+
+    `execute_in_all_frames` should then be called as follows:
+
+    >>> all_links = list()
+    >>> execute_in_all_frames(driver, print_and_gather_links,
+    >>>                       {'prefix': 'Link ', 'links': all_links})
+    >>> print "All links on page (including all iframes):"
+    >>> print all_links
+
+    Parameters
+    ----------
+    driver : selenium.webdriver
+        A Selenium webdriver instance.
+    func : function
+        A function handle to apply to the webdriver instance within each frame
+    max_depth : int
+        Maximum depth to recurse into
+    frame_stack : list of selenium.webdriver.remote.webelement.WebElement
+        list of parent frame handles (including current frame)
+    """
+    # Ensure we start at the top level frame
+    if len(frame_stack) == 1:
+        driver.switch_to_default_content()
+
+    # Bail if past depth cutoff
+    if len(frame_stack) - 1 > max_depth:
+        return
+
+    # Execute function in this frame
+    func(driver, frame_stack, **kwargs)
+
+    # Grab all iframes in the current frame
+    frames = driver.find_elements_by_tag_name('iframe')
+
+    # Recurse through frames
+    for frame in frames:
+        frame_stack.append(frame)
+        try:
+            driver.switch_to_frame(frame)
+        except StaleElementReferenceException:
+            print "Error while switching to frame %s" % str(frame)
+            continue
+        else:
+            # Search within child frame
+            execute_in_all_frames(driver, func, kwargs, frame_stack, max_depth)
+            switch_to_parent_frame(driver, frame_stack)
+        finally:
+            frame_stack.pop()
