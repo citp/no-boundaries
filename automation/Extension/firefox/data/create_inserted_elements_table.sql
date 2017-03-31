@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS inserted_elements(
   script_line TEXT,
   script_col TEXT,
   call_stack TEXT,
+  document_url TEXT,
+  top_level_url TEXT,
   is_visible BOOLEAN,
   node_path TEXT,
   serialized_element TEXT,

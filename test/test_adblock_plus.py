@@ -8,10 +8,14 @@ from ..automation.utilities.platform_utils import fetch_adblockplus_list
 from ..automation.utilities import domain_utils, db_utils
 
 import utilities
-import expected
 from openwpmtest import OpenWPMTest
 
 psl = domain_utils.get_psl()
+
+ADBLOCKPLUS = {
+    "%s/abp/adblock_plus_test.html" % utilities.BASE_TEST_URL,
+    # favicon request is made to URL without a path
+    "%s/favicon.ico" % utilities.BASE_TEST_URL_NOPATH}
 
 
 class TestABP(OpenWPMTest):
@@ -46,7 +50,7 @@ class TestABP(OpenWPMTest):
             # exclude requests to safebrowsing and tracking protection backends
             if ps1 not in ("mozilla.com", "mozilla.net"):
                 urls.add(url)
-        assert urls == expected.adblockplus
+        assert urls == ADBLOCKPLUS
 
     def test_error_with_missing_option(self):
         manager_params, browser_params = self.get_config()

@@ -22,9 +22,34 @@ exports.run = function(crawlID, testing) {
       'testing': testing
     },
     onAttach: function onAttach(worker) {
-      var url = worker.url;
+
+      // Post-instrumentation filtering of records
+      // Return true to prevent a record from being written to the database
+      function dropRecord(data) {
+
+        // window.addEventListener -- See Issue #11
+        excludedEvents = ['unload', 'load', 'resize', 'scroll', 'beforeunload',
+                          'popstate','test'];
+        if (data.symbol && data.symbol == 'window.addEventListener') {
+          return data.args && data.args.length >= 1 && excludedEvents.includes(data.args[0]);
+        }
+
+        // window.document.addEventListener -- See Issue #11
+        excludedEvents = ['DOMContentLoaded','visibilitychange'];
+        if (data.symbol && data.symbol == 'window.document.addEventListener') {
+          return (data.args && data.args.length >= 1 && (
+                excludedEvents.includes(data.args[0]) || data.args[0].startsWith('webdriver')));
+        }
+
+        // Not an excluded record
+        return false;
+      }
 
       function processCallsAndValues(data) {
+        if (dropRecord(data)) {
+          return;
+        }
+
         var update = {};
         update["crawl_id"] = crawlID;
         update["script_url"] = loggingDB.escapeString(data.scriptUrl);
@@ -51,6 +76,11 @@ exports.run = function(crawlID, testing) {
           update["arguments"] = loggingDB.escapeString(JSON.stringify(args));
         }
 
+        // document_url is the current frame's document href
+        // top_level_url is the top-level frame's document href
+        update["document_url"] = loggingDB.escapeString(worker.url);
+        update["top_level_url"] = loggingDB.escapeString(worker.tab.url);
+
         loggingDB.executeSQL(loggingDB.createInsert("javascript", update), true);
       }
       worker.port.on("logCall", function(data){processCallsAndValues(data)});
@@ -68,6 +98,12 @@ exports.run = function(crawlID, testing) {
         update["element_type"] = loggingDB.escapeString(data.elementType);
         update["guid"] = loggingDB.escapeString(data.guid);
         update["time_stamp"] = loggingDB.escapeString(data.timeStamp);
+
+        // document_url is the current frame's document href
+        // top_level_url is the top-level frame's document href
+        update["document_url"] = loggingDB.escapeString(worker.url);
+        update["top_level_url"] = loggingDB.escapeString(worker.tab.url);
+
         loggingDB.executeSQL(loggingDB.createInsert("inserted_elements", update), true);
       });
       worker.port.on("elementModified", function(data) {
@@ -85,6 +121,12 @@ exports.run = function(crawlID, testing) {
         update["new_value"] = loggingDB.escapeString(data.newValue);
         update["guid"] = loggingDB.escapeString(data.guid);
         update["time_stamp"] = loggingDB.escapeString(data.timeStamp);
+
+        // document_url is the current frame's document href
+        // top_level_url is the top-level frame's document href
+        update["document_url"] = loggingDB.escapeString(worker.url);
+        update["top_level_url"] = loggingDB.escapeString(worker.tab.url);
+
         loggingDB.executeSQL(loggingDB.createInsert("modified_elements", update), true);
       });
     }

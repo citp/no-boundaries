@@ -6,6 +6,50 @@
 
   function add_listeners() {
 
+    // Add few filtered listeners. See #11
+    window.addEventListener('load', function(e) {
+      console.log("window load event fired");
+    }, true);
+    window.addEventListener('unload', function(e) {
+      console.log("window unload event fired");
+    }, true);
+    window.addEventListener('resize', function(e) {
+      console.log("window resize event fired");
+    }, true);
+    window.addEventListener('scroll', function(e) {
+      console.log("window scroll event fired");
+    }, true);
+    window.addEventListener('beforeunload', function(e) {
+      console.log("window beforeunload event fired");
+    }, true);
+    window.addEventListener('popstate', function(e) {
+      console.log("window popstate event fired");
+    }, true);
+    window.addEventListener('test', function(e) {
+      console.log("window test event fired");
+    }, true);
+    window.document.addEventListener('DOMContentLoaded', function(e) {
+      console.log("document DOMContentLoaded event fired");
+    }, true);
+    window.document.addEventListener('visibilitychange', function(e) {
+      console.log("document visibilitychange event fired");
+    }, true);
+
+
+    // Add event listeners that should not be filtered
+    window.document.addEventListener('scroll', function(e) {
+      console.log("document scroll event fired");
+    }, true);
+    window.document.addEventListener('beforeunload', function(e) {
+      console.log("document beforeunload event fired");
+    }, true);
+    window.document.body.addEventListener('beforeunload', function(e) {
+      console.log("document body beforeunload event fired");
+    }, true);
+    window.document.body.addEventListener('scroll', function(e) {
+      console.log("document body scroll event fired");
+    }, true);
+
     // Add listeners directly to input elements
     var inputs = document.querySelectorAll("input");
     for (var i=0; i<inputs.length; i++) {

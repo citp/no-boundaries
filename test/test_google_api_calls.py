@@ -269,8 +269,8 @@ class TestGoogleAPICalls(OpenWPMTest):
         )
         observed_calls = set()
         for row in rows:
-            if row[0].startswith('window.gapi'):
-                observed_calls.add(row)
+            if row['symbol'].startswith('window.gapi'):
+                observed_calls.add(tuple(row))
         assert observed_calls == expected_calls
 
     def test_spoofed_plus_api(self):
@@ -553,8 +553,8 @@ class TestGoogleAPICalls(OpenWPMTest):
         )
         observed_calls = set()
         for row in rows:
-            if row[0].startswith('window.gapi'):
-                observed_calls.add(row)
+            if row['symbol'].startswith('window.gapi'):
+                observed_calls.add(tuple(row))
         assert observed_calls == expected_calls
 
     def test_noop_calls(self):
@@ -671,6 +671,6 @@ class TestGoogleAPICalls(OpenWPMTest):
         )
         observed_calls = set()
         for row in rows:
-            if row[0].startswith('window.gapi'):
-                observed_calls.add(row)
+            if row['symbol'].startswith('window.gapi'):
+                observed_calls.add(tuple(row))
         assert expected_calls == observed_calls
