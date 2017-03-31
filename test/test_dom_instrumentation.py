@@ -2,7 +2,61 @@ import os
 from ..automation.utilities import db_utils
 from openwpmtest import OpenWPMTest
 import utilities
-import expected
+
+# DOM modification instrumentation
+TEST_PAGE = u'http://localtest.me:8000/test_pages/dom_modification.html'
+INSERTED_ELEMENTS = {
+        (TEST_PAGE,
+         TEST_PAGE,
+         u'true',
+         u'BODY/DIV[1,test1,,false,,]/FORM[1,form1,,false,,]',
+         u'FORM'),
+        (TEST_PAGE,
+         TEST_PAGE,
+         u'true',
+         u'BODY/DIV[1,test1,,false,,]/FORM[1,form1,,false,,]/'
+         'INPUT[1,email1,,false,,]',
+         u'INPUT'),
+        (TEST_PAGE,
+         TEST_PAGE,
+         u'true',
+         u'BODY/DIV[1,test1,,false,,]/FORM[1,form1,,false,,]/'
+         'INPUT[2,password1,,false,,]',
+         u'INPUT'),
+        (TEST_PAGE,
+         TEST_PAGE,
+         u'false',
+         u'BODY/DIV[2,test2,,false,,]/FORM[1,form2,,false,,]',
+         u'FORM'),
+        (TEST_PAGE,
+         TEST_PAGE,
+         u'true',
+         u'BODY/DIV[2,test2,,false,,]/FORM[1,form2,,false,,]/'
+         'INPUT[1,email2,,false,,]',
+         u'INPUT'),
+        (TEST_PAGE,
+         TEST_PAGE,
+         u'true',
+         u'BODY/DIV[2,test2,,false,,]/FORM[1,form2,,false,,]/'
+         'INPUT[2,password2,,false,,]',
+         u'INPUT')
+}
+MODIFIED_ELEMENTS = {
+        (TEST_PAGE,
+         TEST_PAGE,
+         u'BODY/DIV[1,test1,,false,,]/FORM[1,form1,,false,,]',
+         u'FORM',
+         u'autocomplete',
+         u'',
+         u'on'),
+        (TEST_PAGE,
+         TEST_PAGE,
+         u'BODY/DIV[2,test2,,false,,]/FORM[1,form2,,false,,]',
+         u'FORM',
+         u'autocomplete',
+         u'',
+         u'on')
+}
 
 
 class TestDOMInstrumentation(OpenWPMTest):
@@ -25,9 +79,10 @@ class TestDOMInstrumentation(OpenWPMTest):
             " f.node_path, f.element_type"
             " FROM inserted_elements AS f LEFT JOIN site_visits as v"
             " ON f.visit_id = v.visit_id"
-            " WHERE guid NOT NULL AND guid != ''"
+            " WHERE guid NOT NULL AND guid != ''",
+            as_tuple=True
         )
-        assert set(rows) == expected.inserted_elements
+        assert set(rows) == INSERTED_ELEMENTS
 
         # check element modifications
         rows = db_utils.query_db(
@@ -36,5 +91,7 @@ class TestDOMInstrumentation(OpenWPMTest):
             " f.element_type, f.attribute, f.prev_value, f.new_value"
             " FROM modified_elements AS f LEFT JOIN site_visits as v"
             " ON f.visit_id = v.visit_id"
-            " WHERE guid NOT NULL AND guid != ''")
-        assert set(rows) == expected.modified_elements
+            " WHERE guid NOT NULL AND guid != ''",
+            as_tuple=True
+        )
+        assert set(rows) == MODIFIED_ELEMENTS

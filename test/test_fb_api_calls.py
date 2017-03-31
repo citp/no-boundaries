@@ -191,8 +191,8 @@ class TestFBAPICalls(OpenWPMTest):
         )
         observed_calls = set()
         for row in rows:
-            if row[0].startswith('window.FB'):
-                observed_calls.add(row)
+            if row['symbol'].startswith('window.FB'):
+                observed_calls.add(tuple(row))
         assert expected_calls == observed_calls
 
     def test_graph_api(self, tmpdir):
@@ -447,6 +447,6 @@ class TestFBAPICalls(OpenWPMTest):
         )
         observed_calls = set()
         for row in rows:
-            if row[0].startswith('window.FB'):
-                observed_calls.add(row)
+            if row['symbol'].startswith('window.FB'):
+                observed_calls.add(tuple(row))
         assert expected_calls == observed_calls
