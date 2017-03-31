@@ -23,7 +23,33 @@ exports.run = function(crawlID, testing) {
     },
     onAttach: function onAttach(worker) {
 
+      // Post-instrumentation filtering of records
+      // Return true to prevent a record from being written to the database
+      function dropRecord(data) {
+
+        // window.addEventListener -- See Issue #11
+        excludedEvents = ['unload', 'load', 'resize', 'scroll', 'beforeunload',
+                          'popstate','test'];
+        if (data.symbol && data.symbol == 'window.addEventListener') {
+          return data.args && data.args.length >= 1 && excludedEvents.includes(data.args[0]);
+        }
+
+        // window.document.addEventListener -- See Issue #11
+        excludedEvents = ['DOMContentLoaded','visibilitychange'];
+        if (data.symbol && data.symbol == 'window.document.addEventListener') {
+          return (data.args && data.args.length >= 1 && (
+                excludedEvents.includes(data.args[0]) || data.args[0].startsWith('webdriver')));
+        }
+
+        // Not an excluded record
+        return false;
+      }
+
       function processCallsAndValues(data) {
+        if (dropRecord(data)) {
+          return;
+        }
+
         var update = {};
         update["crawl_id"] = crawlID;
         update["script_url"] = loggingDB.escapeString(data.scriptUrl);
