@@ -25,7 +25,7 @@ exports.run = function(crawlID, testing) {
 
       // Post-instrumentation filtering of records
       // Return true to prevent a record from being written to the database
-      function dropRecord(data) {
+      function shouldDropRecord(data) {
 
         // window.addEventListener -- See Issue #11
         excludedEvents = ['unload', 'load', 'resize', 'scroll', 'beforeunload',
@@ -46,7 +46,7 @@ exports.run = function(crawlID, testing) {
       }
 
       function processCallsAndValues(data) {
-        if (dropRecord(data)) {
+        if (shouldDropRecord(data)) {
           return;
         }
 
