@@ -43,7 +43,7 @@ class TestSimpleCommands(OpenWPMTest):
         manager.close()
 
         qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT site_url FROM site_visits")
+                                    "SELECT site_url FROM site_visits")
 
         # We had two separate page visits
         assert len(qry_res) == 2
@@ -67,8 +67,10 @@ class TestSimpleCommands(OpenWPMTest):
         manager.execute_command_sequence(cs_b)
         manager.close()
 
-        qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id, site_url FROM site_visits")
+        qry_res = db_utils.query_db(
+            manager_params['db'],
+            "SELECT visit_id, site_url FROM site_visits"
+        )
 
         # Construct dict mapping site_url to visit_id
         visit_ids = dict()
@@ -76,27 +78,27 @@ class TestSimpleCommands(OpenWPMTest):
             visit_ids[row[1]] = row[0]
 
         qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id FROM http_requests"
-                                     " WHERE url = ?", (url_a,))
+                                    "SELECT visit_id FROM http_requests"
+                                    " WHERE url = ?", (url_a,))
         assert qry_res[0][0] == visit_ids[url_a]
 
         qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id FROM http_requests"
-                                     " WHERE url = ?", (url_b,))
+                                    "SELECT visit_id FROM http_requests"
+                                    " WHERE url = ?", (url_b,))
         assert qry_res[0][0] == visit_ids[url_b]
 
         qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id FROM http_responses"
-                                     " WHERE url = ?", (url_a,))
+                                    "SELECT visit_id FROM http_responses"
+                                    " WHERE url = ?", (url_a,))
         assert qry_res[0][0] == visit_ids[url_a]
 
         qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id FROM http_responses"
-                                     " WHERE url = ?", (url_b,))
+                                    "SELECT visit_id FROM http_responses"
+                                    " WHERE url = ?", (url_b,))
         assert qry_res[0][0] == visit_ids[url_b]
 
     def test_browse_site_visits_table_valid(self):
-        """Check that CommandSequence.browse() works and populates db correctly."""
+        """Check that CommandSequence.browse() works"""
         # Run the test crawl
         manager_params, browser_params = self.get_config()
         manager = TaskManager.TaskManager(manager_params, browser_params)
@@ -112,7 +114,7 @@ class TestSimpleCommands(OpenWPMTest):
         manager.close()
 
         qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT site_url FROM site_visits")
+                                    "SELECT site_url FROM site_visits")
 
         # We had two separate page visits
         assert len(qry_res) == 2
@@ -121,7 +123,7 @@ class TestSimpleCommands(OpenWPMTest):
         assert qry_res[1][0] == url_b
 
     def test_browse_http_table_valid(self):
-        """Check CommandSequence.browse() works and populates http tables correctly.
+        """Check CommandSequence.browse() works
 
         NOTE: Since the browse command is choosing links randomly, there is a
               (very small -- 2*0.5^20) chance this test will fail with valid
@@ -141,8 +143,10 @@ class TestSimpleCommands(OpenWPMTest):
         manager.execute_command_sequence(cs_b)
         manager.close()
 
-        qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id, site_url FROM site_visits")
+        qry_res = db_utils.query_db(
+            manager_params['db'],
+            "SELECT visit_id, site_url FROM site_visits"
+        )
 
         # Construct dict mapping site_url to visit_id
         visit_ids = dict()
@@ -150,23 +154,23 @@ class TestSimpleCommands(OpenWPMTest):
             visit_ids[row[1]] = row[0]
 
         qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id FROM http_requests"
-                                     " WHERE url = ?", (url_a,))
+                                    "SELECT visit_id FROM http_requests"
+                                    " WHERE url = ?", (url_a,))
         assert qry_res[0][0] == visit_ids[url_a]
 
         qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id FROM http_requests"
-                                     " WHERE url = ?", (url_b,))
+                                    "SELECT visit_id FROM http_requests"
+                                    " WHERE url = ?", (url_b,))
         assert qry_res[0][0] == visit_ids[url_b]
 
         qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id FROM http_responses"
-                                     " WHERE url = ?", (url_a,))
+                                    "SELECT visit_id FROM http_responses"
+                                    " WHERE url = ?", (url_a,))
         assert qry_res[0][0] == visit_ids[url_a]
 
         qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id FROM http_responses"
-                                     " WHERE url = ?", (url_b,))
+                                    "SELECT visit_id FROM http_responses"
+                                    " WHERE url = ?", (url_b,))
         assert qry_res[0][0] == visit_ids[url_b]
 
         # Page simple_a.html has three links:
@@ -177,22 +181,24 @@ class TestSimpleCommands(OpenWPMTest):
         # 5) A link to example.com?localtest.me
         # We should see page visits for 1 and 2, but not 3-5.
         qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id FROM http_responses"
-                                     " WHERE url = ?", (url_c,))
+                                    "SELECT visit_id FROM http_responses"
+                                    " WHERE url = ?", (url_c,))
         assert qry_res[0][0] == visit_ids[url_a]
         qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id FROM http_responses"
-                                     " WHERE url = ?", (url_d,))
+                                    "SELECT visit_id FROM http_responses"
+                                    " WHERE url = ?", (url_d,))
         assert qry_res[0][0] == visit_ids[url_a]
 
         # We expect 4 urls: a,c,d and a favicon request
-        qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT COUNT(DISTINCT url) FROM http_responses"
-                                     " WHERE visit_id = ?", (visit_ids[url_a],))
+        qry_res = db_utils.query_db(
+            manager_params['db'],
+            "SELECT COUNT(DISTINCT url) FROM http_responses"
+            " WHERE visit_id = ?", (visit_ids[url_a],)
+        )
         assert qry_res[0][0] == 4
 
     def test_browse_wrapper_http_table_valid(self):
-        """Check that TaskManager.browse() wrapper works and populates http tables correctly.
+        """Check that TaskManager.browse() wrapper works
 
         NOTE: Since the browse command is choosing links randomly, there is a
               (very small -- 2*0.5^20) chance this test will fail with valid
@@ -207,8 +213,10 @@ class TestSimpleCommands(OpenWPMTest):
         manager.browse(url_b, num_links=1, sleep=1)
         manager.close()
 
-        qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id, site_url FROM site_visits")
+        qry_res = db_utils.query_db(
+            manager_params['db'],
+            "SELECT visit_id, site_url FROM site_visits"
+        )
 
         # Construct dict mapping site_url to visit_id
         visit_ids = dict()
@@ -216,23 +224,23 @@ class TestSimpleCommands(OpenWPMTest):
             visit_ids[row[1]] = row[0]
 
         qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id FROM http_requests"
-                                     " WHERE url = ?", (url_a,))
+                                    "SELECT visit_id FROM http_requests"
+                                    " WHERE url = ?", (url_a,))
         assert qry_res[0][0] == visit_ids[url_a]
 
         qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id FROM http_requests"
-                                     " WHERE url = ?", (url_b,))
+                                    "SELECT visit_id FROM http_requests"
+                                    " WHERE url = ?", (url_b,))
         assert qry_res[0][0] == visit_ids[url_b]
 
         qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id FROM http_responses"
-                                     " WHERE url = ?", (url_a,))
+                                    "SELECT visit_id FROM http_responses"
+                                    " WHERE url = ?", (url_a,))
         assert qry_res[0][0] == visit_ids[url_a]
 
         qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id FROM http_responses"
-                                     " WHERE url = ?", (url_b,))
+                                    "SELECT visit_id FROM http_responses"
+                                    " WHERE url = ?", (url_b,))
         assert qry_res[0][0] == visit_ids[url_b]
 
         # Page simple_a.html has three links:
@@ -243,22 +251,24 @@ class TestSimpleCommands(OpenWPMTest):
         # 5) A link to example.com?localtest.me
         # We should see page visits for 1 and 2, but not 3-5.
         qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id FROM http_responses"
-                                     " WHERE url = ?", (url_c,))
+                                    "SELECT visit_id FROM http_responses"
+                                    " WHERE url = ?", (url_c,))
         assert qry_res[0][0] == visit_ids[url_a]
         qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT visit_id FROM http_responses"
-                                     " WHERE url = ?", (url_d,))
+                                    "SELECT visit_id FROM http_responses"
+                                    " WHERE url = ?", (url_d,))
         assert qry_res[0][0] == visit_ids[url_a]
 
         # We expect 4 urls: a,c,d and a favicon request
-        qry_res = db_utils.query_db(manager_params['db'],
-                                     "SELECT COUNT(DISTINCT url) FROM http_responses"
-                                     " WHERE visit_id = ?", (visit_ids[url_a],))
+        qry_res = db_utils.query_db(
+            manager_params['db'],
+            "SELECT COUNT(DISTINCT url) FROM http_responses"
+            " WHERE visit_id = ?", (visit_ids[url_a],)
+        )
         assert qry_res[0][0] == 4
 
     def test_save_screenshot_valid(self, tmpdir):
-        """Check that 'save_screenshot' works and screenshot is created properly."""
+        """Check that 'save_screenshot' works"""
         # Run the test crawl
         manager_params, browser_params = self.get_config(str(tmpdir))
         manager = TaskManager.TaskManager(manager_params, browser_params)
@@ -268,9 +278,9 @@ class TestSimpleCommands(OpenWPMTest):
         manager.execute_command_sequence(cs)
         manager.close()
 
-
         # Check that image is not blank
-        im = Image.open(os.path.join(str(tmpdir), 'screenshots', 'test_screenshot.png'))
+        im = Image.open(os.path.join(
+            str(tmpdir), 'screenshots', 'test_screenshot.png'))
         bands = im.split()
 
         isBlank = all(band.getextrema() == (255, 255) for band in bands)
@@ -288,7 +298,8 @@ class TestSimpleCommands(OpenWPMTest):
         manager.execute_command_sequence(cs)
         manager.close()
 
-        with open(os.path.join(str(tmpdir), 'sources', 'test_source.html'), 'rb') as f:
+        with open(os.path.join(
+                str(tmpdir), 'sources', 'test_source.html'), 'rb') as f:
             actual_source = f.read()
         with open('./test_pages/expected_source.html', 'rb') as f:
             expected_source = f.read()
