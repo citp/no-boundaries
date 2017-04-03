@@ -7,13 +7,17 @@ from selenium.webdriver.common.action_chains import ActionChains
 import os
 import random
 import time
+import json
+import gzip
+import urllib
 
 from ..SocketInterface import clientsocket
 from ..MPLogger import loggingclient
 from utils.lso import get_flash_cookies
 from utils.firefox_profile import get_cookies
 from utils.webdriver_extensions import (scroll_down, wait_until_loaded,
-                                        get_intra_links)
+                                        get_intra_links, execute_in_all_frames)
+from ..utilities import domain_utils as du
 
 # Bot mitigation constants
 NUM_MOUSE_MOVES = 10  # number of times to randomly move the mouse
@@ -251,3 +255,37 @@ def dump_page_source(dump_name, webdriver, browser_params, manager_params):
                            dump_name + '.html')
     with open(outfile, 'wb') as f:
         f.write(webdriver.page_source.encode('utf8') + '\n')
+
+
+def recursive_dump_page_source(visit_id, driver, manager_params):
+    """Dump a compressed html tree for the current page visit"""
+    url = urllib.quote_plus(du.get_stripped_url(driver.current_url))
+    outfile = os.path.join(manager_params['source_dump_path'],
+                           '%i-%s.json.gz' % (visit_id, url))
+
+    def collect_source(driver, frame_stack, rv={}):
+        is_top_frame = len(frame_stack) == 1
+
+        # Gather frame information
+        doc_url = driver.execute_script("return window.document.URL;")
+        if is_top_frame:
+            page_source = rv
+        else:
+            page_source = dict()
+        page_source['doc_url'] = doc_url
+        page_source['source'] = driver.page_source.encode('UTF-8')
+        page_source['iframes'] = dict()
+
+        # Store frame info in correct area of return value
+        if is_top_frame:
+            return
+        out_dict = rv['iframes']
+        for frame in frame_stack[1:-1]:
+            out_dict = out_dict[frame.id]['iframes']
+        out_dict[frame_stack[-1].id] = page_source
+
+    page_source = dict()
+    execute_in_all_frames(driver, collect_source, {'rv': page_source})
+
+    with gzip.GzipFile(outfile, 'wb') as f:
+        f.write(json.dumps(page_source))
