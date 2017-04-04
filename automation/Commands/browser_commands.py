@@ -165,7 +165,7 @@ def browse_website(url, num_links, sleep, visit_id, webdriver, proxy_queue,
     # Then visit a few subpages
     for i in range(num_links):
         links = get_intra_links(webdriver, url)
-        links = filter(lambda x: x.is_displayed() is True, links)
+        links = filter(lambda x: x.is_displayed(), links)
         if len(links) == 0:
             break
         r = int(random.random()*len(links))
