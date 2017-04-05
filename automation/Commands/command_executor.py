@@ -1,5 +1,6 @@
 import browser_commands
 import profile_commands
+import facebook_commands
 
 
 def execute_command(command, webdriver, proxy_queue, browser_settings, browser_params, manager_params, extension_socket):
@@ -55,6 +56,9 @@ def execute_command(command, webdriver, proxy_queue, browser_settings, browser_p
             driver=webdriver,
             manager_params=manager_params
         )
+
+    if command[0] == 'FACEBOOK_LOGIN':
+        facebook_commands.facebook_login(driver=webdriver, url=command[1])
 
     if command[0] == 'RUN_CUSTOM_FUNCTION':
         arg_dict = {"command": command,
