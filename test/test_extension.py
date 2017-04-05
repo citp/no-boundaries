@@ -4,6 +4,7 @@ from openwpmtest import OpenWPMTest
 from ..automation import TaskManager
 from ..automation.utilities import db_utils
 from datetime import datetime
+import os
 
 # Expected Navigator and Screen properties
 PROPERTIES = {
@@ -32,71 +33,41 @@ PROPERTIES = {
 CANVAS_TEST_URL = u"%s/canvas_fingerprinting.html" % utilities.BASE_TEST_URL
 
 CANVAS_CALLS = {
-    (CANVAS_TEST_URL, u"HTMLCanvasElement.getContext",
-     u"get", u"FUNCTION", None, None),
-    (CANVAS_TEST_URL,
-     u"HTMLCanvasElement.getContext", u"call", u"", 0, u"2d"),
-    (CANVAS_TEST_URL, u"CanvasRenderingContext2D.textBaseline",
-     u"set", u"top", None, None),
-    (CANVAS_TEST_URL, u"CanvasRenderingContext2D.font", u"set",
-     u"14px 'Arial'", None, None),
-    (CANVAS_TEST_URL, u"CanvasRenderingContext2D.textBaseline",
-     u"set", u"alphabetic", None, None),
-    (CANVAS_TEST_URL, u"CanvasRenderingContext2D.fillStyle",
-     u"set", u"#f60", None, None),
-    (CANVAS_TEST_URL, u"CanvasRenderingContext2D.fillRect",
-     u"get", u"FUNCTION", None, None),
-    (CANVAS_TEST_URL, u"CanvasRenderingContext2D.fillRect",
-     u"call", u"", 0, u"125"),
-    (CANVAS_TEST_URL, u"CanvasRenderingContext2D.fillRect",
-     u"call", u"", 1, u"1"),
-    (CANVAS_TEST_URL, u"CanvasRenderingContext2D.fillRect",
-     u"call", u"", 2, u"62"),
-    (CANVAS_TEST_URL, u"CanvasRenderingContext2D.fillRect",
-     u"call", u"", 3, u"20"),
-    (CANVAS_TEST_URL, u"CanvasRenderingContext2D.fillStyle",
-     u"set", u"#069", None, None),
-    (CANVAS_TEST_URL, u"CanvasRenderingContext2D.fillText",
-     u"get", u"FUNCTION", None, None),
-    (CANVAS_TEST_URL, u"CanvasRenderingContext2D.fillText",
-     u"call", u"", 0, u"BrowserLeaks,com <canvas> 1.0"),
-    (CANVAS_TEST_URL, u"CanvasRenderingContext2D.fillText",
-     u"call", u"", 1, u"2"),
-    (CANVAS_TEST_URL, u"CanvasRenderingContext2D.fillText",
-     u"call", u"", 2, u"15"),
-    (CANVAS_TEST_URL, u"CanvasRenderingContext2D.fillStyle",
-     u"set", u"rgba(102, 204, 0, 0.7)", None, None),
-    (CANVAS_TEST_URL, u"CanvasRenderingContext2D.fillText",
-     u"call", u"", 0, u"BrowserLeaks,com <canvas> 1.0"),
-    (CANVAS_TEST_URL, u"CanvasRenderingContext2D.fillText",
-     u"call", u"", 1, u"4"),
-    (CANVAS_TEST_URL, u"CanvasRenderingContext2D.fillText",
-     u"call", u"", 2, u"17"),
-    (CANVAS_TEST_URL, u"HTMLCanvasElement.toDataURL",
-     u"get", u"FUNCTION", None, None),
-    (CANVAS_TEST_URL, u"HTMLCanvasElement.toDataURL", u"call",
-     u"", None, None)
+    (CANVAS_TEST_URL, 'CanvasRenderingContext2D.fillStyle',
+     'set', '#f60', None),
+    (CANVAS_TEST_URL, 'CanvasRenderingContext2D.textBaseline', 'set',
+     'alphabetic', None),
+    (CANVAS_TEST_URL, 'CanvasRenderingContext2D.textBaseline', 'set',
+     'top', None),
+    (CANVAS_TEST_URL, 'CanvasRenderingContext2D.font', 'set',
+     "14px 'Arial'", None),
+    (CANVAS_TEST_URL, 'CanvasRenderingContext2D.fillStyle', 'set',
+     '#069', None),
+    (CANVAS_TEST_URL, 'CanvasRenderingContext2D.fillStyle', 'set',
+     'rgba(102, 204, 0, 0.7)', None),
+    (CANVAS_TEST_URL, 'HTMLCanvasElement.getContext', 'call',
+     '', '{"0":"2d"}'),
+    (CANVAS_TEST_URL, 'CanvasRenderingContext2D.fillRect', 'call',
+     '', '{"0":125,"1":1,"2":62,"3":20}'),
+    (CANVAS_TEST_URL, 'HTMLCanvasElement.toDataURL', 'call',
+     '', None),
+    (CANVAS_TEST_URL, 'CanvasRenderingContext2D.fillText', 'call',
+     '', '{"0":"BrowserLeaks,com <canvas> 1.0","1":4,"2":17}'),
+    (CANVAS_TEST_URL, 'CanvasRenderingContext2D.fillText', 'call',
+     '', '{"0":"BrowserLeaks,com <canvas> 1.0","1":2,"2":15}')
 }
 
 WEBRTC_TEST_URL = u"%s/webrtc_localip.html" % utilities.BASE_TEST_URL
 
 WEBRTC_CALLS = {
-    (WEBRTC_TEST_URL, u'RTCPeerConnection.createDataChannel',
-     u'get', u'FUNCTION', None, None),
-    (WEBRTC_TEST_URL, u'RTCPeerConnection.createDataChannel',
-     u'call', u'', 0, u''),
-    (WEBRTC_TEST_URL, u'RTCPeerConnection.createDataChannel',
-     u'call', u'', 1, u'{"reliable":false}'),
-    (WEBRTC_TEST_URL, u'RTCPeerConnection.onicecandidate',
-     u'set', u'FUNCTION', None, None),
-    (WEBRTC_TEST_URL, u'RTCPeerConnection.createOffer',
-     u'get', u'FUNCTION', None, None),
-    (WEBRTC_TEST_URL, u'RTCPeerConnection.createOffer',
-     u'call', u'', 0, u'FUNCTION'),
-    (WEBRTC_TEST_URL, u'RTCPeerConnection.createOffer',
-     u'call', u'', 1, u'FUNCTION'),
-    (WEBRTC_TEST_URL, u'RTCPeerConnection.setLocalDescription',
-     u'get', u'FUNCTION', None, None),
+    (WEBRTC_TEST_URL, 'RTCPeerConnection.createOffer', 'call',
+     '', '{"0":"FUNCTION","1":"FUNCTION"}'),
+    (WEBRTC_TEST_URL, 'RTCPeerConnection.createDataChannel', 'call',
+     '', '{"0":""}'),
+    (WEBRTC_TEST_URL, 'RTCPeerConnection.createDataChannel', 'call',
+     '', '{"0":"","1":"{\\"reliable\\":false}"}'),
+    (WEBRTC_TEST_URL, 'RTCPeerConnection.onicecandidate', 'set',
+     'FUNCTION', None)
 }
 
 # we expect these strings to be present in the WebRTC SDP
@@ -166,7 +137,7 @@ SET_PROPERTY = [(SET_PROP_TEST_PAGE,
                  u'set_window_name@%s:5:3\n'
                  '@%s:8:1' % (SET_PROP_TEST_PAGE, SET_PROP_TEST_PAGE),
                  u'window.HTMLFormElement.action',
-                 u'set', u'TEST-ACTION', None, None)]
+                 u'set', u'TEST-ACTION', None)]
 
 
 JS_COOKIE_TEST_URL = u'%s/js_cookie.html' % utilities.BASE_TEST_URL
@@ -196,6 +167,21 @@ DOCUMENT_COOKIE_WRITE = (
 
 DOCUMENT_COOKIE_READ_WRITE = set([DOCUMENT_COOKIE_READ,
                                   DOCUMENT_COOKIE_WRITE])
+
+CONTEXT_PARENT_URL = utilities.BASE_TEST_URL + '/nested_iframes/'
+CONTEXT_CHILD_1_URL = u'http://iframe.localtest.me:8000/test_pages/nested_iframes/' # noqa
+CONTEXT_CHILD_2_URL = u'http://iframe2.localtest.me:8000/test_pages/nested_iframes/' # noqa
+CONTEXT_URLS = {
+    (CONTEXT_PARENT_URL + u'shared_script.js',
+     CONTEXT_PARENT_URL + u'parent_page.html',
+     CONTEXT_PARENT_URL + u'parent_page.html'),
+    (CONTEXT_PARENT_URL + u'shared_script.js',
+     CONTEXT_CHILD_1_URL + u'child_page_1.html',
+     CONTEXT_PARENT_URL + u'parent_page.html'),
+    (CONTEXT_PARENT_URL + u'shared_script.js',
+     CONTEXT_CHILD_2_URL + u'child_page_2.html',
+     CONTEXT_PARENT_URL + u'parent_page.html')
+}
 
 
 class TestExtension(OpenWPMTest):
@@ -280,8 +266,8 @@ class TestExtension(OpenWPMTest):
         observed_rows = set()
         for item in rows:
             if (item[1] == "RTCPeerConnection.setLocalDescription" and
-                    item[2] == 'call' and item[4] == 0):
-                sdp_offer = item[5]
+                    item[2] == 'call'):
+                sdp_offer = item[4]
                 self.check_webrtc_sdp_offer(sdp_offer)
             else:
                 observed_rows.add(item)
@@ -305,8 +291,8 @@ class TestExtension(OpenWPMTest):
         db = self.visit('/set_property/set_property.html')
         rows = db_utils.query_db(db, "SELECT script_url, script_line,"
                                  " script_col, call_stack, symbol,"
-                                 " operation, value, parameter_index,"
-                                 " parameter_value FROM javascript")
+                                 " operation, value, arguments "
+                                 "FROM javascript", as_tuple=True)
         assert rows == SET_PROPERTY
 
     def test_js_call_stack(self):
@@ -314,8 +300,11 @@ class TestExtension(OpenWPMTest):
         # Check that all stack info are recorded
         rows = db_utils.get_javascript_entries(db, all_columns=True)
         observed_rows = set()
-        for item in rows:
-            observed_rows.add(item[3:11])
+        for row in rows:
+            item = (row['script_url'], row['script_line'], row['script_col'],
+                    row['func_name'], row['script_loc_eval'],
+                    row['call_stack'], row['symbol'], row['operation'])
+            observed_rows.add(item)
         assert JS_STACK_CALLS == observed_rows
 
     def test_js_time_stamp(self):
@@ -326,7 +315,8 @@ class TestExtension(OpenWPMTest):
         rows = db_utils.get_javascript_entries(db, all_columns=True)
         assert len(rows)  # make sure we have some JS events captured
         for row in rows:
-            js_time = datetime.strptime(row[14], "%Y-%m-%dT%H:%M:%S.%fZ")
+            js_time = datetime.strptime(row['time_stamp'],
+                                        "%Y-%m-%dT%H:%M:%S.%fZ")
             # compare UTC now and the timestamp recorded at the visit
             assert (utc_now - js_time).seconds < MAX_TIMEDELTA
         assert not db_utils.any_command_failed(db)
@@ -334,6 +324,57 @@ class TestExtension(OpenWPMTest):
     def test_document_cookie_instrumentation(self):
         db = self.visit(utilities.BASE_TEST_URL + "/js_cookie.html")
         rows = db_utils.get_javascript_entries(db, all_columns=True)
-        # [3:12] exclude id and empty columns
-        captured_cookie_calls = set([row[3:12] for row in rows])
+        captured_cookie_calls = set()
+        for row in rows:
+            item = (row['script_url'], row['script_line'], row['script_col'],
+                    row['func_name'], row['script_loc_eval'],
+                    row['call_stack'], row['symbol'], row['operation'],
+                    row['value'])
+            captured_cookie_calls.add(item)
         assert captured_cookie_calls == DOCUMENT_COOKIE_READ_WRITE
+
+    def test_document_and_top_level_url(self):
+        """Ensure document and top-level urls are set in all js instruments"""
+        test_url = os.path.join(utilities.BASE_TEST_URL, 'nested_iframes',
+                                'parent_page.html')
+        db = self.visit(test_url, sleep_after=5)
+
+        # check javascript entries
+        observed_js = set()
+        for row in db_utils.get_javascript_entries(db, all_columns=True):
+            observed_js.add((row['script_url'],
+                             row['document_url'],
+                             row['top_level_url']))
+        assert observed_js == CONTEXT_URLS
+
+        # check element insertions
+        rows = db_utils.query_db(
+            db,
+            "SELECT * FROM inserted_elements AS f LEFT JOIN site_visits as v"
+            " ON f.visit_id = v.visit_id"
+            " WHERE guid NOT NULL AND guid != ''"
+        )
+        observed_inserts = set()
+        for row in rows:
+            observed_inserts.add((row['script_url'],
+                                  row['document_url'],
+                                  row['top_level_url']))
+        assert observed_inserts == CONTEXT_URLS
+
+        # check element modifications
+        rows = db_utils.query_db(
+            db,
+            "SELECT * FROM modified_elements AS f LEFT JOIN site_visits as v"
+            " ON f.visit_id = v.visit_id"
+            " WHERE guid NOT NULL AND guid != ''"
+        )
+        observed_modifications = set()
+        for row in rows:
+            # row['script_url'] gives incorrect url. See #126.
+            script_url = ':'.join(
+                row['call_stack'].split('@')[-1].split(':')[0:-2])
+
+            observed_modifications.add((script_url,
+                                        row['document_url'],
+                                        row['top_level_url']))
+        assert observed_modifications == CONTEXT_URLS

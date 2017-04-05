@@ -77,7 +77,8 @@ class TestCrawl(OpenWPMTest):
         crawl_db = manager_params['db']
 
         # Grab urls from crawl database
-        rows = db_utils.query_db(crawl_db, "SELECT url FROM http_requests")
+        rows = db_utils.query_db(crawl_db, "SELECT url FROM http_requests",
+                                 as_tuple=True)
         req_ps = set()  # visited domains from http_requests table
         for url, in rows:
             req_ps.add(psl.get_public_suffix(urlparse(url).hostname))
@@ -85,7 +86,8 @@ class TestCrawl(OpenWPMTest):
         hist_ps = set()  # visited domains from CrawlHistory Table
         successes = dict()
         rows = db_utils.query_db(crawl_db, "SELECT arguments, bool_success "
-                                  "FROM CrawlHistory WHERE command='GET'")
+                                 "FROM CrawlHistory WHERE command='GET'",
+                                 as_tuple=True)
         for url, success in rows:
             ps = psl.get_public_suffix(urlparse(url).hostname)
             hist_ps.add(ps)
@@ -93,7 +95,8 @@ class TestCrawl(OpenWPMTest):
 
         # Grab urls from Firefox database
         profile_ps = set()  # visited domains from firefox profile
-        rows = db_utils.query_db(ff_db, "SELECT url FROM moz_places")
+        rows = db_utils.query_db(ff_db, "SELECT url FROM moz_places",
+                                 as_tuple=True)
         for host, in rows:
             try:
                 profile_ps.add(psl.get_public_suffix(urlparse(host).hostname))
@@ -104,7 +107,8 @@ class TestCrawl(OpenWPMTest):
         # 1. We've made requests to it
         # 2. The url is a top_url we entered into the address bar
         # 3. The url successfully loaded (see: Issue #40)
-        # 4. The site does not respond to the initial request with a 204 (won't show in FF DB)
+        # 4. The site does not respond to the initial request with a 204
+        #    (won't show in FF DB)
         missing_urls = req_ps.intersection(hist_ps).difference(profile_ps)
         unexpected_missing_urls = set()
         for url in missing_urls:
@@ -113,22 +117,22 @@ class TestCrawl(OpenWPMTest):
 
             # Get the visit id for the url
             rows = db_utils.query_db(crawl_db,
-                                      "SELECT visit_id FROM site_visits "
-                                      "WHERE site_url = ?",
-                                      ('http://' + url,))
+                                     "SELECT visit_id FROM site_visits "
+                                     "WHERE site_url = ?",
+                                     ('http://' + url,), as_tuple=True)
             visit_id = rows[0]
 
             rows = db_utils.query_db(crawl_db,
-                                      "SELECT COUNT(*) FROM http_responses "
-                                      "WHERE visit_id = ?",
-                                      (visit_id,))
+                                     "SELECT COUNT(*) FROM http_responses "
+                                     "WHERE visit_id = ?",
+                                     (visit_id,), as_tuple=True)
             if rows[0] > 1:
                 continue
 
             rows = db_utils.query_db(crawl_db,
-                                      "SELECT response_status, location FROM "
-                                      "http_responses WHERE visit_id = ?",
-                                      (visit_id,))
+                                     "SELECT response_status, location FROM "
+                                     "http_responses WHERE visit_id = ?",
+                                     (visit_id,), as_tuple=True)
             response_status, location = rows[0]
             if response_status == 204:
                 continue

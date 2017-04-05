@@ -1,5 +1,6 @@
 from Errors import CommandExecutionError
 
+
 class CommandSequence:
     """A CommandSequence wraps a series of commands to be performed
     on a visit to one top-level site into one logical
@@ -46,7 +47,7 @@ class CommandSequence:
         self.commands_with_timeout.append((command, timeout))
         self.contains_get_or_browse = True
 
-    def browse(self, num_links = 2, sleep=0, timeout=60):
+    def browse(self, num_links=2, sleep=0, timeout=60):
         """ browse a website and visit <num_links> links on the page """
         self.total_timeout += timeout
         command = ('BROWSE', self.url, num_links, sleep)
@@ -59,7 +60,8 @@ class CommandSequence:
         self.total_timeout += timeout
         if not self.contains_get_or_browse:
             raise CommandExecutionError("No get or browse request preceding "
-                                        "the dump storage vectors command", self)
+                                        "the dump storage vectors command",
+                                        self)
         command = ('DUMP_FLASH_COOKIES',)
         self.commands_with_timeout.append((command, timeout))
 
@@ -69,11 +71,13 @@ class CommandSequence:
         self.total_timeout += timeout
         if not self.contains_get_or_browse:
             raise CommandExecutionError("No get or browse request preceding "
-                                        "the dump storage vectors command", self)
+                                        "the dump storage vectors command",
+                                        self)
         command = ('DUMP_PROFILE_COOKIES',)
         self.commands_with_timeout.append((command, timeout))
 
-    def dump_profile(self, dump_folder, close_webdriver=False, compress=True, timeout=120):
+    def dump_profile(self, dump_folder, close_webdriver=False,
+                     compress=True, timeout=120):
         """ dumps from the profile path to a given file (absolute path) """
         self.total_timeout += timeout
         command = ('DUMP_PROF', dump_folder, close_webdriver, compress)
@@ -84,12 +88,13 @@ class CommandSequence:
         self.total_timeout += timeout
         if not self.contains_get_or_browse:
             raise CommandExecutionError("No get or browse request preceding "
-                                        "the dump storage vectors command", self)
+                                        "the dump storage vectors command",
+                                        self)
         command = ('EXTRACT_LINKS',)
         self.commands_with_timeout.append((command, timeout))
 
     def save_screenshot(self, screenshot_name, timeout=30):
-        """Saves screenshot of page to 'screenshots' directory in data directory."""
+        """Saves screenshot of page to 'screenshots' dir in data directory."""
         self.total_timeout += timeout
         if not self.contains_get_or_browse:
             raise CommandExecutionError("No get or browse request preceding "
@@ -98,12 +103,41 @@ class CommandSequence:
         self.commands_with_timeout.append((command, timeout))
 
     def dump_page_source(self, dump_name, timeout=30):
-        """Dumps rendered source of current page visit to 'sources' directory."""
+        """Dumps rendered source of current page visit to 'sources' dir."""
         self.total_timeout += timeout
         if not self.contains_get_or_browse:
             raise CommandExecutionError("No get or browse request preceding "
                                         "the dump page source command", self)
         command = ('DUMP_PAGE_SOURCE', dump_name,)
+        self.commands_with_timeout.append((command, timeout))
+
+    def recursive_dump_page_source(self, timeout=30):
+        """Dumps rendered source of current page visit to 'sources' dir.
+
+        Unlike `dump_page_source`, this includes iframe sources. Archive is
+        stored in `manager_params['source_dump_path']` and is keyed by the
+        current `visit_id` and top-level url. The source dump is a gzipped json
+        file with the following structure:
+
+        {
+            'document_url': "http://example.com",
+            'source': "<html> ... </html>",
+            'iframes': {
+                'frame_1': {'document_url': ...,
+                            'source': ...,
+                            'iframes: { ... }},
+                'frame_2': {'document_url': ...,
+                            'source': ...,
+                            'iframes: { ... }},
+                'frame_3': { ... }
+            }
+        }
+        """
+        self.total_timeout += timeout
+        if not self.contains_get_or_browse:
+            raise CommandExecutionError("No get or browse request preceding "
+                                        "the dump page source command", self)
+        command = ('RECURSIVE_DUMP_PAGE_SOURCE',)
         self.commands_with_timeout.append((command, timeout))
 
     def run_custom_function(self, function_handle, func_args=(), timeout=30):

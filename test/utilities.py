@@ -11,6 +11,7 @@ BASE_TEST_URL_DOMAIN = "localtest.me"
 BASE_TEST_URL_NOPATH = "http://%s:%s" % (BASE_TEST_URL_DOMAIN,
                                          LOCAL_WEBSERVER_PORT)
 BASE_TEST_URL = "%s/test_pages" % BASE_TEST_URL_NOPATH
+BASE_TEST_URL_NOSCHEME = BASE_TEST_URL.split('//')[1]
 
 
 class MyTCPServer(SocketServer.TCPServer):
@@ -46,3 +47,17 @@ def rand_str(size=8):
 def filter_dict(dct, keys):
     """Filter dictionary to specifed keys"""
     return {key: dct[key] for key in keys}
+
+
+def replace_functions(dct):
+    """Replace function strings in dct values with 'function...' (in place).
+
+    Many argument lists have a long function argument. To avoid clutter we
+    cut these down to 'function...' when checking against expected values.
+    """
+    if not type(dct) == dict:
+        raise TypeError("dct argument must be of type `dict`")
+    for key, value in dct.items():
+        if value.startswith('function'):
+            dct[key] = 'function...'
+    return dct

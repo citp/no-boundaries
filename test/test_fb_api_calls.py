@@ -2,6 +2,7 @@ from openwpmtest import OpenWPMTest
 from ..automation import TaskManager, CommandSequence
 from ..automation.utilities import db_utils
 import utilities as util
+import json
 
 FB_API_JS_TEST_URL = u"%s/fb_api/fb_steal.js" % util.BASE_TEST_URL
 FB_API_TEST_URL = u"%s/fb_api/fb_login.html" % util.BASE_TEST_URL
@@ -15,8 +16,11 @@ fb_api_calls = [
     (FB_API_TEST_URL, u'window.FB.getAuthResponse'),
     (FB_API_TEST_URL, u'window.FB.Event.subscribe')
 ]
-fb_api_args = {u'{"fields":"name,email,gender"}', u'/me'}
-fb_init_arg = u'{"appId":"173371693135221","cookie":true,"xfbml":true,"version":"v2.7"}'  # noqa
+fb_api_args = {"0": "/me",
+               "1": u'{"fields":"name,email,gender"}',
+               "2": "function..."}
+fb_init_arg = ('{"0":"{\\"appId\\":\\"173371693135221\\",\\"cookie\\":true,'
+               '\\"xfbml\\":true,\\"version\\":\\"v2.7\\"}"}')
 fb_subscribed_events = {
     u'auth.login',
     u'auth.authResponseChange',
@@ -63,26 +67,28 @@ class TestFBAPICalls(OpenWPMTest):
     def get_config(self, data_dir=""):
         manager_params, browser_params = self.get_test_config(data_dir)
         browser_params[0]['js_instrument'] = True
-        browser_params[0]['spoof_social_login'] = True
+        browser_params[0]['spoof_identity']['enabled'] = True
+        browser_params[0]['spoof_identity']['facebook'] = True
         return manager_params, browser_params
 
     def test_fb_api_calls(self):
         db = self.visit('/fb_api/fb_login.html', sleep_after=20)
         rows = db_utils.get_javascript_entries(db)
-        observed_api_args = set()
         observed_api_calls = set()
         observed_subscribe_events = set()
-        for script_url, symbol, operation, value, pindex, pvalue in rows:
+        for script_url, symbol, operation, value, arguments in rows:
             if operation != 'call':
                 continue
             observed_api_calls.add((script_url, symbol))
-            if (script_url == FB_API_JS_TEST_URL and symbol == u'window.FB.api'
-                    and pindex != 2):
-                observed_api_args.add(pvalue)
+            if (script_url == FB_API_JS_TEST_URL and
+                    symbol == u'window.FB.api'):
+                arguments = util.replace_functions(json.loads(arguments))
+                observed_api_args = arguments
             if script_url == FB_API_TEST_URL and symbol == u'window.FB.init':
-                assert pvalue == fb_init_arg
-            if symbol == u'window.FB.Event.subscribe' and pindex == 0:
-                observed_subscribe_events.add(pvalue)
+                assert arguments == fb_init_arg
+            if symbol == u'window.FB.Event.subscribe':
+                arguments = json.loads(arguments)
+                observed_subscribe_events.add(arguments["0"])
         assert observed_api_calls == set(fb_api_calls)
         assert observed_api_args == fb_api_args
         assert observed_subscribe_events == fb_subscribed_events
@@ -95,14 +101,14 @@ class TestFBAPICalls(OpenWPMTest):
                         sleep_after=10)
         rows = db_utils.get_javascript_entries(db)
         observed_api_calls = set()
-        observed_api_args = set()
-        for script_url, symbol, operation, value, pindex, pvalue in rows:
+        for script_url, symbol, operation, value, arguments in rows:
             if operation != 'call':
                 continue
             observed_api_calls.add((script_url, symbol))
-            if (script_url == FB_API_JS_TEST_URL and symbol == u'window.FB.api'
-                    and pindex != 2):
-                observed_api_args.add(pvalue)
+            if (script_url == FB_API_JS_TEST_URL and
+                    symbol == u'window.FB.api'):
+                arguments = util.replace_functions(json.loads(arguments))
+                observed_api_args = arguments
         assert observed_api_calls == set(fb_api_fake_first_party_sdk_calls)
         assert observed_api_args == fb_api_args
 
@@ -113,12 +119,8 @@ class TestFBAPICalls(OpenWPMTest):
         test_url = util.BASE_TEST_URL + '/simple_a.html'
 
         expected_calls = {
-            (u'window.FB.getLoginStatus', u'get'),
             (u'window.FB.getLoginStatus', u'call'),
-            (u'window.FB.getAuthResponse', u'get'),
             (u'window.FB.getAuthResponse', u'call'),
-            (u'window.FB.Event', u'get'),
-            (u'window.FB.Event.subscribe', u'get'),
             (u'window.FB.Event.subscribe', u'call')
         }
 
@@ -182,38 +184,59 @@ class TestFBAPICalls(OpenWPMTest):
         manager.close()
         assert not db_utils.any_command_failed(manager_params['db'])
 
-        # Verify all expected calls are logged
+        # verify all expected calls are logged
         rows = db_utils.query_db(
             manager_params['db'],
             "SELECT symbol, operation FROM javascript"
         )
         observed_calls = set()
         for row in rows:
-            if row[0].startswith('window.FB'):
-                observed_calls.add(row)
+            if row['symbol'].startswith('window.FB'):
+                observed_calls.add(tuple(row))
         assert expected_calls == observed_calls
 
     def test_graph_api(self, tmpdir):
-        """Verify that our graph API spoofing works as expected"""
+        """verify that our graph api spoofing works as expected"""
         manager_params, browser_params = self.get_config(str(tmpdir))
         manager = TaskManager.TaskManager(manager_params, browser_params)
         test_url = util.BASE_TEST_URL + '/simple_a.html'
 
         expected_calls = {
-            (u'window.FB.api', u'call', u'/me'),
-            (u'window.FB.api', u'call', u'function...'),
-            (u'window.FB.api', u'call', u'/558780400999395'),
-            (u'window.FB.api', u'call', u'GET'),
-            (u'window.FB.api', u'call', u'{}'),
-            (u'window.FB.api', u'call',
-             u'{"fields":"name,email,gender,third_party_id"}'),
-            (u'window.FB.api', u'call', u'{"locale":"en_US","fields":" '
-             'id, verified, first_name, last_name, link "}'),
-            (u'window.FB.api', u'call',
-             u'/me?fields=id,email,first_name,last_name'),
-            (u'window.FB.api', u'call',
-             u'/me?fields=email,age_range,religion'),
-            (u'window.FB.api', u'call', u'get')
+            (u'window.FB.api', u'call', json.dumps({
+                "0": "/me",
+                "1": "{\"locale\":\"en_US\",\"fields\":\" id, "
+                     "verified, first_name, last_name, link \"}",
+                "2": "function..."})),
+            (u'window.FB.api', u'call', json.dumps({
+                "0": "/me",
+                "1": "GET",
+                "2": "function..."})),
+            (u'window.FB.api', u'call', json.dumps({
+                "0": "/me?fields=email,age_range,religion",
+                "1": "get",
+                "2": "function..."})),
+            (u'window.FB.api', u'call', json.dumps({
+                "0": "/me?fields=id,email,first_name,last_name",
+                "1": "function..."})),
+            (u'window.FB.api', u'call', json.dumps({
+                "0": "/me",
+                "1": "{\"fields\":\"name,email,gender,third_party_id\"}",
+                "2": "function..."})),
+            (u'window.FB.api', u'call', json.dumps({
+                "0": "/me",
+                "1": "function..."})),
+            (u'window.FB.api', u'call', json.dumps({
+                "0": "/558780400999395",
+                "1": "function..."})),
+            (u'window.FB.api', u'call', json.dumps({
+                "0": "/me",
+                "1": "{}",
+                "2": "function..."})),
+            (u'window.FB.api', u'call', json.dumps({
+                "0": "/me",
+                "1": "GET",
+                "2": "{}",
+                "3": "function..."}))
         }
 
         def query_FB_api(**kwargs):
@@ -321,15 +344,14 @@ class TestFBAPICalls(OpenWPMTest):
         # Verify all expected calls are logged
         rows = db_utils.query_db(
             manager_params['db'],
-            "SELECT symbol, operation, parameter_value FROM javascript"
+            "SELECT symbol, operation, arguments FROM javascript"
         )
         observed_calls = set()
-        for row in rows:
-            if row[0].startswith('window.FB') and row[1] == 'call':
-                if row[2].startswith('function'):
-                    observed_calls.add((row[0], row[1], 'function...'))
-                else:
-                    observed_calls.add(row)
+        for symbol, operation, arguments in rows:
+            if symbol.startswith('window.FB') and operation == 'call':
+                arguments = util.replace_functions(json.loads(arguments))
+                observed_calls.add((symbol, operation,
+                                    json.dumps(arguments)))
         assert expected_calls == observed_calls
 
     def test_noop_calls(self):
@@ -337,44 +359,22 @@ class TestFBAPICalls(OpenWPMTest):
         manager = TaskManager.TaskManager(manager_params, browser_params)
         test_url = util.BASE_TEST_URL + '/simple_a.html'
         expected_calls = {
-            (u'window.FB.ui', u'get'),
             (u'window.FB.ui', u'call'),
-            (u'window.FB.login', u'get'),
             (u'window.FB.login', u'call'),
-            (u'window.FB.logout', u'get'),
             (u'window.FB.logout', u'call'),
-            (u'window.FB.Event', u'get'),
-            (u'window.FB.Event.unsubscribe', u'get'),
             (u'window.FB.Event.unsubscribe', u'call'),
-            (u'window.FB.AppEvents', u'get'),
-            (u'window.FB.AppEvents.LogEvent', u'get'),
             (u'window.FB.AppEvents.LogEvent', u'call'),
-            (u'window.FB.AppEvents.logPurchase', u'get'),
             (u'window.FB.AppEvents.logPurchase', u'call'),
-            (u'window.FB.AppEvents.activateApp', u'get'),
             (u'window.FB.AppEvents.activateApp', u'call'),
-            (u'window.FB.XFBML', u'get'),
-            (u'window.FB.XFBML.parse', u'get'),
             (u'window.FB.XFBML.parse', u'call'),
-            (u'window.FB.Canvas', u'get'),
-            (u'window.FB.Canvas.Prefetcher', u'get'),
-            (u'window.FB.Canvas.Prefetcher.addStaticResource', u'get'),
             (u'window.FB.Canvas.Prefetcher.addStaticResource', u'call'),
-            (u'window.FB.Canvas.Prefetcher.setCollectionMode', u'get'),
             (u'window.FB.Canvas.Prefetcher.setCollectionMode', u'call'),
-            (u'window.FB.Canvas.scrollTo', u'get'),
             (u'window.FB.Canvas.scrollTo', u'call'),
-            (u'window.FB.Canvas.setAutoGrow', u'get'),
             (u'window.FB.Canvas.setAutoGrow', u'call'),
-            (u'window.FB.Canvas.setSize', u'get'),
             (u'window.FB.Canvas.setSize', u'call'),
-            (u'window.FB.Canvas.setUrlHandler', u'get'),
             (u'window.FB.Canvas.setUrlHandler', u'call'),
-            (u'window.FB.Canvas.setDoneLoading', u'get'),
             (u'window.FB.Canvas.setDoneLoading', u'call'),
-            (u'window.FB.Canvas.startTimer', u'get'),
             (u'window.FB.Canvas.startTimer', u'call'),
-            (u'window.FB.Canvas.stopTimer', u'get'),
             (u'window.FB.Canvas.stopTimer', u'call')
         }
 
@@ -447,6 +447,6 @@ class TestFBAPICalls(OpenWPMTest):
         )
         observed_calls = set()
         for row in rows:
-            if row[0].startswith('window.FB'):
-                observed_calls.add(row)
+            if row['symbol'].startswith('window.FB'):
+                observed_calls.add(tuple(row))
         assert expected_calls == observed_calls

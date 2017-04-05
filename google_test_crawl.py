@@ -1,19 +1,8 @@
-"""
-A stateless crawl of 50,000 sites to test current instrumentation
-
-* Extension-based HTTP Instrumentation
-* Extension-based Cookies
-* JS calls
-* JS bodies
-* HTTP Proxy
-* Autofill enabled
-"""
 from automation import TaskManager, CommandSequence
 from automation.Errors import CommandExecutionError
 import crawl_utils
 import time
 import os
-from automation.Commands.utils.form_utils import fill_input_elements_and_submit
 
 # The list of sites that we wish to crawl
 NUM_BROWSERS = 15
@@ -22,7 +11,7 @@ TOTAL_NUM_SITES = 35000
 
 manager_params, browser_params = TaskManager.load_default_params(NUM_BROWSERS)
 
-prefix = '2017-02-01_all_identity_spoofing_test'
+prefix = '2017-02-03_google_blocking_set_test'
 manager_params['database_name'] = prefix + '.sqlite'
 manager_params['data_directory'] = '~/' + prefix
 manager_params['log_directory'] = '~/' + prefix
@@ -37,13 +26,8 @@ for i in xrange(NUM_BROWSERS):
     browser_params[i]['http_instrument'] = True
     browser_params[i]['save_javascript'] = True
     browser_params[i]['spoof_identity']['enabled'] = True
-    browser_params[i]['spoof_identity']['facebook'] = True
     browser_params[i]['spoof_identity']['google'] = True
-    browser_params[i]['spoof_identity']['dom'] = True
-    browser_params[i]['spoof_identity']['storage'] = True
     browser_params[i]['record_js_errors'] = True
-    #browser_params[i]['custom_prefs'] = {"signon.rememberSignons": True}
-    #browser_params[i]['extension']['fakeAutofill'] = True
 
 start_time = time.time()
 
@@ -60,7 +44,8 @@ else:
     start_index = 0
     end_index = NUM_BATCH + 1
 
-manager = TaskManager.TaskManager(manager_params, browser_params, process_watchdog=True)
+manager = TaskManager.TaskManager(manager_params, browser_params,
+                                  process_watchdog=True)
 current_index = 0
 for i in range(start_index, end_index):
     current_index = i
@@ -69,9 +54,10 @@ for i in range(start_index, end_index):
     try:
         cs = CommandSequence.CommandSequence('http://'+sites[i], reset=True)
         cs.get(sleep=10, timeout=120)
-        cs.run_custom_function(fill_input_elements_and_submit, (), timeout=100)
         manager.execute_command_sequence(cs)
-        with open(os.path.expanduser('~/.openwpm/current_site_index'),'w') as f:
+        with open(
+                os.path.expanduser('~/.openwpm/current_site_index'),
+                'w') as f:
             f.write(str(i))
     except CommandExecutionError:
         with open(os.path.expanduser('~/.openwpm/reboot'), 'w') as f:

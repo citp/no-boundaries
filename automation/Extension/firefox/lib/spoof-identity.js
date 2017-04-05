@@ -5,13 +5,19 @@ const data              = require("sdk/self").data;
 
 Cu.import("resource://gre/modules/Services.jsm");
 
-exports.run = function(testing) {
+exports.run = function(config, testing) {
 
-  // Content script to inject the dummy SDK objects
+  // Content script portion of identity spoofing
   pageMod.PageMod({
     include: "*",
     contentScriptWhen: "start",
-    contentScriptFile: data.url("spoof_social_login_content.js")
+    contentScriptFile: data.url("spoof_identity_content.js"),
+    contentScriptOptions: {
+      'facebook': config['facebook'],
+      'google': config['google'],
+      'dom': config['dom'],
+      'storage': config['storage']
+    }
   });
 
   function shouldRedirect(URI) {
@@ -38,8 +44,10 @@ exports.run = function(testing) {
     }
   }
 
-  // Intercept http requests
-  events.on("http-on-modify-request", function(event) {
-    redirectToDummyScript(event);
-  }, true);
+  // Intercept http requests if Google API spoofing enabled
+  if (config['google']) {
+    events.on("http-on-modify-request", function(event) {
+      redirectToDummyScript(event);
+    }, true);
+  }
 }
