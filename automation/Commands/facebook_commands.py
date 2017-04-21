@@ -7,9 +7,10 @@ import time
 import re
 from utils import XPathUtil as xp
 from utils import webdriver_extensions as wd_ext
+from ..MPLogger import loggingclient
 
 
-def find_login(driver, url):
+def find_login(driver, url, logger):
     """Find all login options on each iframe and try to execute login"""
     # Item may be in an iframe
     try:
@@ -25,8 +26,8 @@ def find_login(driver, url):
                 driver.switch_to_default_content()
                 driver.switch_to_frame(iframes[i-1])
             except StaleElementReferenceException:
-                print ("page must have changed since last visited. "
-                       "Possible successful login *FLAG for review*")
+                logger.error("page must have changed since last visited. "
+                             "Possible successful login *FLAG for review*")
                 break
 
         targets = []
@@ -35,7 +36,7 @@ def find_login(driver, url):
             try:
                 targets.extend(driver.find_elements_by_xpath(selector))
             except NoSuchElementException:
-                print "Illegal query with %s" % selector
+                logger.error("Illegal query with %s" % selector)
 
         find_targets('//*' + xp.xp1_wildcard(xp.xp1_lowercase('text()'),
                                              'sign*in with facebook'))
@@ -63,7 +64,8 @@ def find_login(driver, url):
                                              'register an*account'))
 
         login_options = targets
-        print "Potential Login Targets on this iFrame: %d" % len(login_options)
+        logger.info("Potential Login Targets on this iFrame: %d" % (
+            len(login_options)))
 
         if len(login_options) > 0:
             for i in range(0, len(login_options)):
@@ -71,31 +73,32 @@ def find_login(driver, url):
                 wd_ext.move_to_element(driver, element)
                 try:
                     element.click()
-                    print "Trying to click login now"
+                    logger.info("Trying to click login now")
                     time.sleep(6)
 
-                    print "Trying to find Facebook button now"
+                    logger.info("Trying to find Facebook button now")
                     # try to find a facebook button on this login page
-                    connect_success, stop_searching = connect(driver)
+                    connect_success, stop_searching = connect(driver, logger)
                     time.sleep(5)
                     fb_api_confirm = check_FB_API(driver)
                     if fb_api_confirm is True:
                         connect_success = True
-                    print "Login with Facebook with Login Target %d? %s." % (
-                        i, connect_success)
+                    logger.info("Login with Facebook with Login Target"
+                                "%d? %s." % (i, connect_success))
                     if connect_success:
                         try:
                             driver.get(url)
                         except NoSuchWindowException:
                             pass
                         success = True
-                        print ("returning to main page with likely successful "
-                               "login")
+                        logger.info("returning to main page with likely "
+                                    "successful login")
                         if fb_api_confirm is False:
-                            print ("However could not confirm connection to "
-                                   "FB API, flag for review")
+                            logger.info("However could not confirm connection "
+                                        "to FB API, flag for review")
                         else:
-                            print "Confirmed successful login with FB API"
+                            logger.info("Confirmed successful login "
+                                        "with FB API")
                         break
                     elif stop_searching is True:
                         try:
@@ -103,22 +106,25 @@ def find_login(driver, url):
                         except NoSuchWindowException:
                             pass
                         success = True
-                        print ("returning to main page, reached an FB login "
-                               "page *FLAG FOR REVIEW*")
+                        # TODO DO We need to log this
+                        logger.info("returning to main page, reached an "
+                                    "FB login page *FLAG FOR REVIEW*")
                         time.sleep(3)
                     else:
                         try:
                             driver.get(url)
                         except NoSuchWindowException:
                             pass
-                        print ("returning to main page to try another "
-                               "login on this iFrame")
+                        logger.info("returning to main page to try another "
+                                    "login on this iFrame")
                         time.sleep(3)
                 except ElementNotVisibleException:
-                    print "can't click that target"
+                    # TODO which target?
+                    logger.warning("can't click that target")
                 except StaleElementReferenceException:
-                    print ("page must have changed since last visited. "
-                           "Possible successful login *FLAG for review*")
+                    # TODO DO We need to log this
+                    logger.info("page must have changed since last visited. "
+                                "Possible successful login *FLAG for review*")
                     break
         if success is True:
             break
@@ -247,7 +253,7 @@ def authorize_connect(driver, is_window, save_permissions=False):
         return True, stop_searching
 
 
-def connect(driver, save_permissions=False):
+def connect(driver, logger, save_permissions=False):
     # Current state of the driver
     handles = driver.window_handles
     main_handle = driver.current_window_handle
@@ -287,14 +293,14 @@ def connect(driver, save_permissions=False):
 
         targets = []
 
-        print "Potential iFrames to look through: %d" % len(iframes)
+        logger.info("Potential iFrames to look through: %d" % len(iframes))
         # Parse with Selenium XPath
 
         def do_search(selector, targets):
             try:
                 targets.extend(driver.find_elements_by_xpath(selector))
             except NoSuchElementException:
-                print "Illegal query with %s" % selector
+                logger.error("Illegal query with %s" % selector)
 
         time.sleep(3)
 
@@ -317,7 +323,7 @@ def connect(driver, save_permissions=False):
         do_search("//input[contains(@class, 'facebook')]", targets)
         do_search("//input[contains(@class, 'Facebook')]", targets)
 
-        print "Facebook Button Targets: %d" % len(targets)
+        logger.info("Facebook Button Targets: %d" % len(targets))
 
         # Try to click each xpath if clickable
         for i in range(0, len(targets)):
@@ -327,8 +333,8 @@ def connect(driver, save_permissions=False):
             try:
                 element.click()
                 clicked = True
-                print ("A button, hopefully Facebook login button "
-                       "found on %s\n" % (driver.current_url))
+                logger.info("A button, hopefully Facebook login button "
+                            "found on %s\n" % (driver.current_url))
             except ElementNotVisibleException:
                 print "can't click that target"
             except WebDriverException:
@@ -367,9 +373,12 @@ def connect(driver, save_permissions=False):
     return connected, stop_searching
 
 
-def facebook_login(driver, url):
+def facebook_login(driver, url, manager_params):
+    # Connect to logger
+    logger = loggingclient(*manager_params['logger_address'])
+
     initwindowHandle = driver.current_window_handle
-    login_success = find_login(driver, url)
+    login_success = find_login(driver, url, logger)
 
     # if login page not found or not fruitful,
     # search main page for facebook button
@@ -378,13 +387,15 @@ def facebook_login(driver, url):
         try:
             driver.switch_to_default_content()
         except StaleElementReferenceException:
-            print "tried and failed to switch to main iframe for this site"
-        connect_success, stop_searching = connect(driver)
+            logger.error(
+                "Tried and failed to switch to main iframe for this site")
+        connect_success, stop_searching = connect(driver, logger)
         time.sleep(5)
         fb_api_confirm = check_FB_API(driver)
 
-        if fb_api_confirm is True:
+        if fb_api_confirm:
             connect_success = True
+            # TODO Save the result here
             print "Login with Facebook? %s." % (connect_success)
         if connect_success:
             try:
@@ -393,11 +404,14 @@ def facebook_login(driver, url):
                 pass
             print "returning to main page with likely successful login"
             if fb_api_confirm is False:
+                # TODO Save the result here
                 print ("However could not confirm connection to FB API, "
                        "flag for review")
             else:
+                # TODO Save the result here
                 print "Confirmed successful login with FB API"
         else:
+            # TODO Save the result here
             print "Unable to login with Facebook. Failed"
 
     # close other window handles

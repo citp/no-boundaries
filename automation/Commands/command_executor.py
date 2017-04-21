@@ -58,7 +58,11 @@ def execute_command(command, webdriver, proxy_queue, browser_settings, browser_p
         )
 
     if command[0] == 'FACEBOOK_LOGIN':
-        facebook_commands.facebook_login(driver=webdriver, url=command[1])
+        facebook_commands.facebook_login(
+            driver=webdriver,
+            url=command[1],
+            manager_params=manager_params
+        )
 
     if command[0] == 'RUN_CUSTOM_FUNCTION':
         arg_dict = {"command": command,
