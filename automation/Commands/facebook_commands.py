@@ -9,8 +9,10 @@ from utils import XPathUtil as xp
 from utils import webdriver_extensions as wd_ext
 from ..MPLogger import loggingclient
 
-FB_USERNAME = 'jeffjohnson12345@outlook.com'
-FB_PASSWORD = 'Corndawg!'
+# FB_USERNAME = 'jeffjohnson12345@outlook.com'
+# FB_PASSWORD = 'Corndawg!'
+FB_USERNAME = 'jessjohnson12345@outlook.com'
+FB_PASSWORD = 'C2Au2RPSETuwKeLU'
 
 
 def find_login(driver, url, logger, browser_params):
@@ -21,10 +23,13 @@ def find_login(driver, url, logger, browser_params):
     except NoSuchElementException:
         iframes = []
 
+    logger.info("BROWSER %i: Potential iFrames to look through: %d" % (
+        browser_params['crawl_id'], len(iframes)))
+
     # Loop through frames looking for login buttons to click
     success = False
     for i in range(0, len(iframes)+1):
-        if i > 0: # check main page first (i=0)
+        if i > 0:  # check main page first (i=0)
             try:
                 driver.switch_to_default_content()
                 driver.switch_to_frame(iframes[i-1])
@@ -32,7 +37,7 @@ def find_login(driver, url, logger, browser_params):
             except StaleElementReferenceException:
                 logger.error("BROWSER %i: Page must have changed since last "
                              "visited. Possible successful login" % (
-                             browser_params['crawl_id']))
+                                 browser_params['crawl_id']))
                 break
 
         targets = []
@@ -71,7 +76,7 @@ def find_login(driver, url, logger, browser_params):
 
         logger.info(
             "BROWSER %i: Potential Login Targets on this iFrame: %d" % (
-            browser_params['crawl_id'], len(targets))
+                browser_params['crawl_id'], len(targets))
         )
 
         for element in targets:
@@ -92,10 +97,9 @@ def find_login(driver, url, logger, browser_params):
                 if fb_api_confirm is True:
                     connect_success = True
                 logger.info("BROWSER %i: Login with Facebook with Login "
-                            "Target %d? %s." % (
-                            browser_params["crawl_id"], element,
-                            connect_success)
-                )
+                            "Target %s? %s." % (
+                                browser_params["crawl_id"], element,
+                                connect_success))
                 if connect_success:
                     try:
                         driver.get(url)
@@ -105,35 +109,36 @@ def find_login(driver, url, logger, browser_params):
                     logger.info(
                         "BROWSER %i: Returning to main page. Login confirmed "
                         "with FB API? %s" % (
-                        browser_params['crawl_id'], str(fb_api_confirm))
-                    )
+                            browser_params['crawl_id'], str(fb_api_confirm)))
                     break
                 elif stop_searching:
                     try:
                         driver.get(url)
                     except NoSuchWindowException:
                         pass
+                    # TODO probably don't want to print success here and
+                    # keep searching with other targets
                     success = True
                     logger.info(
                         "BROWSER %i: Returning to main page, reached an FB "
                         "login page. FB.API? %s" % (
-                        browser_params['crawl_id'], str(fb_api_confirm))
-                    )
+                            browser_params['crawl_id'], str(fb_api_confirm)))
                 else:
                     try:
                         driver.get(url)
                     except NoSuchWindowException:
                         pass
+                    # TODO other targets stale after page reload?
                     logger.info("BROWSER %i: Returning to main page to "
                                 "try another login on this iFrame" % (
-                                browser_params['crawl_id']))
+                                    browser_params['crawl_id']))
             except ElementNotVisibleException:
                 logger.warning("BROWSER %i: Can't click target %s" % (
-                    browser_params['crawl_id'], target))
+                    browser_params['crawl_id'], element))
             except StaleElementReferenceException:
                 logger.info("BROWSER %i: Page must have changed since "
                             "last visited. Possible successful login." % (
-                            browser_params['crawl_id']))
+                                browser_params['crawl_id']))
                 break
 
         # No need to check other frames if successful
@@ -211,7 +216,7 @@ def authorize_connect(driver, is_window, logger, browser_params,
                 if r.text != 'Okay':
                     logger.warning("BROWSER %i: This should say 'Okay', let's"
                                    " click it anyway" % (
-                                   browser_params['crawl_id']))
+                                       browser_params['crawl_id']))
                 logger.info("BROWSER %i: Clicking %s" % (
                     browser_params['crawl_id'], r.text))
                 r.click()
@@ -224,7 +229,7 @@ def authorize_connect(driver, is_window, logger, browser_params,
                 if is_window and not wd_ext.title_is(driver, 'Facebook', 0):
                     logger.info("BROWSER %i: Redirect back to site - "
                                 "no permissions needed" % (
-                                browser_params['crawl_id']))
+                                    browser_params['crawl_id']))
                 else:
                     logger.info("BROWSER %i: Redirect back to site" % (
                         browser_params['crawl_id']))
@@ -235,7 +240,7 @@ def authorize_connect(driver, is_window, logger, browser_params,
                 if r.text != 'Okay':
                     logger.warning("BROWSER %i: This should say 'Okay', let's"
                                    " click it anyway" % (
-                                   browser_params['crawl_id']))
+                                       browser_params['crawl_id']))
                 logger.info("BROWSER %i: Clicking %s" % (
                     browser_params['crawl_id'], r.text))
                 r.click()
@@ -243,7 +248,7 @@ def authorize_connect(driver, is_window, logger, browser_params,
                 if is_window and not wd_ext.title_is(driver, 'Facebook', 0):
                     logger.info("BROWSER %i: Redirect back to site - "
                                 "no permissions needed" % (
-                                browser_params['crawl_id']))
+                                    browser_params['crawl_id']))
                 else:
                     logger.info("BROWSER %i: Redirect back to site" % (
                         browser_params['crawl_id']))
@@ -257,7 +262,7 @@ def authorize_connect(driver, is_window, logger, browser_params,
                 if r.text != 'Okay':
                     logger.warning("BROWSER %i: This should say 'Okay', let's"
                                    " click it anyway" % (
-                                   browser_params['crawl_id']))
+                                       browser_params['crawl_id']))
                 logger.info("BROWSER %i: Clicking %s" % (
                     browser_params['crawl_id'], r.text))
                 r.click()
@@ -270,7 +275,7 @@ def authorize_connect(driver, is_window, logger, browser_params,
                 if r.text != 'Okay':
                     logger.warning("BROWSER %i: This should say 'Okay', let's"
                                    " click it anyway" % (
-                                   browser_params['crawl_id']))
+                                       browser_params['crawl_id']))
                 logger.info("BROWSER %i: Clicking %s" % (
                     browser_params['crawl_id'], r.text))
                 r.click()
@@ -278,7 +283,7 @@ def authorize_connect(driver, is_window, logger, browser_params,
                 if is_window and not wd_ext.title_is(driver, 'Facebook', 0):
                     logger.info("BROWSER %i: Redirect back to site - "
                                 "no permissions needed" % (
-                                browser_params['crawl_id']))
+                                    browser_params['crawl_id']))
                 else:
                     logger.info("BROWSER %i: Redirect back to site" % (
                         browser_params['crawl_id']))
@@ -303,7 +308,7 @@ def find_connect(driver, logger, browser_params, save_permissions=False):
             driver.switch_to_window(handle)
             if "facebook.com/login.php" in driver.current_url:
                 connected, stop_searching = authorize_connect(
-                    driver, is_window=False, logger, browser_params,
+                    driver, False, logger, browser_params,
                     save_permissions=save_permissions
                 )
                 return connected, stop_searching
@@ -320,7 +325,7 @@ def find_connect(driver, logger, browser_params, save_permissions=False):
         browser_params['crawl_id'], len(iframes)))
 
     for i in range(0, len(iframes)+1):
-        if i > 0: # check main page first (i=0)
+        if i > 0:  # check main page first (i=0)
             try:
                 driver.switch_to_default_content()
                 driver.switch_to_frame(iframes[i-1])
@@ -362,7 +367,7 @@ def find_connect(driver, logger, browser_params, save_permissions=False):
         # Try to click each element found
         for element in targets:
             try:
-                wd_ext.move_to_element(driver, element) # hover
+                wd_ext.move_to_element(driver, element)  # hover
                 element.click()
                 logger.info(
                     "BROWSER %i: Clicked a potential Facebook login button "
@@ -371,11 +376,11 @@ def find_connect(driver, logger, browser_params, save_permissions=False):
                 )
             except ElementNotVisibleException:
                 logger.warning("BROWSER %i: Can't click target %s" % (
-                    browser_params['crawl_id'], target))
+                    browser_params['crawl_id'], element))
                 continue
             except WebDriverException:
                 logger.warning("BROWSER %i: Can't click target %s" % (
-                    browser_params['crawl_id'], target))
+                    browser_params['crawl_id'], element))
                 continue
             except StaleElementReferenceException:
                 continue
@@ -392,7 +397,7 @@ def find_connect(driver, logger, browser_params, save_permissions=False):
                     "windows" % browser_params['crawl_id']
                 )
                 connected, stop_searching = authorize_connect(
-                    driver, is_window=True, logger, browser_params,
+                    driver, True, logger, browser_params,
                     save_permissions=save_permissions
                 )
                 driver.switch_to_window(main_handle)
@@ -403,10 +408,9 @@ def find_connect(driver, logger, browser_params, save_permissions=False):
             if len(new_windows) == 0:
                 logger.info(
                     "BROWSER %i: Trying to login via main window" % (
-                    browser_params['crawl_id']
-                )
+                        browser_params['crawl_id']))
                 connected, stop_searching = authorize_connect(
-                    driver, is_window=False, logger, browser_params,
+                    driver, False, logger, browser_params,
                     save_permissions=save_permissions
                 )
                 if connected or stop_searching:
@@ -424,7 +428,10 @@ def facebook_login(driver, url, manager_params, browser_params):
 
     # if login page not found or not fruitful,
     # search main page for facebook button
-    if login_success is False:
+    if login_success:
+        # TODO Save success
+        print "noop"
+    else:
         # switch back to main iframe
         try:
             driver.switch_to_default_content()
@@ -432,7 +439,7 @@ def facebook_login(driver, url, manager_params, browser_params):
             logger.error("BROWSER %i: Tried and failed to switch to main "
                          "iframe for this site" % browser_params['crawl_id'])
         connect_success, stop_searching = find_connect(driver, logger,
-                                                  browser_params)
+                                                       browser_params)
         time.sleep(5)
         fb_api_confirm = check_FB_API(driver)
 

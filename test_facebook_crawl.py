@@ -3,17 +3,17 @@ from automation import TaskManager, CommandSequence
 NUM_BROWSERS = 1
 
 sites = [
-    'http://policeauctions.com',
-    'http://8tracks.com',
-    'http://academia.edu',
-    'http://addthis.com',
-    'http://meetme.com',  # **doesnt work because cant pull html
-    'http://quizlet.com',
-    'http://instagram.com',
+    # 'http://policeauctions.com',
+    # 'http://8tracks.com',
+    # 'http://academia.edu',
+    # 'http://addthis.com',
+    # 'http://meetme.com',  # **doesnt work because cant pull html
+    # 'http://quizlet.com',
+    # 'http://instagram.com',
     'http://vk.com',
     'http://myspace.com',  # doesn't work, requires extra steps to complete
     'http://ups.com',  # **no fb login available
-    'http://strava.com'
+    'http://strava.com',
     'http://greatvaluecolleges.net',
     'http://unthsc.edu',
     'http://pes-smoke-patch.blogspot.com',
