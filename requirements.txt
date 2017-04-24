@@ -21,6 +21,6 @@ mitmproxy==0.13
 selenium==2.53.0
 mmh3
 # IPython 6.0+ does not support python 2.7
-IPython<6.0.0
+IPython>=5.0,<6.0
 # See https://github.com/ActiveState/appdirs/issues/89
 appdirs>=1.4.3
