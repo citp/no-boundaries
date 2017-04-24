@@ -19,31 +19,30 @@ you're installing a shared machine. If you plan to develop OpenWPM's
 instrumentation extension or run tests you will also need to install the
 development dependencies included in `install-dev.sh`.
 
-It is likely that OpenWPM will also work on Mac OSX, however this has not been
-tested. If you have experience running OpenWPM on other platforms, please let
-us know!
+It is likely that OpenWPM will work on platforms other than Ubuntu, however
+we do not officially support anything else. For pointers on alternative
+platform support see
+[the wiki](https://github.com/citp/OpenWPM/wiki/OpenWPM-on-Alternate-Platforms).
 
 Quick Start
 -----------
 
 Once installed, it is very easy to run a quick test of OpenWPM. Check out
-`demo.py` for an example. This will the default setting specified in
+`demo.py` for an example. This will use the default setting specified in
 `automation/default_manager_params.json` and
 `automation/default_browser_params.json`, with the exception of the changes
 specified in `demo.py`.
 
-You can test other configurations by changing the values in these two
-dictionaries. `manager_params` is meant to specify the platform-wide settings,
-while `browser_params` specifies browser-specific settings (and as such
-defaults to a `list` of settings, of length equal to the number of browsers you
-are using. A description of the instrumentation available is included below.
+More information on the instrumentation and configuration parameters is given
+below.
+
 
 The [wiki](https://github.com/citp/OpenWPM/wiki) provides a more in-depth
-tutorial, however portions of it are currently outdated. In particular you can find
-[advanced features](https://github.com/citp/OpenWPM/wiki/Advanced-Features),
-and [additional
-commands](https://github.com/citp/OpenWPM/wiki/Available-Commands).
-You can also take a look at two of our past studies,  which use the
+tutorial, including a
+[platform demo](https://github.com/citp/OpenWPM/wiki/Platform-Demo)
+and a description of the
+[additional commands](https://github.com/citp/OpenWPM/wiki/Available-Commands)
+available. You can also take a look at two of our past studies, which use the
 infrastructure:
 
 1. [The Web Never Forgets](https://github.com/citp/TheWebNeverForgets)
@@ -163,6 +162,266 @@ for their measurement data (see
         * Cookie parsing is done using a custom `Cookie.py` module. Although a
             significant effort went into replicating Firefox's cookie parsing,
             it may not be a faithful reproduction.
+
+Browser and Platform Configuration
+----------------------------------
+
+The browser and platform can be configured by two separate dictionaries. The
+platform configuration options can be set in `manager_params`, while the
+browser configuration options can be set in `browser_params`. The default
+settings are given in `automation/default_manager_params.json` and
+`automation/default_browser_params.json`.
+
+To load the default configuration parameter dictionaries we provide a helper
+function `TaskManager::load_default_params`. For example:
+
+```python
+from automation import TaskManager
+manager_params, browser_params = TaskManager.load_default_params(num_browsers=5)
+```
+
+where `manager_params` is a dictionary and `browser_params` is a length 5 list
+of configuration dictionaries.
+
+### Platform Configuration Options
+
+* `data_directory`
+  * The directory in which to output the crawl database and related files. The
+    directory given will be created if it does not exist.
+* `log_directory`
+  * The directory in which to output platform logs. The
+    directory given will be created if it does not exist.
+* `log_file`
+  * The name of the log file to be written to `log_directory`.
+* `database_name`
+  * The name of the database file to be written to `data_directory`
+* `failure_limit`
+  * The number of successive command failures the platform will tolerate before
+    raising a `CommandExecutionError` exception. Otherwise the default is set
+    to 2 x the number of browsers plus 10.
+* `testing`
+  * A platform wide flag that can be used to only run certain functionality
+    while testing. For example, the Javascript instrumentation
+    [exposes its instrumentation function](https://github.com/citp/OpenWPM/blob/91751831647c37b769f0039d99d0a164384c76ae/automation/Extension/firefox/data/content.js#L447-L449)
+    on the page script global to allow test scripts to instrument objects
+    on-the-fly. Depending on where you would like to add test functionality,
+    you may need to propagate the flag.
+  * This is not something you should enable during normal crawls.
+
+### Browser Configuration Options
+
+Note: Instrumentation configuration options are described in the
+*Instrumentation and Data Access* section and profile configuration options are
+described in the *Browser Profile Support* section. As such, these options are
+left out of this section.
+
+* `disable_webdriver_self_id`
+  * Prevents Selenium from identifying itself in the DOM. See
+    [Issue #91](https://github.com/citp/OpenWPM/issues/91).
+* `bot_mitigation`
+  * Performs some actions to prevent the platform from being detected as a bot.
+  * Note, these aren't comprehensive and automated interaction with the site
+    will still appear very bot-like.
+* `disable_flash`
+  * Flash is disabled by default. Set this to `False` to re-enable. Note that
+    flash cookies are shared between browsers.
+* `headless`
+  * Launch the browser in a virtual frame buffer, no GUI will be visible.
+  * Use this when running browsers on a remote machine or to run crawls in the
+      background on a local machine.
+* `browser`
+  * Used to specify which browser to launch. Currently only `firefox` is
+    supported.
+  * Other browsers may be added in the future.
+* `tp_cookies`
+  * Specifies the third-party cookie policy to set in Firefox.
+  * The following options are supported:
+    * `always`: Accept all third-party cookies
+    * `never`: Never accept any third-party cookies
+    * `from_visited`: Only accept third-party cookies from sites that have been
+      visited as a first party.
+* `donottrack`
+  * Set to `True` to enable Do Not Track in the browser.
+* `ghostery`
+  * Set to `True` to enable Ghostery with all blocking enabled
+  * NOTE: The Ghostery version used (including filter lists) may be outdated.
+    It's recommended that you update the xpi and `store.json` file (included in
+    the extension profile directory). These can be placed
+    [here](https://github.com/citp/OpenWPM/tree/master/automation/DeployBrowsers/firefox_extensions/ghostery)
+* `https-everywhere`
+  * Set to `True` to enable HTTPS Everywhere in the browser.
+  * NOTE: The HTTPS Everywhere version may be outdated. It's recommended you
+    update the xpi
+    [located here](https://github.com/citp/OpenWPM/tree/master/automation/DeployBrowsers/firefox_extensions)
+    before crawling.
+* `adblock-plus`
+  * Set to `True` to enable AdBlock Plus in the browser.
+  * The filter lists should be automatically downloaded and installed, but the
+    xpi, [located here](https://github.com/citp/OpenWPM/tree/master/automation/DeployBrowsers/firefox_extensions)
+    , might be outdated.
+  * NOTE: There is a known issue of AdBlock Plus not blocking all resources
+    on the first page visit. See
+    [Issue #35](https://github.com/citp/OpenWPM/issues/35)
+    for more information.
+* **NOT SUPPORTED** ` tracking-protection`
+  * Set to `True` to enable Firefox's built-in
+    [Tracking Protection](https://developer.mozilla.org/en-US/Firefox/Privacy/Tracking_Protection).
+  * NOTE: This is not currently supported. See
+    [Issue #101](https://github.com/citp/OpenWPM/issues/101) for more
+    information.
+
+Browser Profile Support
+-----------------------
+
+### Stateful vs Stateless crawls
+
+By default OpenWPM performs a "stateful" crawl, in that it keeps a consistent
+browser profile between page visits in the same browser. If the browser
+freezes or crashes during the crawl, the profile is saved to disk and restored
+before the next page visit.
+
+It's also possible to run "stateless" crawls, in which each new page visit uses
+a fresh browser profile. To perform a stateless crawl you can restart the
+browser after each command sequence by setting the `reset` initialization
+argument to `True` when creating the command sequence. As an example:
+
+```python
+manager = TaskManager.TaskManager(manager_params, browser_params)
+
+for site in sites:
+    command_sequence = CommandSequence.CommandSequence(site, reset=True)
+    command_sequence.get(sleep=30, timeout=60)
+    command_sequence.dump_profile_cookies(120)
+    manager.execute_command_sequence(command_sequence)
+```
+
+In this example, the browser will `get` the requested `site`, sleep for 30
+seconds, dump the profile cookies to the crawl database, and then restart the
+browser before visiting the next `site` in `sites`.
+
+### Loading and saving a browser profile
+
+It's possible to load and save profiles during stateful crawls. Profile dumps
+currently consist of the following browser storage items:
+
+* cookies
+* localStorage
+* IndexedDB
+* browser history
+
+Other browser state, such as the browser cache, is not saved. In
+[Issue #62](https://github.com/citp/OpenWPM/issues/62) we plan to expand
+profiles to include all browser storage.
+
+#### Save a profile
+
+A browser's profile can be saved to disk for use in later crawls. This can be
+done using a browser command or by setting a browser configuration parameter.
+For long running crawls we recommend saving the profile using the browser
+configuration parameter as the platform will take steps to save the
+profile in the event of a platform-level crash, whereas there is no guarantee
+the browser command will run before a crash.
+
+**Browser configuration parameter:** Set the `profile_archive_dir` browser
+parameter to a directory where the browser profile should be saved. The profile
+will be automatically saved when `TaskManager::close` is called or when a
+platform-level crash occurs.
+
+**Browser command:** See the command definition
+[wiki page](https://github.com/citp/OpenWPM/wiki/Available-Commands#dump_profile)
+for more information.
+
+#### Load a profile
+
+To load a profile, specify the `profile_tar` browser parameter in the browser
+configuration dictionary. This should point to the location of the
+`profile.tar` or (`profile.tar.gz` if compressed) file produced by OpenWPM.
+The profile will be automatically extracted and loaded into the browser
+instance for which the configuration parameter was set.
+
+Development pointers
+--------------------
+
+Much of OpenWPM's instrumentation is included in a Firefox add-on SDK extension.
+Thus, in order to add or change instrumentation you will need a few additional
+dependencies, which can be installed with `install-dev.sh`.
+
+### Editing instrumentation
+
+The extension instrumentation is included in `/automation/Extension/firefox/`.
+Any edits within this directory will require the extension to be re-built with
+`jpm` to produce a new `openwpm.xpi` with your updates. For more information on
+developing a Firefox extension, we recommend reading this
+[MDN introductory tutorial](https://developer.mozilla.org/en-US/Add-ons/SDK/Tutorials/Getting_Started_(jpm)),
+ as well as the [jpm reference page](https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm).
+
+### Debugging the platform
+
+Manual debugging with OpenWPM can be difficult. By design the platform runs all
+browsers in separate processes and swallows all exceptions (with the intent of
+continuing the crawl). We recommend using
+[manual_test.py](https://github.com/citp/OpenWPM/blob/master/test/manual_test.py).
+
+This utility allows manual debugging of the extension instrumentation with or
+without Selenium enabled, as well as makes it easy to launch a Selenium
+instance (without any instrumentation)
+* `python manual_test.py` uses `jpm` to build the current extension directory
+  and launch a Firefox instance with it.
+* `python manual_test.py --selenium` launches a Firefox Selenium instance
+  after using `jpm` to automatically rebuild `openwpm.xpi`. The script then
+  drops into an `ipython` shell where the webdriver instance is available
+  through variable `driver`.
+* `python manual_test.py --selenium --no_extension` launches a Firefox Selenium
+  instance with no instrumentation. The script then
+  drops into an `ipython` shell where the webdriver instance is available
+  through variable `driver`.
+
+
+### Running tests
+
+OpenWPM's tests are build on `py.test`. To run the tests you will need a few
+additional dependencies, which can be installed by running `install-dev.sh`.
+
+Once installed, execute `py.test -vv` in the test directory to run all tests.
+
+
+Troubleshooting
+---------------
+
+1. `IOError: [Errno 2] No such file or directory: '../../firefox-bin/application.ini'`
+
+  This error occurs when the platform can't find a standalone Firefox binary in
+  the root directory of OpenWPM. The `install.sh` script will download and unzip
+  the appropriate version of Firefox for you. If you've run this script but still
+  don't have the binary installed note that the script will exit if any command
+  fails, so re-run the install script checking that no command fails.
+
+2. `WebDriverException: Message: The browser appears to have exited before we could connect...`
+
+  This error indicates that Firefox exited during startup (or was prevented from
+  starting). There are many possible causes of this error:
+
+  * If you are seeing this error for all browser spawn attempts check that:
+    * Both selenium and Firefox are the appropriate versions. Run the following
+      commands and check that the versions output match the required versions in
+      `install.sh` and `requirements.txt`. If not, re-run the install script.
+      ```sh
+      cd firefox-bin/
+      firefox --version
+      ```
+
+      and
+
+      ```sh
+        pip show selenium
+      ```
+    * If you are running in a headless environment (e.g. a remote server), ensure
+      that all browsers have the `headless` browser parameter set to `True` before
+      launching.
+  * If you are seeing this error randomly during crawls it can be caused by
+    an overtaxed system, either memory or CPU usage. Try lowering the number of
+    concurrent browsers.
+
 
 Disclaimer
 -----------
