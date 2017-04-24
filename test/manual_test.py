@@ -3,13 +3,22 @@ from os.path import dirname, join, realpath
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 from selenium import webdriver
 import subprocess
+import commands
 import atexit
+
 
 OPENWPM_LOG_PREFIX = "console.log: openwpm: "
 INSERT_PREFIX = "Array"
 BASE_DIR = dirname(dirname(realpath(__file__)))
 EXT_PATH = join(BASE_DIR, 'automation', 'Extension', 'firefox')
 FF_BIN_PATH = join(BASE_DIR, 'firefox-bin', 'firefox')
+
+
+def create_xpi():
+    """Creates a new extension xpi using jpm."""
+    ext_dirname = join(dirname(realpath(__file__)), '..', 'automation',
+                       'Extension', 'firefox')
+    return commands.getstatusoutput("cd %s && jpm xpi" % ext_dirname)
 
 
 class bcolors:
@@ -76,6 +85,7 @@ def start_webdriver(with_extension=False):
         return register_cleanup(webdriver.Firefox(firefox_binary=fb))
 
     # add openwpm extension to profile
+    create_xpi()
     fp = webdriver.FirefoxProfile()
     ext_xpi = join(EXT_PATH, 'openwpm.xpi')
     fp.add_extension(extension=ext_xpi)
