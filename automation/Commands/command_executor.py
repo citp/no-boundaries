@@ -50,17 +50,32 @@ def execute_command(command, webdriver, proxy_queue, browser_settings, browser_p
         browser_commands.dump_page_source(dump_name=command[1], webdriver=webdriver,
                                           browser_params=browser_params, manager_params=manager_params)
 
+    if command[0] == 'BROWSE_AND_DUMP_SOURCE':
+        browser_commands.browse_and_dump_source(
+            url=command[1],
+            num_links=command[2],
+            sleep=command[3],
+            visit_id=command[4],
+            webdriver=webdriver,
+            proxy_queue=proxy_queue,
+            browser_params=browser_params,
+            manager_params=manager_params,
+            extension_socket=extension_socket
+        )
+
     if command[0] == 'RECURSIVE_DUMP_PAGE_SOURCE':
         browser_commands.recursive_dump_page_source(
-            visit_id=command[1],
+            visit_id=command[2],
             driver=webdriver,
-            manager_params=manager_params
+            manager_params=manager_params,
+            suffix=command[1]
         )
 
     if command[0] == 'FACEBOOK_LOGIN':
         facebook_commands.facebook_login(
             driver=webdriver,
             url=command[1],
+            visit_id=command[2],
             manager_params=manager_params,
             browser_params=browser_params
         )

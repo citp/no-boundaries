@@ -3,6 +3,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import MoveTargetOutOfBoundsException
 from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import ElementNotVisibleException
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.action_chains import ActionChains
 import os
 import random
@@ -184,6 +186,62 @@ def browse_website(url, num_links, sleep, visit_id, webdriver, proxy_queue,
             pass
 
 
+def browse_and_dump_source(url, num_links, sleep, visit_id, webdriver,
+                           proxy_queue, browser_params, manager_params,
+                           extension_socket):
+    """Calls get_website before visiting <num_links> present on the page.
+
+    Each link visited will do a recursive page source dump.
+    """
+    # First get the site
+    get_website(url, sleep, visit_id, webdriver, proxy_queue,
+                browser_params, extension_socket)
+    recursive_dump_page_source(visit_id, webdriver, manager_params,
+                               suffix='0')
+
+    # Connect to logger
+    logger = loggingclient(*manager_params['logger_address'])
+
+    # Then visit a few subpages
+    for i in range(num_links):
+        links = get_intra_links(webdriver, url)
+        links = filter(lambda x: x.is_displayed(), links)
+        if len(links) == 0:
+            break
+        random.shuffle(links)
+        clicked = False
+        for link in links:
+            try:
+                href = link.get_attribute('href')
+                print "BROWSER %i: Trying to click %s out of %i links" % (
+                    browser_params['crawl_id'], href, len(links))
+                link.click()
+            except ElementNotVisibleException:
+                continue
+            except WebDriverException:
+                continue
+            except Exception, e:
+                logger.error("BROWSER %i: Exception trying to visit %s, %s" % (
+                    browser_params['crawl_id'],
+                    link.get_attribute("href"),
+                    str(e)
+                ))
+                continue
+            logger.info("BROWSER %i: visiting internal link %s" % (
+                browser_params['crawl_id'], href))
+            wait_until_loaded(webdriver, 300)
+            time.sleep(max(1, sleep))
+            recursive_dump_page_source(visit_id, webdriver, manager_params,
+                                       suffix=str(i+1))
+            webdriver.back()
+            time.sleep(max(1, sleep))
+            wait_until_loaded(webdriver, 300)
+            clicked = True
+            break
+        if not clicked:
+            break
+
+
 def dump_flash_cookies(start_time, visit_id, webdriver,
                        browser_params, manager_params):
     """ Save newly changed Flash LSOs to database
@@ -257,11 +315,13 @@ def dump_page_source(dump_name, webdriver, browser_params, manager_params):
         f.write(webdriver.page_source.encode('utf8') + '\n')
 
 
-def recursive_dump_page_source(visit_id, driver, manager_params):
+def recursive_dump_page_source(visit_id, driver, manager_params, suffix=''):
     """Dump a compressed html tree for the current page visit"""
     url = urllib.quote_plus(du.get_stripped_url(driver.current_url))
+    if suffix != '':
+        suffix = '-' + suffix
     outfile = os.path.join(manager_params['source_dump_path'],
-                           '%i-%s.json.gz' % (visit_id, url))
+                           '%i-%s%s.json.gz' % (visit_id, url, suffix))
 
     def collect_source(driver, frame_stack, rv={}):
         is_top_frame = len(frame_stack) == 1

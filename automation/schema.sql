@@ -37,6 +37,17 @@ CREATE TABLE IF NOT EXISTS site_visits (
     site_url VARCHAR(500) NOT NULL,
     FOREIGN KEY(crawl_id) REFERENCES crawl(id));
 
+CREATE TABLE IF NOT EXISTS fb_login (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    crawl_id INTEGER NOT NULL,
+    visit_id INTEGER NOT NULL,
+    connect_page_found BOOLEAN NOT NULL,
+    connect_successful BOOLEAN NOT NULL,
+    fb_api_verified BOOLEAN NOT NULL,
+    FOREIGN KEY(crawl_id) REFERENCES crawl(id),
+    FOREIGN KEY(visit_id) REFERENCES site_visits(visit_id)
+);
+
 /* Proxy Tables */
 
 /* TODO: add publix_suffix to db structure */
