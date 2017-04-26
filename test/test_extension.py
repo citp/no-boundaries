@@ -337,6 +337,7 @@ class TestExtension(OpenWPMTest):
             assert (utc_now - js_time).seconds < MAX_TIMEDELTA
         assert not db_utils.any_command_failed(db)
 
+    @pytest.mark.skip("Battery instrumentation is disabled")
     def test_battery_fingerprinting(self):
         db = self.visit('/battery_fingerprinting.html')
         # Check that all calls and methods are recorded
@@ -349,7 +350,6 @@ class TestExtension(OpenWPMTest):
             observed_symbols.add(symbol)
         assert BATTERY_SYMBOLS == observed_symbols
         assert BATTERY_ARGUMENTS == observed_arguments
-
 
     def test_document_cookie_instrumentation(self):
         db = self.visit(utilities.BASE_TEST_URL + "/js_cookie.html")

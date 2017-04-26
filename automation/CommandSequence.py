@@ -54,6 +54,15 @@ class CommandSequence:
         self.commands_with_timeout.append((command, timeout))
         self.contains_get_or_browse = True
 
+    def browse_and_dump_source(self, num_links=2, sleep=0, timeout=60):
+        """ browse a website and visit <num_links> links on the page
+
+        The recursive page source is dumped for each page visit.
+        """
+        self.total_timeout += timeout
+        command = ('BROWSE_AND_DUMP_SOURCE', self.url, num_links, sleep)
+        self.commands_with_timeout.append((command, timeout))
+
     def dump_flash_cookies(self, timeout=60):
         """ dumps the local storage vectors (flash, localStorage, cookies) to db
         Side effect: closes the current tab."""
@@ -111,7 +120,7 @@ class CommandSequence:
         command = ('DUMP_PAGE_SOURCE', dump_name,)
         self.commands_with_timeout.append((command, timeout))
 
-    def recursive_dump_page_source(self, timeout=30):
+    def recursive_dump_page_source(self, suffix='', timeout=30):
         """Dumps rendered source of current page visit to 'sources' dir.
 
         Unlike `dump_page_source`, this includes iframe sources. Archive is
@@ -137,7 +146,16 @@ class CommandSequence:
         if not self.contains_get_or_browse:
             raise CommandExecutionError("No get or browse request preceding "
                                         "the dump page source command", self)
-        command = ('RECURSIVE_DUMP_PAGE_SOURCE',)
+        command = ('RECURSIVE_DUMP_PAGE_SOURCE', suffix)
+        self.commands_with_timeout.append((command, timeout))
+
+    def facebook_login(self, url, timeout=120):
+        """ tries to login to facebook on <url> """
+        self.total_timeout += timeout
+        if not self.contains_get_or_browse:
+            raise CommandExecutionError("No get or browse request preceding "
+                                        "the facebook_login command", self)
+        command = ('FACEBOOK_LOGIN', url)
         self.commands_with_timeout.append((command, timeout))
 
     def run_custom_function(self, function_handle, func_args=(), timeout=30):
