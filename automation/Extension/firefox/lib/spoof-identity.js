@@ -12,12 +12,7 @@ exports.run = function(config, testing) {
     include: "*",
     contentScriptWhen: "start",
     contentScriptFile: data.url("spoof_identity_content.js"),
-    contentScriptOptions: {
-      'facebook': config['facebook'],
-      'google': config['google'],
-      'dom': config['dom'],
-      'storage': config['storage']
-    }
+    contentScriptOptions: config
   });
 
   function shouldRedirect(URI) {

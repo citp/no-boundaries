@@ -6,6 +6,10 @@ import utilities as util
 
 DOM_EMAIL = 'jeromecisco@hotmail.com'
 DOM_NAME = 'Jerome Cisco'
+DOM_LOGIN = ['username', 'password']
+DOM_CHECKOUT = ['name', 'email', 'emailC', 'ship-address', 'ship-city',
+                'ship-state', 'ship-zip', 'ship-country', 'ccname',
+                'cardnumber', 'cvc', 'cc-exp', 'phone']
 
 COOKIES = {
     u'xxx-name': u'ChiefWiggins',
@@ -26,7 +30,9 @@ class TestIdentitySpoofing(OpenWPMTest):
     def test_dom_and_storage_spoofing(self):
         """Verify that we redirect requests to platform.js to a noop"""
         manager_params, browser_params = self.get_config()
-        browser_params[0]['spoof_identity']['dom'] = True
+        browser_params[0]['spoof_identity']['dom_identity'] = True
+        browser_params[0]['spoof_identity']['dom_checkout'] = True
+        browser_params[0]['spoof_identity']['dom_login'] = True
         browser_params[0]['spoof_identity']['storage'] = True
         manager = TaskManager.TaskManager(manager_params, browser_params)
         test_url = util.BASE_TEST_URL + '/simple_with_iframe.html'
@@ -51,6 +57,22 @@ class TestIdentitySpoofing(OpenWPMTest):
                     return ''
                 return elem.get_attribute('innerHTML')
 
+            def get_login():
+                try:
+                    elem = driver.find_element_by_id("dom-login-credentials")
+                except NoSuchElementException:
+                    return []
+                return [x.get_attribute('name') for x in
+                        elem.find_elements_by_tag_name('input')]
+
+            def get_checkout():
+                try:
+                    elem = driver.find_element_by_id("dom-checkout-payment")
+                except NoSuchElementException:
+                    return []
+                return [x.get_attribute('name') for x in
+                        elem.find_elements_by_tag_name('input')]
+
             def get_cookies():
                 cookies = dict()
                 for cookie in driver.get_cookies():
@@ -61,6 +83,8 @@ class TestIdentitySpoofing(OpenWPMTest):
 
             # Check main frame, should have both DOM and cookies
             assert get_email() == DOM_EMAIL
+            assert get_login() == DOM_LOGIN
+            assert get_checkout() == DOM_CHECKOUT
             assert DOM_NAME in get_name()
             assert get_cookies() == COOKIES
 
@@ -68,6 +92,8 @@ class TestIdentitySpoofing(OpenWPMTest):
             iframe = driver.find_element_by_tag_name('iframe')
             driver.switch_to_frame(iframe)
             assert get_email() == DOM_EMAIL
+            assert get_login() == DOM_LOGIN
+            assert get_checkout() == DOM_CHECKOUT
             assert DOM_NAME in get_name()
             assert get_cookies() == dict()
 
