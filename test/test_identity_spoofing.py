@@ -28,7 +28,7 @@ class TestIdentitySpoofing(OpenWPMTest):
         return manager_params, browser_params
 
     def test_dom_and_storage_spoofing(self):
-        """Verify that we redirect requests to platform.js to a noop"""
+        """Verify that dom and storage spoofing run successfully"""
         manager_params, browser_params = self.get_config()
         browser_params[0]['spoof_identity']['dom_identity'] = True
         browser_params[0]['spoof_identity']['dom_checkout'] = True
