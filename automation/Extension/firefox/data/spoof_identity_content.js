@@ -6,7 +6,7 @@ function getPageScript() {
      * Facebook Login API
      */
 
-    var facebook = document.currentScript.getAttribute('data-facebook');
+    var facebook = document.currentScript.getAttribute('data-facebook') === 'true';
     if (facebook) {
       // User information used for Facebook
       var FBUserInfo = {
@@ -202,7 +202,7 @@ function getPageScript() {
      * Google and Google Plus Login API
      */
 
-    var google = document.currentScript.getAttribute('data-google');
+    var google = document.currentScript.getAttribute('data-google') === 'true';
     if (google) {
       // User information used for Google and Google Plus profile
       var GUserInfo = {
@@ -559,7 +559,7 @@ function getPageScript() {
                       '<p>' + domEmail + '</p>';
       document.body.appendChild(div);
     }
-    var domSpoof = document.currentScript.getAttribute('data-dom-identity');
+    var domSpoof = document.currentScript.getAttribute('data-dom-identity') === 'true';
     if (domSpoof) {
       console.log("Spoofing identifying information in the DOM.");
       var domName = 'Jerome Cisco';
@@ -612,7 +612,7 @@ function getPageScript() {
       div.appendChild(form);
       document.body.appendChild(div);
     }
-    var domLoginSpoof = document.currentScript.getAttribute('data-dom-login');
+    var domLoginSpoof = document.currentScript.getAttribute('data-dom-login') === 'true';
     if (domLoginSpoof) {
       console.log("Spoofing login form in the DOM.");
       var domLoginEmail = 'example@example.com';
@@ -700,7 +700,7 @@ function getPageScript() {
       div.innerHTML = paymentForm;
       document.body.appendChild(div);
     }
-    var domCheckoutSpoof = document.currentScript.getAttribute('data-dom-checkout');
+    var domCheckoutSpoof = document.currentScript.getAttribute('data-dom-checkout') === 'true';
     if (domCheckoutSpoof) {
       console.log("Spoofing checkout payment info forms in the DOM.");
       window.setTimeout(insertDOMCheckout, 100);
@@ -724,7 +724,7 @@ function getPageScript() {
       var str = 'xxx-' + key + '=' + value + ';expires=' + expiry.toUTCString();
       document.cookie = str;
     }
-    var storage_spoof = document.currentScript.getAttribute('data-storage');
+    var storage_spoof = document.currentScript.getAttribute('data-storage') === 'true';
     if (storage_spoof && !inIframe()) {
       console.log("Spoofing identifying information in storage for", window.self);
       var storageId = {
