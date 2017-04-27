@@ -32,7 +32,9 @@ exports.main = function(options, callbacks) {
         'enabled': true,
         'facebook': true,
         'google': true,
-        'dom': true,
+        'dom_identity': true,
+        'dom_login': true,
+        'dom_checkout': true,
         'storage': true
       },
       cookie_instrument:true,
