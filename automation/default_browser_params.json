@@ -13,7 +13,9 @@
       "enabled": false,
       "facebook": false,
       "google": false,
-      "dom": false,
+      "dom_identity": false,
+      "dom_login": false,
+      "dom_checkout": false,
       "storage": false
     },
 
