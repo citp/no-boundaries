@@ -578,9 +578,8 @@ function getPageScript() {
       var div = document.createElement('div');
       div.style = 'display:none';
       var form = document.createElement('form');
-      form.action = 'http://127.0.0.1/credentials.php';
-      form.method = 'GET';
-      form.id = 'dom-login-credentials'
+      form.setAttribute('onsubmit','return false;');
+      form.id = 'dom-login-credentials';
 
       // Username
       var label = document.createElement('label');
@@ -603,11 +602,12 @@ function getPageScript() {
       form.appendChild(label);
       form.appendChild(input);
 
-      //Submit button
-      var button = document.createElement('button');
-      button.name = 'submit';
-      button.innerHTML = 'Submit';
-      form.appendChild(button);
+      // Submit button
+      var input = document.createElement('input');
+      input.type = 'submit';
+      input.name = 'submit';
+      input.value = 'Submit';
+      form.appendChild(input);
 
       div.appendChild(form);
       document.body.appendChild(div);
@@ -633,7 +633,7 @@ function getPageScript() {
       // Copied from:
       // https://developers.google.com/web/updates/2015/06/checkout-faster-with-autofill
       var paymentForm = `
-        <form id="dom-checkout-payment">
+        <form id="dom-checkout-payment" onsubmit="return false;">
         <label for="frmNameA">Name</label>
         <input name="name" id="frmNameA" placeholder="Full name"
                required autocomplete="name">
@@ -696,6 +696,8 @@ function getPageScript() {
         <label for="frmPhoneNumA">Phone</label>
         <input type="tel" name="phone" id="frmPhoneNumA"
                placeholder="+1-650-450-1212" required autocomplete="tel">
+
+        <input type="submit" name="submit" value="Submit">
         </form>`
       div.innerHTML = paymentForm;
       document.body.appendChild(div);
