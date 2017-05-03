@@ -6,10 +6,10 @@ import utilities as util
 
 DOM_EMAIL = 'jeromecisco@hotmail.com'
 DOM_NAME = 'Jerome Cisco'
-DOM_LOGIN = ['username', 'password']
+DOM_LOGIN = ['username', 'password', 'submit']
 DOM_CHECKOUT = ['name', 'email', 'emailC', 'ship-address', 'ship-city',
                 'ship-state', 'ship-zip', 'ship-country', 'ccname',
-                'cardnumber', 'cvc', 'cc-exp', 'phone']
+                'cardnumber', 'cvc', 'cc-exp', 'phone', 'submit']
 
 COOKIES = {
     u'xxx-name': u'ChiefWiggins',
