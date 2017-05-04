@@ -48,11 +48,12 @@ exports.main = function(options, callbacks) {
       crawl_id:''
     };
   }
+  var listeningSockets = {}; // All listening sockets
 
-  loggingDB.open(config['sqlite_address'],
-                 config['leveldb_address'],
-                 config['logger_address'],
-                 config['crawl_id']);
+  listeningSockets['loggingDB'] = loggingDB.open(config['sqlite_address'],
+                                                 config['leveldb_address'],
+                                                 config['logger_address'],
+                                                 config['crawl_id']);
 
   // Prevent the webdriver from identifying itself in the DOM. See #91
   if (config['disable_webdriver_self_id']) {
@@ -96,4 +97,15 @@ exports.main = function(options, callbacks) {
     console.log("Console JS error recording enabled");
     consoleLogs.run(config['crawl_id']);
   }
+
+  // Write listening sockets to disk for main process
+  var path = system.pathFor("ProfD") + '/extension_sockets.json';
+  console.log("Writing all listening socket ports to:", path);
+  var file = fileIO.open(path, 'w');
+  if (!file.closed) {
+      file.write(JSON.stringify(listeningSockets));
+      file.close();
+      console.log("Sockets",listeningSockets,"written to disk.");
+  }
+
 };

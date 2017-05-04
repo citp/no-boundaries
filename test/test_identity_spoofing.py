@@ -144,7 +144,8 @@ class TestIdentitySpoofing(OpenWPMTest):
         cs = CommandSequence.CommandSequence(test_url, blocking=True)
         cs.get(sleep=2, timeout=60)
         cs.run_custom_function(check_dom_and_storage)
-        cs.run_custom_function(form_utils.fill_spoofed_elements_and_submit)
+        cs.run_custom_function(form_utils.fill_spoofed_elements_and_submit,
+                               timeout=60)
         manager.execute_command_sequence(cs)
         manager.close()
         db = manager_params['db']

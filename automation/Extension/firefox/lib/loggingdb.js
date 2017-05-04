@@ -1,5 +1,4 @@
 const fileIO            = require("sdk/io/file");
-const system            = require("sdk/system");
 var socket              = require("./socket.js");
 
 var crawlID = null;
@@ -39,19 +38,12 @@ exports.open = function(sqliteAddress, ldbAddress, logAddress, curr_crawlID) {
         console.log("ldbSocket started?",rv);
     }
 
-
     // Listen for incomming urls as visit ids
-    listeningSocket = new socket.ListeningSocket();
-    var path = system.pathFor("ProfD") + '/extension_port.txt';
-    console.log("Writing listening socket port to disk at:", path);
-    var file = fileIO.open(path, 'w');
-    if (!file.closed) {
-        file.write(listeningSocket.port);
-        file.close();
-        console.log("Port",listeningSocket.port,"written to disk.");
-    }
     console.log("Starting socket listening for incomming connections.");
+    listeningSocket = new socket.ListeningSocket();
     listeningSocket.startListening();
+
+    return listeningSocket.port;
 };
 
 exports.close = function() {
@@ -199,7 +191,7 @@ exports.createInsert = function(table, update) {
     }
 
     update["visit_id"] = visitID;
-    
+
     if (!visitID && !debugging) {
         exports.logCritical('Extension-' + crawlID + ' : visitID is null while attempting to insert ' +
                     JSON.stringify(update));
