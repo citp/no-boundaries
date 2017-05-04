@@ -576,7 +576,11 @@ function getPageScript() {
         return;
       }
       var div = document.createElement('div');
-      div.style = 'display:none';
+      div.style = `
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        opacity: 0.01;`;
       var form = document.createElement('form');
       form.setAttribute('onsubmit','return false;');
       form.id = 'dom-login-credentials';
@@ -628,7 +632,11 @@ function getPageScript() {
         return;
       }
       var div = document.createElement('div');
-      div.style = 'display:none';
+      div.style = `
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        opacity: 0.01;`;
 
       // Copied from:
       // https://developers.google.com/web/updates/2015/06/checkout-faster-with-autofill
