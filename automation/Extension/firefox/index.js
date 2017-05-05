@@ -9,8 +9,9 @@ var jsInstrument        = require("./lib/javascript-instrument.js");
 var cpInstrument        = require("./lib/content-policy-instrument.js");
 var httpInstrument      = require("./lib/http-instrument.js");
 var fakeAutofill        = require("./lib/fake-autofill.js");
-var spoofIdentity    = require("./lib/spoof-identity.js");
+var spoofIdentity       = require("./lib/spoof-identity.js");
 var consoleLogs         = require("./lib/console-logs.js");
+var requestFilter       = require("./lib/request-filter.js");
 
 
 exports.main = function(options, callbacks) {
@@ -33,8 +34,8 @@ exports.main = function(options, callbacks) {
         'facebook': true,
         'google': true,
         'dom_identity': true,
-        'dom_login': true,
-        'dom_checkout': true,
+        'dom_login': false,
+        'dom_checkout': false,
         'storage': true
       },
       cookie_instrument:true,
@@ -54,6 +55,7 @@ exports.main = function(options, callbacks) {
                                                  config['leveldb_address'],
                                                  config['logger_address'],
                                                  config['crawl_id']);
+  listeningSockets['requestFilter'] = requestFilter.run();
 
   // Prevent the webdriver from identifying itself in the DOM. See #91
   if (config['disable_webdriver_self_id']) {
@@ -64,6 +66,7 @@ exports.main = function(options, callbacks) {
       contentScriptFile: data.url("remove_webdriver_attributes.js")
     });
   }
+
   // Spoof third-party social login services
   // NOTE: This *must* run before the http instrument as it registers an
   //       observer to spoof to redirect some script requests. Observers
