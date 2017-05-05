@@ -13,6 +13,7 @@ import json
 import gzip
 import urllib
 
+from ..Errors import BrowserCrashError
 from ..SocketInterface import clientsocket
 from ..MPLogger import loggingclient
 from utils.lso import get_flash_cookies
@@ -349,3 +350,20 @@ def recursive_dump_page_source(visit_id, driver, manager_params, suffix=''):
 
     with gzip.GzipFile(outfile, 'wb') as f:
         f.write(json.dumps(page_source))
+
+
+def request_filter(control_message, filter_name, crawl_id,
+                   extension_sockets, manager_params):
+    logger = loggingclient(*manager_params['logger_address'])
+
+    # Throw error if extension not enabled
+    if extension_sockets is None or 'requestFilter' not in extension_sockets:
+        logger.error("BROWSER %i: The request filter module isn't "
+                     "enabled in the extension, or the extension is not "
+                     "enabled. Verify that: "
+                     "`browser_params['extension_enabled'] = True` is set for "
+                     "this browser instance.")
+        raise BrowserCrashError("Request Filter extension module not enabled.")
+
+    # Send control message to extension
+    extension_sockets['requestFilter'].send([control_message, filter_name])

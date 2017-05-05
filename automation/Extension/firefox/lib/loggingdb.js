@@ -1,4 +1,3 @@
-const fileIO            = require("sdk/io/file");
 var socket              = require("./socket.js");
 
 var crawlID = null;

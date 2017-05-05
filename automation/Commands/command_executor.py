@@ -87,6 +87,15 @@ def execute_command(command, webdriver, proxy_queue, browser_settings,
             browser_params=browser_params
         )
 
+    if command[0] == 'REQUEST_FILTER':
+        browser_commands.request_filter(
+            control_message=command[1],
+            filter_name=command[2],
+            crawl_id=browser_params['crawl_id'],
+            extension_sockets=extension_sockets,
+            manager_params=manager_params
+        )
+
     if command[0] == 'RUN_CUSTOM_FUNCTION':
         arg_dict = {"command": command,
                     "driver": webdriver,
