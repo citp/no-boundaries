@@ -174,6 +174,8 @@ if __name__ == '__main__':
                 sock.send(dict_msg)
             elif msg == 'function':
                 sock.send(function_msg)
+            elif msg == 'eval':
+                sock.send(eval(raw_input("Enter string to eval:\n").strip()))
             else:
                 sock.send(msg)
         sock.close()

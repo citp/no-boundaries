@@ -13,6 +13,7 @@ import json
 import gzip
 import urllib
 
+from ..Errors import BrowserCrashError
 from ..SocketInterface import clientsocket
 from ..MPLogger import loggingclient
 from utils.lso import get_flash_cookies
@@ -75,7 +76,7 @@ def tab_restart_browser(webdriver):
 
 
 def get_website(url, sleep, visit_id, webdriver, proxy_queue,
-                browser_params, extension_socket):
+                browser_params, extension_sockets):
     """
     goes to <url> using the given <webdriver> instance
     <proxy_queue> is queue for sending the proxy the current first party site
@@ -90,8 +91,8 @@ def get_website(url, sleep, visit_id, webdriver, proxy_queue,
         proxy_queue.put(visit_id)
         while not proxy_queue.empty():
             time.sleep(0.001)
-    if extension_socket is not None:
-        extension_socket.send(visit_id)
+    if extension_sockets is not None and 'loggingDB' in extension_sockets:
+        extension_sockets['loggingDB'].send(visit_id)
 
     # Execute a get through selenium
     try:
@@ -151,7 +152,7 @@ def extract_links(webdriver, browser_params, manager_params):
 
 
 def browse_website(url, num_links, sleep, visit_id, webdriver, proxy_queue,
-                   browser_params, manager_params, extension_socket):
+                   browser_params, manager_params, extension_sockets):
     """Calls get_website before visiting <num_links> present on the page.
 
     Note: the site_url in the site_visits table for the links visited will
@@ -159,7 +160,7 @@ def browse_website(url, num_links, sleep, visit_id, webdriver, proxy_queue,
     """
     # First get the site
     get_website(url, sleep, visit_id, webdriver, proxy_queue,
-                browser_params, extension_socket)
+                browser_params, extension_sockets)
 
     # Connect to logger
     logger = loggingclient(*manager_params['logger_address'])
@@ -188,14 +189,14 @@ def browse_website(url, num_links, sleep, visit_id, webdriver, proxy_queue,
 
 def browse_and_dump_source(url, num_links, sleep, visit_id, webdriver,
                            proxy_queue, browser_params, manager_params,
-                           extension_socket):
+                           extension_sockets):
     """Calls get_website before visiting <num_links> present on the page.
 
     Each link visited will do a recursive page source dump.
     """
     # First get the site
     get_website(url, sleep, visit_id, webdriver, proxy_queue,
-                browser_params, extension_socket)
+                browser_params, extension_sockets)
     recursive_dump_page_source(visit_id, webdriver, manager_params,
                                suffix='0')
 
@@ -349,3 +350,20 @@ def recursive_dump_page_source(visit_id, driver, manager_params, suffix=''):
 
     with gzip.GzipFile(outfile, 'wb') as f:
         f.write(json.dumps(page_source))
+
+
+def request_filter(control_message, filter_name, crawl_id,
+                   extension_sockets, manager_params):
+    logger = loggingclient(*manager_params['logger_address'])
+
+    # Throw error if extension not enabled
+    if extension_sockets is None or 'requestFilter' not in extension_sockets:
+        logger.error("BROWSER %i: The request filter module isn't "
+                     "enabled in the extension, or the extension is not "
+                     "enabled. Verify that: "
+                     "`browser_params['extension_enabled'] = True` is set for "
+                     "this browser instance.")
+        raise BrowserCrashError("Request Filter extension module not enabled.")
+
+    # Send control message to extension
+    extension_sockets['requestFilter'].send([control_message, filter_name])

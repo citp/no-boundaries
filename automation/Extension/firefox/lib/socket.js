@@ -15,11 +15,16 @@ class ListeningSocket {
                               .createInstance(Ci.nsIServerSocket);
     this._inputStream = null;
     this._serverSocket.init(-1, true, -1); // init with random port
+    this._listeners = []; // event listeners fired when item added to queue
 
     this.port = this._serverSocket.port;
     this.queue = []; // stores messages sent to socket
     console.log("...serverSocket listening on port:",this.port);
 
+  }
+
+  registerListener(listener) {
+    this._listeners.push(listener);
   }
 
   startListening() {
@@ -51,6 +56,9 @@ class ListeningSocket {
       return;
     }
     this.queue.push(string);
+    for (var i=0; i<this._listeners.length; i++) {
+      this._listeners[i](this.queue);
+    }
 
     var thisSocket = this; // self reference for closure
     this._inputStream.asyncWait({
