@@ -178,6 +178,20 @@ def str_element(element):
     return out
 
 
+def str_form(element):
+    """Return a human readable representation of a form.
+
+    Return empty string if the element is not active anymore."""
+    try:
+        out = '<form name="%s" action="%s" ...> x:%s y:%s w:%d h:%d' % (  # noqa
+            element.get_attribute("name"), element.get_attribute("action"),
+            element.location["x"], element.location["y"],
+            element.size["width"], element.size["height"])
+    except Exception:
+        out = ""
+    return out
+
+
 def is_text_or_email_input(element):
     """Check if the given input element is an active text or email field.
 

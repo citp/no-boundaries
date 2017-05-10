@@ -12,6 +12,10 @@ exports.run = function(crawlID, testing) {
   loggingDB.executeSQL(createInsertedElementsTable, false);
   var createModifiedElementsTable = data.load("create_modified_elements_table.sql");
   loggingDB.executeSQL(createModifiedElementsTable, false);
+  // TODO: Where should we create the form_filling table?
+  var createFormFillingTable = data.load("create_form_filling_events.sql");
+  loggingDB.executeSQL(createFormFillingTable, false);
+
 
   // Inject content script to instrument JavaScript API
   pageMod.PageMod({
