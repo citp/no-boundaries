@@ -836,7 +836,7 @@ function getPageScript() {
           logCallStack: true,
           excludedProperties: [ "nodeType", "nodeName", "parentNode",
                                 "tagName", "contains", "getBoundingClientRect",
-                                "className"]
+                                "className", "ownerDocument"]
         });
 
     /* Monitor new event listeners to top-level objects */

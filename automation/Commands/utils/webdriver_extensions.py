@@ -10,6 +10,7 @@ from selenium.common.exceptions import StaleElementReferenceException
 from urlparse import urljoin
 import random
 import time
+import json
 
 from ...utilities import domain_utils as du
 import XPathUtil
@@ -166,13 +167,19 @@ def str_element(element):
     """Return a human readable representation of a webelement.
 
     Return empty string if the element is not active anymore."""
+    elem_dict = {}
     try:
-        out = '<%s type="%s" name="%s" value="%s" placeholder="%s" ...> x:%s y:%s w:%d h:%d' % (  # noqa
-            element.tag_name, get_element_type(element),
-            element.get_attribute("name"), element.get_attribute("value"),
-            get_placeholder_text(element),
-            element.location["x"], element.location["y"],
-            element.size["width"], element.size["height"])
+        elem_dict["tag_name"] = element.tag_name
+        elem_dict["type"] = get_element_type(element)
+        elem_dict["name"] = element.get_attribute("name")
+        elem_dict["value"] = element.get_attribute("value"),
+        elem_dict["autocomplete"] = element.get_attribute("autocomplete")
+        elem_dict["placeholder"] = get_placeholder_text(element)
+        elem_dict["x"] = element.location["x"]
+        elem_dict["y"] = element.location["y"]
+        elem_dict["width"] = element.size["width"]
+        elem_dict["height"] = element.size["height"]
+        out = json.dumps(elem_dict)
     except Exception:
         out = ""
     return out
@@ -182,14 +189,18 @@ def str_form(element):
     """Return a human readable representation of a form.
 
     Return empty string if the element is not active anymore."""
+    elem_dict = {}
     try:
-        # TODO: return as JSON string
-        out = '<form name="%s" action="%s" method="%s" ...> x:%s y:%s w:%d h:%d' % (  # noqa
-            element.get_attribute("name"),
-            element.get_attribute("action"),
-            element.get_attribute("method"),
-            element.location["x"], element.location["y"],
-            element.size["width"], element.size["height"])
+        elem_dict["tag_name"] = "Form"
+        elem_dict["name"] = element.get_attribute("name")
+        elem_dict["action"] = element.get_attribute("action")
+        elem_dict["method"] = element.get_attribute("method")
+        elem_dict["autocomplete"] = element.get_attribute("autocomplete")
+        elem_dict["x"] = element.location["x"]
+        elem_dict["y"] = element.location["y"]
+        elem_dict["width"] = element.size["width"]
+        elem_dict["height"] = element.size["height"]
+        out = json.dumps(elem_dict)
     except Exception:
         out = ""
     return out
