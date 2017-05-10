@@ -139,6 +139,15 @@ def is_clickable(driver, full_xpath, xpath, timeout=1):
         return False
 
 
+def click_to_elem(element, sleep_after=0.5):
+    """Click to element and handle WebDriverException."""
+    try:
+        element.click()
+        time.sleep(sleep_after)
+    except WebDriverException:
+        pass
+
+
 def get_element_type(element):
     try:
         return element.get_attribute("type")
