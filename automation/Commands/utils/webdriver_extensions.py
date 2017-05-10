@@ -20,10 +20,10 @@ from selenium.webdriver.common.action_chains import ActionChains
 def scroll_down(driver):
     at_bottom = False
     while random.random() > .20 and not at_bottom:
-        k = str(10 + int(200*random.random()))
-        driver.execute_script("window.scrollBy(0,"+k+")")
+        k = str(10 + int(200 * random.random()))
+        driver.execute_script("window.scrollBy(0," + k + ")")
         at_bottom = driver.execute_script("""
-            return (((window.scrollY + window.innerHeight ) + 100 > document.body.clientHeight ))""") # noqa
+            return (((window.scrollY + window.innerHeight ) + 100 > document.body.clientHeight ))""")  # noqa
         time.sleep(0.5 + random.random())
 
 
@@ -158,13 +158,13 @@ def str_element(element):
 
     Return empty string if the element is not active anymore."""
     try:
-        out = '<%s type="%s" name="%s" value="%s" placeholder="%s" ...> x:%s y:%s w:%d h:%d' % ( # noqa
+        out = '<%s type="%s" name="%s" value="%s" placeholder="%s" ...> x:%s y:%s w:%d h:%d' % (  # noqa
             element.tag_name, get_element_type(element),
             element.get_attribute("name"), element.get_attribute("value"),
             get_placeholder_text(element),
             element.location["x"], element.location["y"],
             element.size["width"], element.size["height"])
-    except:
+    except Exception:
         out = ""
     return out
 
