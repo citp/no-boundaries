@@ -183,8 +183,11 @@ def str_form(element):
 
     Return empty string if the element is not active anymore."""
     try:
-        out = '<form name="%s" action="%s" ...> x:%s y:%s w:%d h:%d' % (  # noqa
-            element.get_attribute("name"), element.get_attribute("action"),
+        # TODO: return as JSON string
+        out = '<form name="%s" action="%s" method="%s" ...> x:%s y:%s w:%d h:%d' % (  # noqa
+            element.get_attribute("name"),
+            element.get_attribute("action"),
+            element.get_attribute("method"),
             element.location["x"], element.location["y"],
             element.size["width"], element.size["height"])
     except Exception:
