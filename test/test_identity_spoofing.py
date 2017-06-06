@@ -7,10 +7,11 @@ import utilities as util
 
 DOM_EMAIL = 'jeromecisco@hotmail.com'
 DOM_NAME = 'Jerome Cisco'
-DOM_LOGIN = ['username', 'password', 'submit']
-DOM_CHECKOUT = ['name', 'email', 'emailC', 'ship-address', 'ship-city',
-                'ship-state', 'ship-zip', 'ship-country', 'ccname',
-                'cardnumber', 'cvc', 'cc-exp', 'phone', 'submit']
+DOM_LOGIN = form_utils.DOM_LOGIN_ELEMS + ['submit']
+DOM_CHECKOUT = form_utils.DOM_CHECKOUT_ELEMS + ['submit']
+
+FILL_EMAIL = form_utils.FORM_FILL_EMAIL
+FILL_PASSWORD = form_utils.FORM_FILL_PASSWORD
 
 COOKIES = {
     u'xxx-name': u'ChiefWiggins',
@@ -20,23 +21,6 @@ COOKIES = {
 
 IFRAME_URL = u'https://rawgit.com/englehardt/e05f7b95f4713f94a70a9c0c55bad067/raw/160a3582fafece3e3287085f9d601e5e2b649a41/blank.html'  # noqa
 TOP_LEVEL_URL = u'http://localtest.me:8000/test_pages/simple_with_iframe.html'
-
-FILL_EMAIL = "randomtestuser.1234@gmail.com"
-FILL_PASSWORD = "_pa$$word123_"
-CHECKOUT = {
-    'email': FILL_EMAIL,
-    'name': 'Random User',
-    'ship-address': '123 Not A Real Street',
-    'ship-city': 'New York',
-    'ship-state': 'NY',
-    'ship-zip': '10001',
-    'ship-country': 'USA',
-    'ccname':  'Random User',
-    'cardnumber': '5105105105105100',
-    'cvc': '123',
-    'cc-exp': '08/2019',
-    'phone': '123-555-0100'
-}
 
 
 class TestIdentitySpoofing(OpenWPMTest):
@@ -137,44 +121,10 @@ class TestIdentitySpoofing(OpenWPMTest):
 
             def verify_spoofed_checkout_elements():
                 form = driver.find_element_by_id('dom-checkout-payment')
-                elem = form.find_element_by_name('name')
-                assert elem.get_attribute('value') == CHECKOUT['name']
-
-                elem = form.find_element_by_name('email')
-                assert elem.get_attribute('value') == CHECKOUT['email']
-
-                elem = form.find_element_by_name('emailC')
-                assert elem.get_attribute('value') == CHECKOUT['email']
-
-                elem = form.find_element_by_name('ship-address')
-                assert elem.get_attribute('value') == CHECKOUT['ship-address']
-
-                elem = form.find_element_by_name('ship-city')
-                assert elem.get_attribute('value') == CHECKOUT['ship-city']
-
-                elem = form.find_element_by_name('ship-state')
-                assert elem.get_attribute('value') == CHECKOUT['ship-state']
-
-                elem = form.find_element_by_name('ship-zip')
-                assert elem.get_attribute('value') == CHECKOUT['ship-zip']
-
-                elem = form.find_element_by_name('ship-country')
-                assert elem.get_attribute('value') == CHECKOUT['ship-country']
-
-                elem = form.find_element_by_name('ccname')
-                assert elem.get_attribute('value') == CHECKOUT['ccname']
-
-                elem = form.find_element_by_name('cardnumber')
-                assert elem.get_attribute('value') == CHECKOUT['cardnumber']
-
-                elem = form.find_element_by_name('cvc')
-                assert elem.get_attribute('value') == CHECKOUT['cvc']
-
-                elem = form.find_element_by_name('cc-exp')
-                assert elem.get_attribute('value') == CHECKOUT['cc-exp']
-
-                elem = form.find_element_by_name('phone')
-                assert elem.get_attribute('value') == CHECKOUT['phone']
+                for elem_name in form_utils.DOM_CHECKOUT_ELEMS:
+                    elem = form.find_element_by_name(elem_name)
+                    assert (elem.get_attribute('value') ==
+                            form_utils.FORM_FILL_CHECKOUT[elem_name])
 
             # Check main frame and iframe
             # All spoofed elements should be present and filled in both
