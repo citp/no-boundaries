@@ -179,6 +179,11 @@ function getPageScript() {
       window.FB.Canvas.startTimer = function() { return; };
       window.FB.Canvas.stopTimer = function() { return; };
 
+      // Define a no-op of fbAsyncInit to allow us to instrument
+      window.fbAsyncInit = function() {
+        console.log("window.fbAsyncInit called!");
+      };
+
       var fb_inited = function(){
         // Don't fire fbAsyncInit until the document is complete
         if (document.readyState !== "complete"){

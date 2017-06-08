@@ -689,6 +689,15 @@ function getPageScript() {
       });
     }
 
+    // Instrument access/sets to window.fbAsyncInit (if exists)
+    if (window.fbAsyncInit) {
+      console.log("Instrumenting window.fbAsyncInit");
+      instrumentObjectProperty(window, "window", "fbAsyncInit", {
+        logFunctionsAsStrings: true,
+        logCallStack: true
+      });
+    }
+
     // Instrument access to our spoofed Google API (if exists)
     if (window.gapi) {
       console.log("Instrumenting window.gapi");
