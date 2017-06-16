@@ -6,10 +6,7 @@ var passwordManager = Cc["@mozilla.org/login-manager;1"].getService(
     Ci.nsILoginManager
 );
 
-exports.run = function(crawlID) {
-
-  let fakePwd = "_pa$$word123_";
-  let fakeEmail = "randomtestuser.4321@gmail.com";
+exports.run = function(crawlID, fakeEmail, fakePwd) {
   let emailField = "email";
   let PwdField = "password";
   let realm = null;
@@ -29,6 +26,9 @@ exports.run = function(crawlID) {
       return;
     }
     let hostname = tabUrlObj.protocol + "//" + tabUrlObj.host;
+    if (tabUrlObj.port) {
+      hostname += ':' + tabUrlObj.port;
+    }
     let newSignon = Cc["@mozilla.org/login-manager/loginInfo;1"].
       createInstance(Ci.nsILoginInfo);
 

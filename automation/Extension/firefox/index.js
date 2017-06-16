@@ -13,6 +13,8 @@ var spoofIdentity       = require("./lib/spoof-identity.js");
 var consoleLogs         = require("./lib/console-logs.js");
 var requestFilter       = require("./lib/request-filter.js");
 
+const AUTOFILL_EMAIL = "randomtestuser.4321@gmail.com";
+const AUTOFILL_PASSWORD = "_pa$$word123_";
 
 exports.main = function(options, callbacks) {
 
@@ -82,7 +84,9 @@ exports.main = function(options, callbacks) {
   }
   if (config['js_instrument']) {
     loggingDB.logDebug("Javascript instrumentation enabled");
-    jsInstrument.run(config['crawl_id'], config['testing']);
+    jsInstrument.run(config['crawl_id'], config['testing'],
+                     config['fake_autofill'], AUTOFILL_EMAIL,
+                     AUTOFILL_PASSWORD);
   }
   if (config['cp_instrument']) {
     loggingDB.logDebug("Content Policy instrumentation enabled");
@@ -94,7 +98,7 @@ exports.main = function(options, callbacks) {
   }
   if (config['fake_autofill']) {
     console.log("Fake autofill is enabled");
-    fakeAutofill.run(config['crawl_id']);
+    fakeAutofill.run(config['crawl_id'], AUTOFILL_EMAIL, AUTOFILL_PASSWORD);
   }
   if (config['record_js_errors']) {
     console.log("Console JS error recording enabled");

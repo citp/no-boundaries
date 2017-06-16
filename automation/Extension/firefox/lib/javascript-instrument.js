@@ -3,7 +3,8 @@ const data = require("sdk/self").data;
 var loggingDB = require("./loggingdb.js");
 var pageManager = require("./page-manager.js");
 
-exports.run = function(crawlID, testing) {
+exports.run = function(crawlID, testing, fakeAutofill,
+                       autofillEmail, autofillPassword) {
 
   // Set up tables
   var createJavascriptTable = data.load("create_javascript_table.sql");
@@ -19,7 +20,10 @@ exports.run = function(crawlID, testing) {
     contentScriptWhen: "start",
     contentScriptFile: data.url("./content.js"),
     contentScriptOptions: {
-      'testing': testing
+      'testing': testing,
+      'fakeAutofill': fakeAutofill,
+      'autofillEmail': autofillEmail,
+      'autofillPassword': autofillPassword
     },
     onAttach: function onAttach(worker) {
 
@@ -128,6 +132,22 @@ exports.run = function(crawlID, testing) {
         update["top_level_url"] = loggingDB.escapeString(worker.tab.url);
 
         loggingDB.executeSQL(loggingDB.createInsert("modified_elements", update), true);
+      });
+
+      /*
+       * Autofill
+       */
+      worker.port.on("autofillEvent", function(data) {
+        var update = {};
+        update["crawl_id"] = crawlID;
+        update["frame_url"] = loggingDB.escapeString(worker.url);
+        update["top_url"] = loggingDB.escapeString(worker.tab.url);
+        update["crawl_type"] = "AUTOFILL";
+        update["elem_str"] = loggingDB.escapeString(data.elem_str);
+        update["form_str"] = loggingDB.escapeString(data.form_str);
+        update["value"] = loggingDB.escapeString(data.value);
+        update["time_stamp"] = loggingDB.escapeString(data.time_stamp);
+        loggingDB.executeSQL(loggingDB.createInsert("form_filling_events", update), true);
       });
     }
   });

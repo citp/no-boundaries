@@ -268,7 +268,9 @@ function getPageScript() {
     }
 
     // Prevent logging of gets arising from logging
-    var inLog = false;
+    // Set to `true` while adding instrumentation to prevent logs.
+    // Be sure to set to false at end of instrumentation.
+    var inLog = true;
 
     // For gets, sets, etc. on a single value
     function logValue(instrumentedVariableName, value, operation, callContext, logSettings) {
@@ -866,6 +868,82 @@ function getPageScript() {
       propertiesToInstrument: [ "domain" ]
     });
 
+    /*
+     * Credential Autofill
+     */
+    var fakeAutofill = document.currentScript.
+      getAttribute('data-fakeAutofill') === 'true';
+    if (fakeAutofill) {
+      var autofillEmail = document.currentScript.
+        getAttribute('data-autofillEmail');
+      var autofillPassword = document.currentScript.
+        getAttribute('data-autofillPassword');
+      var stringifyElement = function(element) {
+        return JSON.stringify({
+          'tag_name': element.tagName,
+          'type': element.type,
+          'name': element.name,
+          'value': element.value,
+          'autocomplete': element.autocomplete,
+          'placeholder': element.placeholder,
+          'x': element.getBoundingClientRect().x,
+          'y': element.getBoundingClientRect().y,
+          'width': element.offsetWidth,
+          'height': element.offsetHeight
+        });
+      }
+      var stringifyForm = function(element) {
+        return JSON.stringify({
+          'tag_name': "Form",
+          'name': element.name,
+          'action': element.action,
+          'method': element.method,
+          'autocomplete': element.autocomplete,
+          'x': element.getBoundingClientRect().x,
+          'y': element.getBoundingClientRect().y,
+          'width': element.offsetWidth,
+          'height': element.offsetHeight
+        });
+      }
+      document.addEventListener("change", function(event) {
+        if (inLog) {
+          return;
+        }
+        inLog = true;
+
+        // Since `change` is a generic event, we want to filter anything that
+        // isn't caused by the browser's autofill. Skip events when:
+        // 1. Not an input element
+        // 2. Value filled is not the autofill value.
+        // 3. Call context isn't empty
+        var target = event.target;
+        if (!target.tagName || target.tagName != 'INPUT' ||
+            (target.value != autofillEmail && target.value != autofillPassword)) {
+          inLog = false;
+          return;
+        }
+        let callContext = getOriginatingScriptContext(true);
+        if (callContext.callStack != "") {
+          inLog = false;
+          return;
+        }
+
+        // Stringify forms and log fill event
+        var current_time = new Date();
+        var data = {
+          'elem_str': stringifyElement(target),
+          'form_str': target.form ? stringifyForm(target.form) : "",
+          'value': target.value,
+          'time_stamp': current_time.toISOString()
+        };
+        send('autofillEvent', data);
+        inLog = false;
+        return;
+      }, false);
+    }
+
+    // Enable logging
+    inLog = false;
 
     console.log("Successfully started all instrumentation.");
   } + "());";
@@ -907,5 +985,8 @@ document.addEventListener(event_id, function (e) {
 
 insertScript(getPageScript(), {
   event_id: event_id,
-  testing: self.options.testing
+  testing: self.options.testing,
+  fakeAutofill: self.options.fakeAutofill,
+  autofillEmail: self.options.autofillEmail,
+  autofillPassword: self.options.autofillPassword
 });
