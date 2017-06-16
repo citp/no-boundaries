@@ -45,6 +45,7 @@ exports.main = function(options, callbacks) {
       save_javascript:true,
       fake_autofill:true,
       testing:true,
+      instrument_fbasyncinit:true,
       record_js_errors:true,
       crawl_id:''
     };
@@ -82,7 +83,8 @@ exports.main = function(options, callbacks) {
   }
   if (config['js_instrument']) {
     loggingDB.logDebug("Javascript instrumentation enabled");
-    jsInstrument.run(config['crawl_id'], config['testing']);
+    jsInstrument.run(config['crawl_id'], config['testing'],
+        config['instrument_fbasyncinit']);
   }
   if (config['cp_instrument']) {
     loggingDB.logDebug("Content Policy instrumentation enabled");

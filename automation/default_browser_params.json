@@ -8,6 +8,7 @@
     "save_javascript": false,
     "fake_autofill": false,
     "record_js_errors": false,
+    "instrument_fbasyncinit": false,
 
     "spoof_identity": {
       "enabled": false,
