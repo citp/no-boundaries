@@ -10,6 +10,7 @@ FB_API_TEST_URL = u"%s/fb_api/fb_login.html" % util.BASE_TEST_URL
 fb_api_calls = [
     (FB_API_JS_TEST_URL, u'window.FB.getLoginStatus'),
     (FB_API_JS_TEST_URL, u'window.FB.api'),
+    (FB_API_TEST_URL, u'window.fbAsyncInit'),
     (FB_API_TEST_URL, u'window.FB.init'),
     (FB_API_TEST_URL, u'window.FB.getLoginStatus'),
     (FB_API_TEST_URL, u'window.FB.api'),
@@ -19,6 +20,12 @@ fb_api_calls = [
 fb_api_args = {"0": "/me",
                "1": u'{"fields":"name,email,gender"}',
                "2": "function..."}
+
+# First 70 characters of expected stringified functions
+fbasyncinit_sets = {
+    u'function () {\n    console.log("No-op overwrite of window.fbAsyncInit c',
+    u"function () {\n    FB.init({\n      appId      : '173371693135221', // M"
+}
 fb_init_arg = ('{"0":"{\\"appId\\":\\"173371693135221\\",\\"cookie\\":true,'
                '\\"xfbml\\":true,\\"version\\":\\"v2.7\\"}"}')
 fb_subscribed_events = {
@@ -67,6 +74,7 @@ class TestFBAPICalls(OpenWPMTest):
     def get_config(self, data_dir=""):
         manager_params, browser_params = self.get_test_config(data_dir)
         browser_params[0]['js_instrument'] = True
+        browser_params[0]['instrument_fbasyncinit'] = True
         browser_params[0]['spoof_identity']['enabled'] = True
         browser_params[0]['spoof_identity']['facebook'] = True
         return manager_params, browser_params
@@ -76,7 +84,10 @@ class TestFBAPICalls(OpenWPMTest):
         rows = db_utils.get_javascript_entries(db)
         observed_api_calls = set()
         observed_subscribe_events = set()
+        observed_fbasyncinit_sets = set()
         for script_url, symbol, operation, value, arguments in rows:
+            if operation == 'set' and symbol == 'window.fbAsyncInit':
+                observed_fbasyncinit_sets.add(value[:70])
             if operation != 'call':
                 continue
             observed_api_calls.add((script_url, symbol))
@@ -89,6 +100,7 @@ class TestFBAPICalls(OpenWPMTest):
             if symbol == u'window.FB.Event.subscribe':
                 arguments = json.loads(arguments)
                 observed_subscribe_events.add(arguments["0"])
+        assert observed_fbasyncinit_sets == fbasyncinit_sets
         assert observed_api_calls == set(fb_api_calls)
         assert observed_api_args == fb_api_args
         assert observed_subscribe_events == fb_subscribed_events
@@ -102,7 +114,7 @@ class TestFBAPICalls(OpenWPMTest):
         rows = db_utils.get_javascript_entries(db)
         observed_api_calls = set()
         for script_url, symbol, operation, value, arguments in rows:
-            if operation != 'call':
+            if operation != 'call' or symbol == 'window.fbAsyncInit':
                 continue
             observed_api_calls.add((script_url, symbol))
             if (script_url == FB_API_JS_TEST_URL and

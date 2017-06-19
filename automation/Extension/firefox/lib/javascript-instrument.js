@@ -3,7 +3,7 @@ const data = require("sdk/self").data;
 var loggingDB = require("./loggingdb.js");
 var pageManager = require("./page-manager.js");
 
-exports.run = function(crawlID, testing) {
+exports.run = function(crawlID, testing, instrument_fbasyncinit) {
 
   // Set up tables
   var createJavascriptTable = data.load("create_javascript_table.sql");
@@ -19,7 +19,8 @@ exports.run = function(crawlID, testing) {
     contentScriptWhen: "start",
     contentScriptFile: data.url("./content.js"),
     contentScriptOptions: {
-      'testing': testing
+      'testing': testing,
+      'instrument_fbasyncinit': instrument_fbasyncinit
     },
     onAttach: function onAttach(worker) {
 
