@@ -691,6 +691,22 @@ function getPageScript() {
       });
     }
 
+    // Instrument access/sets to window.fbAsyncInit (if exists)
+    var instrument_fbasyncinit = document.currentScript.
+      getAttribute('data-instrument-fbasyncinit') === 'true';
+    if (instrument_fbasyncinit) {
+      console.log("Instrumenting window.fbAsyncInit");
+
+      // Define a no-op to allow us to instrument
+      window.fbAsyncInit = function() {
+        console.log("window.fbAsyncInit called!");
+      };
+      instrumentObjectProperty(window, "window", "fbAsyncInit", {
+        logFunctionsAsStrings: true,
+        logCallStack: true
+      });
+    }
+
     // Instrument access to our spoofed Google API (if exists)
     if (window.gapi) {
       console.log("Instrumenting window.gapi");
@@ -989,7 +1005,9 @@ document.addEventListener(event_id, function (e) {
 insertScript(getPageScript(), {
   event_id: event_id,
   testing: self.options.testing,
+
   fakeAutofill: self.options.fakeAutofill,
   autofillEmail: self.options.autofillEmail,
-  autofillPassword: self.options.autofillPassword
+  autofillPassword: self.options.autofillPassword,
+  instrument_fbasyncinit: self.options.instrument_fbasyncinit
 });

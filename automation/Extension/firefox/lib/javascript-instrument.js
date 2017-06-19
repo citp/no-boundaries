@@ -4,7 +4,8 @@ var loggingDB = require("./loggingdb.js");
 var pageManager = require("./page-manager.js");
 
 exports.run = function(crawlID, testing, fakeAutofill,
-                       autofillEmail, autofillPassword) {
+                       autofillEmail, autofillPassword,
+                       instrument_fbasyncinit) {
 
   // Set up tables
   var createJavascriptTable = data.load("create_javascript_table.sql");
@@ -23,7 +24,8 @@ exports.run = function(crawlID, testing, fakeAutofill,
       'testing': testing,
       'fakeAutofill': fakeAutofill,
       'autofillEmail': autofillEmail,
-      'autofillPassword': autofillPassword
+      'autofillPassword': autofillPassword,
+      'instrument_fbasyncinit': instrument_fbasyncinit
     },
     onAttach: function onAttach(worker) {
 
