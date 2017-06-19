@@ -878,6 +878,9 @@ function getPageScript() {
         getAttribute('data-autofillEmail');
       var autofillPassword = document.currentScript.
         getAttribute('data-autofillPassword');
+      // `stringifyElement` and `stringifyForm` should replicate the stringify
+      // functions in `automation/Commands/utils/webdriver_extensions`
+      // See: https://github.com/englehardt/OpenWPM_Leuven_Princeton/blob/096bec53ab38d93e5b25fdcaba0f4d038e0e57b6/automation/Commands/utils/webdriver_extensions.py#L166-L206
       var stringifyElement = function(element) {
         return JSON.stringify({
           'tag_name': element.tagName,
@@ -917,7 +920,7 @@ function getPageScript() {
         // 2. Value filled is not the autofill value.
         // 3. Call context isn't empty
         var target = event.target;
-        if (!target.tagName || target.tagName != 'INPUT' ||
+        if (!target || !target.tagName || target.tagName != 'INPUT' ||
             (target.value != autofillEmail && target.value != autofillPassword)) {
           inLog = false;
           return;
