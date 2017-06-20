@@ -12,6 +12,7 @@ INSERT_PREFIX = "Array"
 BASE_DIR = dirname(dirname(realpath(__file__)))
 EXT_PATH = join(BASE_DIR, 'automation', 'Extension', 'firefox')
 FF_BIN_PATH = join(BASE_DIR, 'firefox-bin', 'firefox')
+PREF_FILE = join(BASE_DIR, 'test', 'prefs_for_manual_test.json')
 
 
 def create_xpi():
@@ -96,8 +97,8 @@ def start_webdriver(with_extension=False):
 
 
 def start_jpm():
-    cmd_jpm_run = "jpm run --binary-args 'url %s' -b %s" % (BASE_TEST_URL,
-                                                            FF_BIN_PATH)
+    cmd_jpm_run = "jpm run --prefs %s --binary-args 'url %s' -b %s" % (
+        PREF_FILE, BASE_TEST_URL, FF_BIN_PATH)
     server, thread = start_server()
     try:
         # http://stackoverflow.com/a/4417735/3104416
