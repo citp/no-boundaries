@@ -9,9 +9,12 @@ var jsInstrument        = require("./lib/javascript-instrument.js");
 var cpInstrument        = require("./lib/content-policy-instrument.js");
 var httpInstrument      = require("./lib/http-instrument.js");
 var fakeAutofill        = require("./lib/fake-autofill.js");
-var spoofIdentity    = require("./lib/spoof-identity.js");
+var spoofIdentity       = require("./lib/spoof-identity.js");
 var consoleLogs         = require("./lib/console-logs.js");
+var requestFilter       = require("./lib/request-filter.js");
 
+const AUTOFILL_EMAIL = "randomtestuser.4321@gmail.com";
+const AUTOFILL_PASSWORD = "_pa$$word123_";
 
 exports.main = function(options, callbacks) {
 
@@ -32,7 +35,9 @@ exports.main = function(options, callbacks) {
         'enabled': true,
         'facebook': true,
         'google': true,
-        'dom': true,
+        'dom_identity': true,
+        'dom_login': false,
+        'dom_checkout': false,
         'storage': true
       },
       cookie_instrument:true,
@@ -42,15 +47,18 @@ exports.main = function(options, callbacks) {
       save_javascript:true,
       fake_autofill:true,
       testing:true,
+      instrument_fbasyncinit:true,
       record_js_errors:true,
       crawl_id:''
     };
   }
+  var listeningSockets = {}; // All listening sockets
 
-  loggingDB.open(config['sqlite_address'],
-                 config['leveldb_address'],
-                 config['logger_address'],
-                 config['crawl_id']);
+  listeningSockets['loggingDB'] = loggingDB.open(config['sqlite_address'],
+                                                 config['leveldb_address'],
+                                                 config['logger_address'],
+                                                 config['crawl_id']);
+  listeningSockets['requestFilter'] = requestFilter.run();
 
   // Prevent the webdriver from identifying itself in the DOM. See #91
   if (config['disable_webdriver_self_id']) {
@@ -61,6 +69,7 @@ exports.main = function(options, callbacks) {
       contentScriptFile: data.url("remove_webdriver_attributes.js")
     });
   }
+
   // Spoof third-party social login services
   // NOTE: This *must* run before the http instrument as it registers an
   //       observer to spoof to redirect some script requests. Observers
@@ -76,7 +85,9 @@ exports.main = function(options, callbacks) {
   }
   if (config['js_instrument']) {
     loggingDB.logDebug("Javascript instrumentation enabled");
-    jsInstrument.run(config['crawl_id'], config['testing']);
+    jsInstrument.run(config['crawl_id'], config['testing'],
+                     config['fake_autofill'], AUTOFILL_EMAIL,
+                     AUTOFILL_PASSWORD, config['instrument_fbasyncinit']);
   }
   if (config['cp_instrument']) {
     loggingDB.logDebug("Content Policy instrumentation enabled");
@@ -88,10 +99,21 @@ exports.main = function(options, callbacks) {
   }
   if (config['fake_autofill']) {
     console.log("Fake autofill is enabled");
-    fakeAutofill.run(config['crawl_id']);
+    fakeAutofill.run(config['crawl_id'], AUTOFILL_EMAIL, AUTOFILL_PASSWORD);
   }
   if (config['record_js_errors']) {
     console.log("Console JS error recording enabled");
     consoleLogs.run(config['crawl_id']);
   }
+
+  // Write listening sockets to disk for main process
+  var path = system.pathFor("ProfD") + '/extension_sockets.json';
+  console.log("Writing all listening socket ports to:", path);
+  var file = fileIO.open(path, 'w');
+  if (!file.closed) {
+      file.write(JSON.stringify(listeningSockets));
+      file.close();
+      console.log("Sockets",listeningSockets,"written to disk.");
+  }
+
 };

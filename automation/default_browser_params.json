@@ -8,12 +8,15 @@
     "save_javascript": false,
     "fake_autofill": false,
     "record_js_errors": false,
+    "instrument_fbasyncinit": false,
 
     "spoof_identity": {
       "enabled": false,
       "facebook": false,
       "google": false,
-      "dom": false,
+      "dom_identity": false,
+      "dom_login": false,
+      "dom_checkout": false,
       "storage": false
     },
 

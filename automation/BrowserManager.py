@@ -16,9 +16,11 @@ import tempfile
 import cPickle
 import shutil
 import signal
+import json
 import time
 import sys
 import os
+
 
 class Browser:
     """
@@ -258,19 +260,26 @@ def BrowserManager(command_queue, status_queue, browser_params, manager_params, 
         # Start the virtualdisplay (if necessary), webdriver, and browser
         (driver, prof_folder, browser_settings) = deploy_browser.deploy_browser(status_queue, browser_params, manager_params, crash_recovery)
 
-        # Read the extension port -- if extension is enabled
+        # Read the extension open socket ports
         # TODO: This needs to be cleaner
-        if browser_params['browser'] == 'firefox' and browser_params['extension_enabled']:
-            logger.debug("BROWSER %i: Looking for extension port information in %s" % (browser_params['crawl_id'], prof_folder))
-            while not os.path.isfile(prof_folder + 'extension_port.txt'):
+        if (browser_params['browser'] == 'firefox'
+                and browser_params['extension_enabled']):
+            logger.debug("BROWSER %i: Looking for extension port information "
+                         "in %s" % (browser_params['crawl_id'], prof_folder))
+            while not os.path.isfile(prof_folder + 'extension_sockets.json'):
                 time.sleep(0.1)
             time.sleep(0.5)
-            with open(prof_folder + 'extension_port.txt', 'r') as f:
-                port = f.read().strip()
-            extension_socket = clientsocket(serialization='json')
-            extension_socket.connect('127.0.0.1',int(port))
+            with open(prof_folder + 'extension_sockets.json', 'r') as f:
+                socket_ports = json.loads(f.read().strip())
+            extension_sockets = dict()
+            for name, port in socket_ports.items():
+                logger.debug("BROWSER %i: Connecting to extension socket "
+                             "%s at port %i" % (
+                                 browser_params['crawl_id'], name, port))
+                extension_sockets[name] = clientsocket(serialization='json')
+                extension_sockets[name].connect('127.0.0.1', port)
         else:
-            extension_socket = None
+            extension_sockets = None
 
         # passes the profile folder, WebDriver pid and display pid back to the TaskManager
         # now, the TaskManager knows that the browser is successfully set up
@@ -295,7 +304,7 @@ def BrowserManager(command_queue, status_queue, browser_params, manager_params, 
                                              browser_settings,
                                              browser_params,
                                              manager_params,
-                                             extension_socket)
+                                             extension_sockets)
             status_queue.put("OK")
 
     except (ProfileLoadError, BrowserConfigError, AssertionError) as e:

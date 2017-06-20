@@ -6,7 +6,7 @@ function getPageScript() {
      * Facebook Login API
      */
 
-    var facebook = document.currentScript.getAttribute('data-facebook');
+    var facebook = document.currentScript.getAttribute('data-facebook') === 'true';
     if (facebook) {
       // User information used for Facebook
       var FBUserInfo = {
@@ -202,7 +202,7 @@ function getPageScript() {
      * Google and Google Plus Login API
      */
 
-    var google = document.currentScript.getAttribute('data-google');
+    var google = document.currentScript.getAttribute('data-google') === 'true';
     if (google) {
       // User information used for Google and Google Plus profile
       var GUserInfo = {
@@ -553,18 +553,167 @@ function getPageScript() {
         return;
       }
       var div = document.createElement('div');
-      div.style = 'display:none'
+      div.style = 'display:none';
       div.innerHTML = '<p>' +
                       'Welcome ' + domName + '!</p>' +
                       '<p>' + domEmail + '</p>';
       document.body.appendChild(div);
     }
-    var domSpoof = document.currentScript.getAttribute('data-dom');
+    var domSpoof = document.currentScript.getAttribute('data-dom-identity') === 'true';
     if (domSpoof) {
       console.log("Spoofing identifying information in the DOM.");
       var domName = 'Jerome Cisco';
       var domEmail = 'jeromecisco@hotmail.com';
       window.setTimeout(insertDOMIdentity, 100);
+    }
+
+    /*
+     * Spoof login form in the DOM
+     */
+    function insertDOMLogin() {
+      if (!document.body) {
+        window.setTimeout(insertDOMLogin, 100);
+        return;
+      }
+      var div = document.createElement('div');
+      div.style = `
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        opacity: 0.01;`;
+      var form = document.createElement('form');
+      form.setAttribute('onsubmit','return false;');
+      form.id = 'dom-login-credentials';
+
+      // Username
+      var label = document.createElement('label');
+      label.innerHTML = 'Username ';
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.name = 'username';
+      input.autocomplete = 'username';
+      input.placeholder = domLoginEmail;
+      form.appendChild(label);
+      form.appendChild(input);
+
+      // Password
+      var label = document.createElement('label');
+      label.innerHTML = 'Password ';
+      var input = document.createElement('input');
+      input.type = 'password';
+      input.name = 'password';
+      input.autocomplete = 'current-password';
+      form.appendChild(label);
+      form.appendChild(input);
+
+      // Submit button
+      var input = document.createElement('input');
+      input.type = 'submit';
+      input.name = 'submit';
+      input.value = 'Submit';
+      form.appendChild(input);
+
+      div.appendChild(form);
+      document.body.appendChild(div);
+    }
+    var domLoginSpoof = document.currentScript.getAttribute('data-dom-login') === 'true';
+    if (domLoginSpoof) {
+      console.log("Spoofing login form in the DOM.");
+      var domLoginEmail = 'example@example.com';
+      window.setTimeout(insertDOMLogin, 100);
+    }
+
+    /*
+     * Spoof checkout payment forms in the DOM
+     */
+    function insertDOMCheckout() {
+      if (!document.body) {
+        window.setTimeout(insertDOMCheckout, 100);
+        return;
+      }
+      var div = document.createElement('div');
+      div.style = `
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        opacity: 0.01;`;
+
+      // Copied from:
+      // https://developers.google.com/web/updates/2015/06/checkout-faster-with-autofill
+      var paymentForm = `
+        <form id="dom-checkout-payment" onsubmit="return false;">
+        <label for="frmNameA">Name</label>
+        <input name="name" id="frmNameA" placeholder="Full name"
+               required autocomplete="name">
+        <br/>
+
+        <label for="frmEmailA">Email</label>
+        <input type="email" name="email" id="frmEmailA"
+               placeholder="name@example.com" required autocomplete="email">
+        <br/>
+
+        <label for="frmEmailC">Confirm Email</label>
+        <input type="email" name="emailC" id="frmEmailC"
+               placeholder="name@example.com" required autocomplete="email">
+        <br/>
+
+        <label for="frmAddressS">Address</label>
+        <input name="ship-address" required id="frmAddressS"
+               placeholder="123 Any Street"
+               autocomplete="shipping street-address">
+        <br/>
+
+        <label for="frmCityS">City</label>
+        <input name="ship-city" required id="frmCityS" placeholder="New York"
+               autocomplete="shipping locality">
+        <br/>
+
+        <label for="frmStateS">State</label>
+        <input name="ship-state" required id="frmStateS" placeholder="NY"
+               autocomplete="shipping region">
+        <br/>
+
+        <label for="frmZipS">Zip</label>
+        <input name="ship-zip" required id="frmZipS" placeholder="10011"
+               autocomplete="shipping postal-code">
+        <br/>
+
+        <label for="frmCountryS">Country</label>
+        <input name="ship-country" required id="frmCountryS" placeholder="USA"
+               autocomplete="shipping country">
+        <br/>
+
+        <label for="frmNameCC">Name on card</label>
+        <input name="ccname" id="frmNameCC" required placeholder="Full Name"
+               autocomplete="cc-name">
+        <br/>
+
+        <label for="frmCCNum">Card Number</label>
+        <input name="cardnumber" id="frmCCNum" required autocomplete="cc-number">
+        <br/>
+
+        <label for="frmCCCVC">CVC</label>
+        <input name="cvc" id="frmCCCVC" required autocomplete="cc-csc">
+        <br/>
+
+        <label for="frmCCExp">Expiry</label>
+        <input name="cc-exp" id="frmCCExp" required placeholder="MM-YYYY"
+               autocomplete="cc-exp">
+        <br/>
+
+        <label for="frmPhoneNumA">Phone</label>
+        <input type="tel" name="phone" id="frmPhoneNumA"
+               placeholder="+1-650-450-1212" required autocomplete="tel">
+
+        <input type="submit" name="submit" value="Submit">
+        </form>`
+      div.innerHTML = paymentForm;
+      document.body.appendChild(div);
+    }
+    var domCheckoutSpoof = document.currentScript.getAttribute('data-dom-checkout') === 'true';
+    if (domCheckoutSpoof) {
+      console.log("Spoofing checkout payment info forms in the DOM.");
+      window.setTimeout(insertDOMCheckout, 100);
     }
 
     /*
@@ -585,7 +734,7 @@ function getPageScript() {
       var str = 'xxx-' + key + '=' + value + ';expires=' + expiry.toUTCString();
       document.cookie = str;
     }
-    var storage_spoof = document.currentScript.getAttribute('data-storage');
+    var storage_spoof = document.currentScript.getAttribute('data-storage') === 'true';
     if (storage_spoof && !inIframe()) {
       console.log("Spoofing identifying information in storage for", window.self);
       var storageId = {
@@ -616,8 +765,10 @@ function insertScript(text, data) {
   parent.removeChild(script);
 }
 insertScript(getPageScript(), {
-  facebook: self.options.facebook,
-  google: self.options.google,
-  dom: self.options.dom,
-  storage: self.options.storage
+  'facebook': self.options.facebook,
+  'google': self.options.google,
+  'dom-identity': self.options.dom_identity,
+  'dom-login': self.options.dom_login,
+  'dom-checkout': self.options.dom_checkout,
+  'storage': self.options.storage
 });

@@ -36,47 +36,52 @@
     });
   }
 
+  // First overwrite the default with a no-op, then write a new version
   window.fbAsyncInit = function() {
-  FB.init({
-    appId      : '173371693135221', // My (real) Facebook App
-    cookie     : true,  // enable cookies to allow the server to access
-                        // the session
-    xfbml      : true,  // parse social plugins on this page
-    version    : 'v2.7' // use graph api version 2.7
-  });
+    console.log("No-op overwrite of window.fbAsyncInit called!");
+  };
 
-  // Now that we've initialized the JavaScript SDK, we call
-  // FB.getLoginStatus().  This function gets the state of the
-  // person visiting this page and can return one of three states to
-  // the callback you provide.  They can be:
-  //
-  // 1. Logged into your app ('connected')
-  // 2. Logged into Facebook, but not your app ('not_authorized')
-  // 3. Not logged into Facebook and can't tell if they are logged into
-  //    your app or not.
-  //
-  // These three cases are handled in the callback function.
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '173371693135221', // My (real) Facebook App
+      cookie     : true,  // enable cookies to allow the server to access
+                          // the session
+      xfbml      : true,  // parse social plugins on this page
+      version    : 'v2.7' // use graph api version 2.7
+    });
 
-  FB.getLoginStatus(function(response) {
-    console.log('FB.getLoginStatus');
-    console.log(response);
-    statusChangeCallback(response);
-  });
+    // Now that we've initialized the JavaScript SDK, we call
+    // FB.getLoginStatus().  This function gets the state of the
+    // person visiting this page and can return one of three states to
+    // the callback you provide.  They can be:
+    //
+    // 1. Logged into your app ('connected')
+    // 2. Logged into Facebook, but not your app ('not_authorized')
+    // 3. Not logged into Facebook and can't tell if they are logged into
+    //    your app or not.
+    //
+    // These three cases are handled in the callback function.
 
-  console.log("FB.getAuthResponse()",FB.getAuthResponse());
+    FB.getLoginStatus(function(response) {
+      console.log('FB.getLoginStatus');
+      console.log(response);
+      statusChangeCallback(response);
+    });
 
-  FB.Event.subscribe('auth.login', function(authResponse) {
-    console.log('FB.Event.subscribe -- auth.login');
-    console.log(authResponse);
-  });
-  FB.Event.subscribe('auth.authResponseChange', function(authResponse) {
-    console.log('FB.Event.subscribe -- auth.authResponseChange');
-    console.log(authResponse);
-  });
-  FB.Event.subscribe('auth.statusChange', function(authResponse) {
-    console.log('FB.Event.subscribe -- auth.statusChange');
-    console.log(authResponse);
-  });
+    console.log("FB.getAuthResponse()",FB.getAuthResponse());
+
+    FB.Event.subscribe('auth.login', function(authResponse) {
+      console.log('FB.Event.subscribe -- auth.login');
+      console.log(authResponse);
+    });
+    FB.Event.subscribe('auth.authResponseChange', function(authResponse) {
+      console.log('FB.Event.subscribe -- auth.authResponseChange');
+      console.log(authResponse);
+    });
+    FB.Event.subscribe('auth.statusChange', function(authResponse) {
+      console.log('FB.Event.subscribe -- auth.statusChange');
+      console.log(authResponse);
+    });
 
   };
 

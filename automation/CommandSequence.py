@@ -158,6 +158,40 @@ class CommandSequence:
         command = ('FACEBOOK_LOGIN', url)
         self.commands_with_timeout.append((command, timeout))
 
+    def enable_request_filter(self, filter_name, timeout=15):
+        """ Enable one of the supported request filters.
+
+        Filters are defined in:
+            `automation/Extension/firefox/lib/request-filter.js`
+
+        Supported `filter_name` values:
+            * `drop-all`    Drop all subsequent requests (requests are logged)
+        """
+        self.total_timeout += timeout
+        if not self.contains_get_or_browse:
+            raise CommandExecutionError("No get or browse request preceding "
+                                        "the enable_request_filter command",
+                                        self)
+        command = ('REQUEST_FILTER', 'enable', filter_name)
+        self.commands_with_timeout.append((command, timeout))
+
+    def disable_request_filter(self, filter_name, timeout=15):
+        """ Disable one of the supported request filters.
+
+        Filters are defined in:
+            `automation/Extension/firefox/lib/request-filter.js`
+
+        Supported `filter_name` values:
+            * `drop-all`    Drop all subsequent requests (requests are logged)
+        """
+        self.total_timeout += timeout
+        if not self.contains_get_or_browse:
+            raise CommandExecutionError("No get or browse request preceding "
+                                        "the enable_request_filter command",
+                                        self)
+        command = ('REQUEST_FILTER', 'disable', filter_name)
+        self.commands_with_timeout.append((command, timeout))
+
     def run_custom_function(self, function_handle, func_args=(), timeout=30):
         """Run a custom by passing the function handle"""
         self.total_timeout += timeout

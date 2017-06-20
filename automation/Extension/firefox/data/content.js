@@ -71,7 +71,7 @@ function getPageScript() {
      * Instrumentation helpers
      */
 
-    var testing = document.currentScript.getAttribute('data-testing');
+    var testing = document.currentScript.getAttribute('data-testing') === 'true';
     console.log("Currently testing?",testing);
 
     // Recursively generates a path for an element
@@ -268,7 +268,9 @@ function getPageScript() {
     }
 
     // Prevent logging of gets arising from logging
-    var inLog = false;
+    // Set to `true` while adding instrumentation to prevent logs.
+    // Be sure to set to false at end of instrumentation.
+    var inLog = true;
 
     // For gets, sets, etc. on a single value
     function logValue(instrumentedVariableName, value, operation, callContext, logSettings) {
@@ -689,6 +691,22 @@ function getPageScript() {
       });
     }
 
+    // Instrument access/sets to window.fbAsyncInit (if exists)
+    var instrument_fbasyncinit = document.currentScript.
+      getAttribute('data-instrument-fbasyncinit') === 'true';
+    if (instrument_fbasyncinit) {
+      console.log("Instrumenting window.fbAsyncInit");
+
+      // Define a no-op to allow us to instrument
+      window.fbAsyncInit = function() {
+        console.log("window.fbAsyncInit called!");
+      };
+      instrumentObjectProperty(window, "window", "fbAsyncInit", {
+        logFunctionsAsStrings: true,
+        logCallStack: true
+      });
+    }
+
     // Instrument access to our spoofed Google API (if exists)
     if (window.gapi) {
       console.log("Instrumenting window.gapi");
@@ -836,7 +854,7 @@ function getPageScript() {
           logCallStack: true,
           excludedProperties: [ "nodeType", "nodeName", "parentNode",
                                 "tagName", "contains", "getBoundingClientRect",
-                                "className"]
+                                "className", "ownerDocument"]
         });
 
     /* Monitor new event listeners to top-level objects */
@@ -866,6 +884,85 @@ function getPageScript() {
       propertiesToInstrument: [ "domain" ]
     });
 
+    /*
+     * Credential Autofill
+     */
+    var fakeAutofill = document.currentScript.
+      getAttribute('data-fakeAutofill') === 'true';
+    if (fakeAutofill) {
+      var autofillEmail = document.currentScript.
+        getAttribute('data-autofillEmail');
+      var autofillPassword = document.currentScript.
+        getAttribute('data-autofillPassword');
+      // `stringifyElement` and `stringifyForm` should replicate the stringify
+      // functions in `automation/Commands/utils/webdriver_extensions`
+      // See: https://github.com/englehardt/OpenWPM_Leuven_Princeton/blob/096bec53ab38d93e5b25fdcaba0f4d038e0e57b6/automation/Commands/utils/webdriver_extensions.py#L166-L206
+      var stringifyElement = function(element) {
+        return JSON.stringify({
+          'tag_name': element.tagName,
+          'type': element.type,
+          'name': element.name,
+          'value': element.value,
+          'autocomplete': element.autocomplete,
+          'placeholder': element.placeholder,
+          'x': element.getBoundingClientRect().x,
+          'y': element.getBoundingClientRect().y,
+          'width': element.offsetWidth,
+          'height': element.offsetHeight
+        });
+      }
+      var stringifyForm = function(element) {
+        return JSON.stringify({
+          'tag_name': "Form",
+          'name': element.name,
+          'action': element.action,
+          'method': element.method,
+          'autocomplete': element.autocomplete,
+          'x': element.getBoundingClientRect().x,
+          'y': element.getBoundingClientRect().y,
+          'width': element.offsetWidth,
+          'height': element.offsetHeight
+        });
+      }
+      document.addEventListener("change", function(event) {
+        if (inLog) {
+          return;
+        }
+        inLog = true;
+
+        // Since `change` is a generic event, we want to filter anything that
+        // isn't caused by the browser's autofill. Skip events when:
+        // 1. Not an input element
+        // 2. Value filled is not the autofill value.
+        // 3. Call context isn't empty
+        var target = event.target;
+        if (!target || !target.tagName || target.tagName != 'INPUT' ||
+            (target.value != autofillEmail && target.value != autofillPassword)) {
+          inLog = false;
+          return;
+        }
+        let callContext = getOriginatingScriptContext(true);
+        if (callContext.callStack != "") {
+          inLog = false;
+          return;
+        }
+
+        // Stringify forms and log fill event
+        var current_time = new Date();
+        var data = {
+          'elem_str': stringifyElement(target),
+          'form_str': target.form ? stringifyForm(target.form) : "",
+          'value': target.value,
+          'time_stamp': current_time.toISOString()
+        };
+        send('autofillEvent', data);
+        inLog = false;
+        return;
+      }, false);
+    }
+
+    // Enable logging
+    inLog = false;
 
     console.log("Successfully started all instrumentation.");
   } + "());";
@@ -907,5 +1004,10 @@ document.addEventListener(event_id, function (e) {
 
 insertScript(getPageScript(), {
   event_id: event_id,
-  testing: self.options.testing
+  testing: self.options.testing,
+
+  fakeAutofill: self.options.fakeAutofill,
+  autofillEmail: self.options.autofillEmail,
+  autofillPassword: self.options.autofillPassword,
+  instrument_fbasyncinit: self.options.instrument_fbasyncinit
 });

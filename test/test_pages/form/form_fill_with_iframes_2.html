@@ -16,23 +16,25 @@
   </script>
   </head>
   <body onload="sniff_forms()">
-      <form name="form1" action="submit1.php">
+      <form>
         Email: <input type='text' name='email' value='example@gmail.com'><br />
         Password: <input type='password' value='password'>
       </form>
-      <form name="form2" action="submit2.php">
+      <form>
         Email: <input type='email' name='email' value='example@gmail.com'><br />
         <input type="submit" value="Subscribe" onclick="return false;" />
       </form>
-      <form name="form3" action="submit3.php">
+      <form>
       Email: <input type='email' name='E-mail' value=''><br />
       <input type="button" value="Sign Up" onclick="return false;" />
       </form>
-      <form name="form4" action="submit4.php">
+      <form>
       Email: <input type='text' name='E-mail' value=''><br />
       <button type="submit" onclick="return false;"><span>Subscribe</span></button>
       </form>
       Email: <input type='text' value='Enter your email adress'><br />
+
+      <iframe src='form_fill.html'></iframe>
 
   </body>
 </html>

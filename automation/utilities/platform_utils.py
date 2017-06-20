@@ -7,6 +7,7 @@ from tabulate import tabulate
 from copy import deepcopy
 from ..Errors import TimeExceededError
 
+import datetime
 import re
 import subprocess
 import shutil
@@ -268,3 +269,10 @@ def contains_email_regex(text):
     """
     email_regex = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
     return True if re.search(email_regex, text) else False
+
+
+def get_iso8601_timestamp():
+    """Return a timestamp in ISO 8601 format."""
+    utcnow = datetime.datetime.utcnow()
+    usec = int(round(utcnow.microsecond / 1000.0))
+    return utcnow.strftime("%Y-%m-%dT%H:%M:%S.{0}Z").format(usec)

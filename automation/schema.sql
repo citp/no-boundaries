@@ -128,3 +128,14 @@ CREATE TABLE IF NOT EXISTS CrawlHistory (
     dtg DATETIME DEFAULT (CURRENT_TIMESTAMP),
     FOREIGN KEY(crawl_id) REFERENCES crawl(id));
 
+CREATE TABLE IF NOT EXISTS form_filling_events(
+    id INTEGER PRIMARY KEY ASC,
+    crawl_id INTEGER,
+    visit_id INTEGER,
+    top_url TEXT,
+    frame_url TEXT,
+    crawl_type TEXT,
+    elem_str TEXT,
+    form_str TEXT,
+    value TEXT,
+    time_stamp TEXT NOT NULL);
