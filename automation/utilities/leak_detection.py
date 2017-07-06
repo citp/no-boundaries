@@ -316,7 +316,7 @@ class LeakDetector():
                 continue
             try:
                 decoded = self._decoder.decode(encoding, string)
-                if type(decoded) == int or type(decoded) == long:
+                if type(decoded) == int or type(decoded) == long or type(decoded) == float:
                     decoded = str(decoded)
             # decoding error means this isn't the correct decoding
             except DecodeException:
