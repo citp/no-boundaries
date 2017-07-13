@@ -14,7 +14,7 @@ host=ubuntu@$2
 data_dir=$3
 
 echo Checking if crawls are running on $1
-if ssh -i ~/.ssh/$keyname -q $host [[ -f /tmp/crawl_running ]]; then
+if ssh -i ~/.ssh/$keyname -q $host [[ -f /tmp/crawl.running ]]; then
     echo "Can't archive while crawls are running on the machine, exiting."
     exit 1
 fi
@@ -62,9 +62,9 @@ for dir in ${crawl_dirs[@]}; do
     #ssh -i ~/.ssh/$keyname $host 'rm -rf '$dir
     #ssh -i ~/.ssh/$keyname $host 'rm '$compressed
 
-    printf '\n Deleting local decompressed archive\n'
-    echo $data_dir$dir
-    rm -rf $data_dir$dir
+    #printf '\n Deleting local decompressed archive\n'
+    #echo $data_dir$dir
+    #rm -rf $data_dir$dir
 
     printf '\n Processing complete for '$dir'\n\n'
 done
