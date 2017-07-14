@@ -10,8 +10,8 @@ from utils import webdriver_extensions as wd_ext
 from ..MPLogger import loggingclient
 from ..SocketInterface import clientsocket
 
-FB_USERNAME = 'chief_wiggins@hotmail.com'
-FB_PASSWORD = 'Corndawg!'
+FB_USERNAME = 'KattyOzo@hotmail.com'
+FB_PASSWORD = 'ucJQgYNS'
 
 
 def find_login(driver, url, logger, browser_params):

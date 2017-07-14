@@ -4,6 +4,7 @@ import requests
 import zipfile
 import random
 import shutil
+import json
 import glob
 import os
 
@@ -34,29 +35,58 @@ def get_top_1m(location):
     return [x.split(',')[-1] for x in contents.split('\n')]
 
 
-def sample_top_sites(location):
-    """
-    Returns a subsample of 35k sites sliced from the top 1 million:
+def get_sampled_sites(location, include_rank=False,
+                      slices=[(10000, 0, 10000),
+                              (10000, 10000, 100000),
+                              (15000, 100000, 1000000)]):
+    location = os.path.expanduser(location)
+    site_list = os.path.join(location, 'sampled_sites.json')
 
-    [1, 10k]    - all sites
-    (10k, 100k] - 10k sites
-    (100k, 1M]  - 15k sites
+    # If sampled site list exists, read and return it
+    if os.path.isfile(site_list):
+        with open(site_list, 'r') as f:
+            return json.load(f)
+
+    # If not, create it and return it
+    if not os.path.isdir(location):
+        os.makedirs(location)
+    sites = sample_top_sites(location, include_rank, slices)
+    with open(site_list, 'w') as f:
+        json.dump(sites, f)
+    return sites
+
+
+def sample_top_sites(location, include_rank=False,
+                     slices=[(10000, 0, 10000),
+                             (10000, 10000, 100000),
+                             (15000, 100000, 1000000)]):
+    """
+    Returns a subsample of sites from the top 1 million given by `slices`
+
+    Parameters
+    ----------
+    location : str
+        Location of top 1 million site list. If the list does not exist at this
+        location it will be downloaded.
+    include_rank : bool
+        Indicates whether or not to include the alexa rank in the output sample
+    slices : list of tuples
+        List of slices to sample. Each slice should be given as follows:
+        (# of sites, start_index, end_index)
+
+    Returns
+    -------
+    list of str or list of tuples
+        List of URLs sampled from the top 1m according to `slices`. If
+        `include_rank` is True, this returns of list of `(int: rank, str: url)`
     """
     location = os.path.expanduser(location)
-    site_list = os.path.join(location, 'sampled-sites.csv')
-    if not os.path.isfile(site_list):
-        top_1m = get_top_1m(location)
-        sites = top_1m[0:10000]
-        sites.extend(random.sample(top_1m[10000:100000], 10000))
-        sites.extend(random.sample(top_1m[100000:], 15000))
-        if not os.path.isdir(location):
-            os.makedirs(location)
-        with open(site_list, 'w') as f:
-            for site in sites:
-                f.write(site + '\n')
-    else:
-        with open(site_list, 'r') as f:
-            sites = f.read().strip().split('\n')
+    top_1m = get_top_1m(location)
+    if include_rank:
+        top_1m = zip(range(len(top_1m)), top_1m)
+    sites = list()
+    for sl in slices:
+        sites.extend(random.sample(top_1m[sl[1]:sl[2]], sl[0]))
     return sites
 
 
