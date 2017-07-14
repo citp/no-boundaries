@@ -57,7 +57,7 @@ cur.execute("SELECT r.id, r.crawl_id, r.visit_id, r.url, r.top_level_url, "
             "r.headers, r.loading_href, r.req_call_stack, "
             "r.content_policy_type, r.post_body, r.time_stamp "
             "FROM http_requests as r LEFT JOIN site_visits as sv "
-            "ON r.visit_id = sv.visit_id LIMIT 100000;")
+            "ON r.visit_id = sv.visit_id;")
 
 pool = mp.Pool(processes=mp.cpu_count() - 1)
 
