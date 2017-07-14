@@ -1,5 +1,3 @@
-# Dependencies:
-# `sudo pip install pycrypto hackercodecs pyblake2 sha3 mmhash base58 cookies`
 from urlparse import urlparse
 from Crypto.Hash import MD2
 import cookies as ck
@@ -226,7 +224,9 @@ class Decoder():
 
 
 class LeakDetector():
-    def __init__(self, search_strings, encoding_set=None, hash_layers=2):
+    def __init__(self, search_strings, precompute_hashes=True, hash_set=None,
+                 hash_layers=2, precompute_encodings=True, encoding_set=None,
+                 encoding_layers=2):
         """LeakDetector searches URL, POST bodies, and cookies for leaks.
 
         The detector is constructed with a set of search strings (given by
@@ -238,35 +238,69 @@ class LeakDetector():
         ==========
         search_strings : list
             LeakDetector will search for leaks containing any item in this list
-        encoding_set : list
-            List of encodings to use when searching for leaks.
+        precompute_hashes : bool
+            Set to `True` to include precomputed hashes in the candidate set.
+        hash_set : list
+            List of hash functions to use when building the set of candidate
+            strings.
         hash_layers : int
             The detector will find instances of `search_string` iteratively
             hashed up to `hash_layers` times by any combination of supported
             hashes.
+        precompute_encodings : bool
+            Set to `True` to include precomputed encodings in the candidate set
+        encoding_set : list
+            List of encodings to use when building the set of candidate
+            strings.
+        encoding_layers : int
+            The detector will find instances of `search_string` iteratively
+            encoded up to `encoding_layers` times by any combination of
+            supported encodings.
         """
         self.search_strings = search_strings
         self._min_length = min([len(x) for x in search_strings])
-        self._hash_layers = hash_layers
         self._hasher = Hasher()
+        self._hash_set = hash_set
+        self._hash_layers = hash_layers
+        self._encoder = Encoder()
+        self._encoding_set = encoding_set
+        self._encoding_layers = encoding_layers
         self._decoder = Decoder()
-        self._hash_pool = dict()
-        self._build_hash_pool()
-        self.encoding_set = encoding_set
-        if self.encoding_set is None:
-            self.encoding_set = self._decoder.supported_encodings
+        self._precompute_pool = dict()
+        self._build_precompute_pool(precompute_hashes, precompute_encodings)
+
+        # If hash/encoding sets aren't specified, use all available.
+        if self._hash_set is None:
+            self._hash_set = self._hasher.supported_hashes
+        if self._encoding_set is None:
+            self._encoding_set = self._encoder.supported_encodings
 
     def _compute_hashes(self, string, layers, prev_hashes=tuple()):
         """Returns all iterative hashes of `string` up to the
         specified number of `layers`"""
         for h in self._hasher.supported_hashes:
             hashed_string = self._hasher.get_hash(h, string)
+            if hashed_string == string:  # skip no-ops
+                continue
             hash_stack = (h,) + prev_hashes
-            self._hash_pool[hashed_string] = hash_stack
+            self._precompute_pool[hashed_string] = hash_stack
             if layers > 1:
                 self._compute_hashes(hashed_string, layers-1, hash_stack)
 
-    def _build_hash_pool(self):
+    def _compute_encodings(self, string, layers, prev_encodings=tuple()):
+        """Returns all iterative encodings of `string` up to the
+        specified number of `layers`"""
+        for enc in self._encoding_set:
+            encoded_string = str(self._encoder.encode(enc, string))
+            if encoded_string == string:  # skip no-ops
+                continue
+            encoding_stack = (enc,) + prev_encodings
+            self._precompute_pool[encoded_string] = encoding_stack
+            if layers > 1:
+                self._compute_encodings(encoded_string, layers-1,
+                                        encoding_stack)
+
+    def _build_precompute_pool(self, precompute_hashes, precompute_encodings):
         """Build a pool of hashes for the given search string"""
         strings = list()
         for string in self.search_strings:
@@ -275,13 +309,19 @@ class LeakDetector():
                 strings.append(string.rsplit('.', 1)[0])
                 parts = string.rsplit('@')
                 strings.append(parts[0])
-                strings.append(parts[1])
-                strings.append(parts[1].rsplit('.', 1)[0])
+                # Domain searches have too many false positives
+                # strings.append(parts[1])
+                # strings.append(parts[1].rsplit('.', 1)[0])
         for string in strings:
-            self._hash_pool[string] = (string,)
-        self._min_length = min([len(x) for x in self._hash_pool.keys()])
-        for string, name in self._hash_pool.items():
-            self._compute_hashes(string, self._hash_layers, name)
+            self._precompute_pool[string] = (string,)
+        self._min_length = min([len(x) for x in self._precompute_pool.keys()])
+        initial_items = self._precompute_pool.items()
+        if precompute_hashes:
+            for string, name in initial_items:
+                self._compute_hashes(string, self._hash_layers, name)
+        if precompute_encodings:
+            for string, name in initial_items:
+                self._compute_encodings(string, self._encoding_layers, name)
 
     def _split_on_delims(self, string, rv_parts, rv_named):
         """Splits a string on several delimiters"""
@@ -293,17 +333,23 @@ class LeakDetector():
         for part in parts:
             if part == '':
                 continue
-            if part.count('=') == 1:
-                rv_named.add(tuple(part.split('=', 1)))
+            count = part.count('=')
+            if count != 1:
+                rv_parts.add(part)
+            if count == 0:
+                continue
+            n, k = part.split('=', 1)
+            if len(n) > 0 and len(k) > 0:
+                rv_named.add((n, k))
             else:
                 rv_parts.add(part)
 
-    def check_if_hashed(self, string):
-        """Returns a tuple that lists the (possibly layered) hashes
-        that result in input string
+    def check_if_in_precompute_pool(self, string):
+        """Returns a tuple that lists the (possibly layered) hashes or
+        encodings that result in input string
         """
         try:
-            return self._hash_pool[str(string)]
+            return self._precompute_pool[str(string)]
         except KeyError:
             return
         except (UnicodeDecodeError, UnicodeEncodeError):
@@ -311,18 +357,18 @@ class LeakDetector():
 
     def check_for_leak(self, string, layers=1, prev_encodings=tuple(),
                        prev=''):
-        """Check if given string contains an email address"""
+        """Check if given string contains a leak"""
         # Short tokens won't contain email address
         if len(string) < self._min_length:
             return
 
         # Check if direct hash or plaintext
-        rv = self.check_if_hashed(string)
+        rv = self.check_if_in_precompute_pool(string)
         if rv is not None:
             return prev_encodings + rv
 
         # Try encodings
-        for encoding in self.encoding_set:
+        for encoding in self._encoding_set:
             # multiple rots are unnecessary
             if encoding.startswith('rot') and prev.startswith('rot'):
                 continue
@@ -343,7 +389,7 @@ class LeakDetector():
                 if rv is not None:
                     return rv
             else:
-                rv = self.check_if_hashed(decoded)
+                rv = self.check_if_in_precompute_pool(decoded)
                 if rv is not None:
                     return encoding_stack + rv
         return
@@ -382,21 +428,6 @@ class LeakDetector():
         tokens, parameters = self._split_url(url)
         return self._check_parts_for_leaks(tokens, parameters, encoding_layers)
 
-    def check_post_body(self, post_body):
-        """Check if post body contains a leak
-
-        NOTE: This is currently inefficient substring searching. No decoding
-        is done. Instead, we just search for all possible hashes. This could
-        include encoding by parsing the post bodies.
-        """
-        if post_body is None or post_body == '':
-            return list()
-        leaks = list()
-        for string, hash_stack in self._hash_pool.items():
-            if string in post_body:
-                leaks.append(hash_stack)
-        return leaks
-
     def _get_cookie_str(self, header_str):
         """Returns the `Cookie` header string parsed from `header_str`"""
         for item in json.loads(header_str):
@@ -429,3 +460,24 @@ class LeakDetector():
             return list()
         tokens, parameters = rv
         return self._check_parts_for_leaks(tokens, parameters, encoding_layers)
+
+    def substring_search(self, input_string, max_layers=None):
+        """Do a substring search for all precomputed hashes/encodings
+
+        `max_layers` limits the number of encoding/hashing layers used in the
+        substring search (to limit time). The default is no limit (`None`).
+        """
+        if input_string is None or input_string == '':
+            return list()
+        try:
+            input_string = input_string.encode('utf8')
+        except (UnicodeDecodeError, UnicodeEncodeError):
+            print "ERROR encoding %s" % input_string
+            return list()
+        leaks = list()
+        for string, transform_stack in self._precompute_pool.items():
+            if max_layers and len(transform_stack) > (max_layers + 1):
+                continue
+            if string in input_string:
+                leaks.append(transform_stack)
+        return leaks
