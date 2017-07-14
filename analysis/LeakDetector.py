@@ -1,5 +1,8 @@
+# Dependencies:
+# `sudo pip install pycrypto hackercodecs pyblake2 sha3 mmhash base58 cookies`
 from urlparse import urlparse
 from Crypto.Hash import MD2
+import cookies as ck
 import hackercodecs  # noqa
 import hashlib
 import pyblake2
@@ -13,12 +16,14 @@ import zlib
 import json
 import re
 
-ENCODINGS_NO_ROT = ['base16', 'base32', 'base58', 'base64',
-                    'urlencode', 'yenc', 'entity',
-                    'deflate', 'zlib', 'gzip']
 DELIMITERS = re.compile('[&|\,_]')
 EXTENSION_RE = re.compile('\.[A-Za-z]{2,4}')
 ENCODING_LAYERS = 3
+ENCODINGS_NO_ROT = ['base16', 'base32', 'base58', 'base64',
+                    'urlencode', 'yenc', 'entity',
+                    'deflate', 'zlib', 'gzip']
+LIKELY_ENCODINGS = ['base16', 'base32', 'base58', 'base64',
+                    'urlencode', 'yenc', 'entity']
 
 
 class Hasher():
@@ -52,7 +57,10 @@ class Hasher():
         hashes['adler32'] = lambda x: str(zlib.adler32(x))
 
         self._hashes = hashes
+        self.hashes_and_checksums = self._hashes.keys()
         self.supported_hashes = self._hashes.keys()
+        self.supported_hashes.remove('crc32')
+        self.supported_hashes.remove('adler32')
 
     def _get_hashlib_hash(self, name, string):
         """Use for hashlib hashes that don't have a shortcut"""
@@ -114,11 +122,6 @@ class Encoder():
         encodings['yenc'] = lambda x: x.encode('yenc')
         self._encodings = encodings
         self.supported_encodings = self._encodings.keys()
-        self.likely_encodings = ['base16', 'base32', 'base58', 'base64',
-                                 'urlencode', 'yenc', 'entity']
-        self.no_rot = ['base16', 'base32', 'base58', 'base64',
-                       'urlencode', 'yenc', 'entity',
-                       'deflate', 'zlib', 'gzip']
 
     def _compress_with_zlib(self, compression_type, string, level=6):
         """Compress in one of the zlib supported formats: zlib, gzip, or deflate.
@@ -193,11 +196,6 @@ class Decoder():
         encodings['yenc'] = lambda x: x.decode('yenc')
         self._encodings = encodings
         self.supported_encodings = self._encodings.keys()
-        self.likely_encodings = ['base16', 'base32', 'base58', 'base64',
-                                 'urlencode', 'yenc', 'entity']
-        self.no_rot = ['base16', 'base32', 'base58', 'base64',
-                       'urlencode', 'yenc', 'entity',
-                       'deflate', 'zlib', 'gzip']
 
     def _decompress_with_zlib(self, compression_type, string, level=9):
         """Compress in one of the zlib supported formats: zlib, gzip, or deflate.
@@ -228,31 +226,62 @@ class Decoder():
 
 
 class LeakDetector():
-    def __init__(self, email, encoding_set=None):
-        self.email = str(email)
+    def __init__(self, search_strings, encoding_set=None, hash_layers=2):
+        """LeakDetector searches URL, POST bodies, and cookies for leaks.
+
+        The detector is constructed with a set of search strings (given by
+        the `search_strings` parameters. It has several methods to check for
+        leaks containing these strings in URLs, POST bodies, and cookie header
+        strings.
+
+        Parameters
+        ==========
+        search_strings : list
+            LeakDetector will search for leaks containing any item in this list
+        encoding_set : list
+            List of encodings to use when searching for leaks.
+        hash_layers : int
+            The detector will find instances of `search_string` iteratively
+            hashed up to `hash_layers` times by any combination of supported
+            hashes.
+        """
+        self.search_strings = search_strings
+        self._min_length = min([len(x) for x in search_strings])
+        self._hash_layers = hash_layers
         self._hasher = Hasher()
         self._decoder = Decoder()
         self._hash_pool = dict()
-        self._build_hash_pool(self.email, layers=2)
-        if encoding_set is None:
+        self._build_hash_pool()
+        self.encoding_set = encoding_set
+        if self.encoding_set is None:
             self.encoding_set = self._decoder.supported_encodings
-        else:
-            self.encoding_set = encoding_set
 
-    def _build_hash_pool(self, string, layers=1, prev_hashes=tuple()):
-        """Build a pool of hashes for this email"""
-        self._hash_pool[self.email] = ('plaintext',)
-        self._hash_pool[self.email[:-3]] = ('plaintext',)  # TODO fix parser
-        self._hash_pool[self.email.split('@')[0]] = ('username',)
-        self._hash_pool[self.email.split('@')[1]] = ('domain',)
-        self._hash_pool[self.email.split('@')[1][:-3]] = ('domain',)
+    def _compute_hashes(self, string, layers, prev_hashes=tuple()):
+        """Returns all iterative hashes of `string` up to the
+        specified number of `layers`"""
         for h in self._hasher.supported_hashes:
             hashed_string = self._hasher.get_hash(h, string)
             hash_stack = (h,) + prev_hashes
             self._hash_pool[hashed_string] = hash_stack
             if layers > 1:
-                self._build_hash_pool(hashed_string, layers-1, hash_stack)
-        return
+                self._compute_hashes(hashed_string, layers-1, hash_stack)
+
+    def _build_hash_pool(self):
+        """Build a pool of hashes for the given search string"""
+        strings = list()
+        for string in self.search_strings:
+            strings.append(string)
+            if '@' in string:
+                strings.append(string.rsplit('.', 1)[0])
+                parts = string.rsplit('@')
+                strings.append(parts[0])
+                strings.append(parts[1])
+                strings.append(parts[1].rsplit('.', 1)[0])
+        for string in strings:
+            self._hash_pool[string] = (string,)
+        self._min_length = min([len(x) for x in self._hash_pool.keys()])
+        for string, name in self._hash_pool.items():
+            self._compute_hashes(string, self._hash_layers, name)
 
     def _split_on_delims(self, string, rv_parts, rv_named):
         """Splits a string on several delimiters"""
@@ -269,21 +298,8 @@ class LeakDetector():
             else:
                 rv_parts.add(part)
 
-    def _split_url(self, url):
-        """Split url path and query string on delimiters"""
-        tokens = set()
-        parameters = set()
-        purl = urlparse(url)
-        path_parts = purl.path.split('/')
-        for part in path_parts:
-            p = re.sub(EXTENSION_RE, '', part)
-            self._split_on_delims(p, tokens, parameters)
-        self._split_on_delims(purl.query, tokens, parameters)
-        self._split_on_delims(purl.fragment, tokens, parameters)
-        return tokens, parameters
-
     def check_if_hashed(self, string):
-        """Returns a tuple that lists the (possibly layers) hashes
+        """Returns a tuple that lists the (possibly layered) hashes
         that result in input string
         """
         try:
@@ -297,7 +313,7 @@ class LeakDetector():
                        prev=''):
         """Check if given string contains an email address"""
         # Short tokens won't contain email address
-        if len(string) < 6:
+        if len(string) < self._min_length:
             return
 
         # Check if direct hash or plaintext
@@ -332,19 +348,84 @@ class LeakDetector():
                     return encoding_stack + rv
         return
 
-    def check_url(self, url):
-        """Check if a given url contains an email address"""
-        tokens, parameters = self._split_url(url)
+    def _check_parts_for_leaks(self, tokens, parameters, nlayers):
+        """Check token and parameter string parts for leaks"""
         leaks = list()
         for token in tokens:
-            leak = self.check_for_leak(token, layers=3)
+            leak = self.check_for_leak(token, layers=nlayers)
             if leak is not None:
                 leaks.append(leak)
         for name, value in parameters:
-            leak = self.check_for_leak(value, layers=3)
+            leak = self.check_for_leak(value, layers=nlayers)
             if leak is not None:
                 leaks.append(leak)
-            leak = self.check_for_leak(name, layers=3)
+            leak = self.check_for_leak(name, layers=nlayers)
             if leak is not None:
                 leaks.append(leak)
         return leaks
+
+    def _split_url(self, url):
+        """Split url path and query string on delimiters"""
+        tokens = set()
+        parameters = set()
+        purl = urlparse(url)
+        path_parts = purl.path.split('/')
+        for part in path_parts:
+            p = re.sub(EXTENSION_RE, '', part)
+            self._split_on_delims(p, tokens, parameters)
+        self._split_on_delims(purl.query, tokens, parameters)
+        self._split_on_delims(purl.fragment, tokens, parameters)
+        return tokens, parameters
+
+    def check_url(self, url, encoding_layers=3):
+        """Check if a given url contains a leak"""
+        tokens, parameters = self._split_url(url)
+        return self._check_parts_for_leaks(tokens, parameters, encoding_layers)
+
+    def check_post_body(self, post_body):
+        """Check if post body contains a leak
+
+        NOTE: This is currently inefficient substring searching. No decoding
+        is done. Instead, we just search for all possible hashes. This could
+        include encoding by parsing the post bodies.
+        """
+        if post_body is None or post_body == '':
+            return list()
+        leaks = list()
+        for string, hash_stack in self._hash_pool.items():
+            if string in post_body:
+                leaks.append(hash_stack)
+        return leaks
+
+    def _get_cookie_str(self, header_str):
+        """Returns the `Cookie` header string parsed from `header_str`"""
+        for item in json.loads(header_str):
+            if item[0] == 'Cookie':
+                return item[1]
+        return
+
+    def _split_cookie(self, header_str):
+        """Returns all parsed parts of the cookie names and values"""
+        cookie_str = self._get_cookie_str(header_str)
+        if cookie_str is None:
+            return
+        try:
+            cookies = ck.Cookies.from_request(cookie_str)
+        except (ck.InvalidCookieError, UnicodeDecodeError):
+            return
+        tokens = set()
+        parameters = set()
+        for cookie in cookies.values():
+            self._split_on_delims(cookie.name, tokens, parameters)
+            self._split_on_delims(cookie.value, tokens, parameters)
+        return tokens, parameters
+
+    def check_cookies(self, header_str, encoding_layers=3):
+        """Check the cookies portion of the header string for leaks"""
+        if header_str == '':
+            return list()
+        rv = self._split_cookie(header_str)
+        if rv is None:
+            return list()
+        tokens, parameters = rv
+        return self._check_parts_for_leaks(tokens, parameters, encoding_layers)
