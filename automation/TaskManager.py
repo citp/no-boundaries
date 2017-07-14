@@ -426,8 +426,13 @@ class TaskManager:
         self._check_failure_status()
 
         browser.set_visit_id(self.next_visit_id)
-        self.sock.send(("INSERT INTO site_visits (visit_id, crawl_id, site_url) VALUES (?,?,?)",
-                        (self.next_visit_id, browser.crawl_id, command_sequence.url)))
+        self.sock.send(("INSERT INTO site_visits "
+                        "(visit_id, crawl_id, site_url, "
+                        "first_party, site_rank) "
+                        "VALUES (?,?,?,?,?)",
+                        (self.next_visit_id, browser.crawl_id,
+                         command_sequence.url, command_sequence.first_party,
+                         command_sequence.site_rank)))
         self.next_visit_id += 1
 
         # Start command execution thread

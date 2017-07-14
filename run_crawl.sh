@@ -7,7 +7,7 @@ touch /tmp/crawl.running
 
 while [ ! -e ~/.openwpm/crawl_done ] ; do
 	echo !!!! Starting crawler !!!!
-	python ~/OpenWPM_Leuven_Princeton/crawl.py
+	python ~/OpenWPM_Leuven_Princeton/XXX.py
 
 	# Reboot if we have crash issues
 	if [ -e ~/.openwpm/reboot ] ; then

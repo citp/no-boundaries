@@ -52,10 +52,19 @@ def wait_until_loaded(webdriver, timeout, period=0.25):
 
 def get_intra_links(webdriver, url):
     ps1 = du.get_ps_plus_1(url)
-    links = filter(lambda x: (x.get_attribute("href") and
-                              du.get_ps_plus_1(urljoin(
-                                  url, x.get_attribute("href"))) == ps1),
-                   webdriver.find_elements_by_tag_name("a"))
+    links = list()
+    for elem in webdriver.find_elements_by_tag_name("a"):
+        try:
+            href = elem.get_attribute('href')
+        except StaleElementReferenceException:
+            continue
+        if href is None:
+            continue
+        full_href = urljoin(url, href)
+        if not full_href.startswith('http'):
+            continue
+        if du.get_ps_plus_1(full_href) == ps1:
+            links.append(elem)
     return links
 
 
@@ -224,6 +233,13 @@ def move_to_element(driver, element):
         ActionChains(driver).move_to_element(element).perform()
     except WebDriverException:
         pass
+
+
+def is_displayed(element):
+    try:
+        return element.is_displayed()
+    except (StaleElementReferenceException, WebDriverException):
+        return False
 
 
 def is_active(input_element):

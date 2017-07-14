@@ -21,7 +21,8 @@ class CommandSequence:
     called prior to one of those two commands.
     """
 
-    def __init__(self, url, reset=False, blocking=False):
+    def __init__(self, url, reset=False, blocking=False, site_rank=None,
+                 first_party=None):
         """Initialize command sequence.
 
         Parameters
@@ -32,10 +33,16 @@ class CommandSequence:
             True if browser should clear state and restart after sequence
         blocking : bool
             True if sequence should block parent process during execution
+        site_rank : int
+            Alexa rank of the site (optional)
+        first_party : str
+            The top-level first party domain for the url (optional)
         """
         self.url = url
         self.reset = reset
         self.blocking = blocking
+        self.site_rank = site_rank
+        self.first_party = first_party
         self.commands_with_timeout = []
         self.total_timeout = 0
         self.contains_get_or_browse = False

@@ -2,16 +2,17 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import MoveTargetOutOfBoundsException
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import ElementNotVisibleException
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.action_chains import ActionChains
+from hashlib import md5
 import os
 import random
 import time
 import json
 import gzip
-import urllib
 
 from ..Errors import BrowserCrashError
 from ..SocketInterface import clientsocket
@@ -19,8 +20,8 @@ from ..MPLogger import loggingclient
 from utils.lso import get_flash_cookies
 from utils.firefox_profile import get_cookies
 from utils.webdriver_extensions import (scroll_down, wait_until_loaded,
-                                        get_intra_links, execute_in_all_frames)
-from ..utilities import domain_utils as du
+                                        get_intra_links, execute_in_all_frames,
+                                        is_displayed)
 
 # Bot mitigation constants
 NUM_MOUSE_MOVES = 10  # number of times to randomly move the mouse
@@ -151,6 +152,13 @@ def extract_links(webdriver, browser_params, manager_params):
     sock.close()
 
 
+def _filter_out_clicks(element, already_clicked):
+    try:
+        return element.get_attribute('href') not in already_clicked
+    except StaleElementReferenceException:
+        return False
+
+
 def browse_website(url, num_links, sleep, visit_id, webdriver, proxy_queue,
                    browser_params, manager_params, extension_sockets):
     """Calls get_website before visiting <num_links> present on the page.
@@ -166,25 +174,50 @@ def browse_website(url, num_links, sleep, visit_id, webdriver, proxy_queue,
     logger = loggingclient(*manager_params['logger_address'])
 
     # Then visit a few subpages
+    already_clicked = set()
     for i in range(num_links):
-        links = get_intra_links(webdriver, url)
-        links = filter(lambda x: x.is_displayed(), links)
+        all_links = get_intra_links(webdriver, url)
+        disp_links = filter(lambda x: is_displayed(x), all_links)
+        links = filter(
+            lambda x: _filter_out_clicks(x, already_clicked),
+            disp_links
+        )
         if len(links) == 0:
             break
-        r = int(random.random()*len(links))
-        logger.info("BROWSER %i: visiting internal link %s" % (
-            browser_params['crawl_id'], links[r].get_attribute("href")))
-
-        try:
-            links[r].click()
+        random.shuffle(links)
+        clicked = False
+        for link in links:
+            try:
+                href = link.get_attribute('href')
+                already_clicked.add(href)
+                logger.info("BROWSER %i: Trying to click %s out of "
+                            "%i links" % (browser_params['crawl_id'], href,
+                                          len(links)))
+                link.click()
+            except ElementNotVisibleException:
+                continue
+            except WebDriverException:
+                continue
+            except Exception, e:
+                logger.error("BROWSER %i: Exception trying to visit %s, %s" % (
+                    browser_params['crawl_id'],
+                    link.get_attribute("href"),
+                    str(e)
+                ))
+                continue
+            logger.info("BROWSER %i: visiting internal link %s" % (
+                browser_params['crawl_id'], href))
             wait_until_loaded(webdriver, 300)
             time.sleep(max(1, sleep))
             if browser_params['bot_mitigation']:
                 bot_mitigation(webdriver)
             webdriver.back()
+            time.sleep(max(1, sleep))
             wait_until_loaded(webdriver, 300)
-        except Exception:
-            pass
+            clicked = True
+            break
+        if not clicked:
+            break
 
 
 def browse_and_dump_source(url, num_links, sleep, visit_id, webdriver,
@@ -204,9 +237,14 @@ def browse_and_dump_source(url, num_links, sleep, visit_id, webdriver,
     logger = loggingclient(*manager_params['logger_address'])
 
     # Then visit a few subpages
+    already_clicked = set()
     for i in range(num_links):
-        links = get_intra_links(webdriver, url)
-        links = filter(lambda x: x.is_displayed(), links)
+        all_links = get_intra_links(webdriver, url)
+        disp_links = filter(lambda x: is_displayed(x), all_links)
+        links = filter(
+            lambda x: _filter_out_clicks(x, already_clicked),
+            disp_links
+        )
         if len(links) == 0:
             break
         random.shuffle(links)
@@ -214,8 +252,10 @@ def browse_and_dump_source(url, num_links, sleep, visit_id, webdriver,
         for link in links:
             try:
                 href = link.get_attribute('href')
-                print "BROWSER %i: Trying to click %s out of %i links" % (
-                    browser_params['crawl_id'], href, len(links))
+                already_clicked.add(href)
+                logger.info("BROWSER %i: Trying to click %s out of "
+                            "%i links" % (browser_params['crawl_id'], href,
+                                          len(links)))
                 link.click()
             except ElementNotVisibleException:
                 continue
@@ -318,11 +358,12 @@ def dump_page_source(dump_name, webdriver, browser_params, manager_params):
 
 def recursive_dump_page_source(visit_id, driver, manager_params, suffix=''):
     """Dump a compressed html tree for the current page visit"""
-    url = urllib.quote_plus(du.get_stripped_url(driver.current_url))
     if suffix != '':
         suffix = '-' + suffix
+
+    urlhash = md5(driver.current_url).hexdigest()
     outfile = os.path.join(manager_params['source_dump_path'],
-                           '%i-%s%s.json.gz' % (visit_id, url, suffix))
+                           '%i-%s%s.json.gz' % (visit_id, urlhash, suffix))
 
     def collect_source(driver, frame_stack, rv={}):
         is_top_frame = len(frame_stack) == 1
