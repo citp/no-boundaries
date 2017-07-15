@@ -6,7 +6,10 @@ import time
 import sys
 import os
 
-CHUNKSIZE = 50000
+sys.path.append('../automation/utilities/')
+import domain_utils as du  # noqa
+
+CHUNKSIZE = 100000
 
 # This assumes a folder structure like:
 # DATA_DIR/2017-06-03_crawl_1/2017-06-03_crawl_1.sqlite
@@ -17,7 +20,7 @@ CHUNKSIZE = 50000
 # DATA_DIR/analysis/2017-06-20_crawl_2/...
 # DATA_DIR/analysis/...
 DATA_DIR = '***REMOVED***/identity_tracking_decompressed/'
-OUT_DIR = os.path.join(DATA_DIR, 'analysis')
+OUT_BASE = os.path.join(DATA_DIR, 'analysis')
 
 if len(sys.argv) < 4:
     print ("Usage: detect_leaks_in_requests.py <db_folder> <output_name> "
@@ -25,7 +28,10 @@ if len(sys.argv) < 4:
     sys.exit(1)
 
 db_file = os.path.join(DATA_DIR, sys.argv[1], sys.argv[1] + '.sqlite')
-output_file = os.path.join(OUT_DIR, sys.argv[1], sys.argv[2])
+output_dir = os.path.join(OUT_BASE, sys.argv[1])
+if not os.path.isdir(output_dir):
+    os.mkdir(output_dir)
+output_file = os.path.join(output_dir, sys.argv[2])
 search_strings = sys.argv[3:]
 
 print ("\n\nInput parameters:\nDatabase path:\n\t%s\nOutput file:\n\t%s\n"
@@ -69,16 +75,23 @@ while True:
     rows = cur.fetchmany(CHUNKSIZE)
     if len(rows) == 0:
         break
+    tp_rows = list()
+    for row in rows:
+        if (row['top_level_url'] is not None and row['top_level_url'] != ''
+                and du.get_ps_plus_1(row['site_url']) != du.get_ps_plus_1(row['url'])  # noqa
+                and du.get_ps_plus_1(row['site_url']) == du.get_ps_plus_1(row['top_level_url'])):  # noqa
+            tp_rows.append(row)
+
     results = pool.map(
         check_row_for_leaks,
-        [(x['url'], x['headers'], x['post_body']) for x in rows]
+        [(x['url'], x['headers'], x['post_body']) for x in tp_rows]
     )
 
     # Save rows with leaks
     with open(output_file, 'a') as f:
         for i in range(len(results)):
             if any(map(lambda x: len(x) > 0, results[i])):
-                output = tuple(rows[i]) + results[i]
+                output = tuple(tp_rows[i]) + results[i]
                 f.write(json.dumps(output) + '\n')
     if counter % 30 == 0:
         print "Processed: %i | Time %0.2f" % (
