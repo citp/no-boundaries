@@ -295,7 +295,7 @@ def switch_to_parent_frame(driver, frame_stack):
 
 
 def execute_in_all_frames(driver, func, kwargs={}, frame_stack=['default'],
-                          max_depth=5):
+                          max_depth=5, logger=None, visit_id=-1):
     """Recursively apply `func` within each iframe
 
     When called at each level, `func` will be passed the webdriver instance
@@ -330,6 +330,11 @@ def execute_in_all_frames(driver, func, kwargs={}, frame_stack=['default'],
         Maximum depth to recurse into
     frame_stack : list of selenium.webdriver.remote.webelement.WebElement
         list of parent frame handles (including current frame)
+    logger : logger
+        logging module's logger
+    visit_id : int
+        ID of the visit
+
     """
     # Ensure we start at the top level frame
     if len(frame_stack) == 1:
@@ -351,9 +356,15 @@ def execute_in_all_frames(driver, func, kwargs={}, frame_stack=['default'],
         try:
             driver.switch_to_frame(frame)
         except StaleElementReferenceException:
-            print "Error while switching to frame %s" % str(frame)
+            if logger is not None:
+                logger.error("Error while switching to frame %s (visit: %d))" %
+                         (str(frame), visit_id))
             continue
         else:
+            if logger is not None:
+                doc_url = driver.execute_script("return window.document.URL;")
+                logger.info("Switched to frame: %s (visit: %d)" %
+                            (doc_url, visit_id))
             # Search within child frame
             execute_in_all_frames(driver, func, kwargs, frame_stack, max_depth)
             switch_to_parent_frame(driver, frame_stack)

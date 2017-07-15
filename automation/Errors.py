@@ -32,3 +32,8 @@ class BrowserCrashError(Exception):
 
 class TimeExceededError(Exception):
     pass
+
+
+class EndOfVisitException(Exception):
+    """Not an error, used to terminate the recursive frame iteration."""
+    pass
