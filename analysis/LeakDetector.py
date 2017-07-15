@@ -414,7 +414,11 @@ class LeakDetector():
         """Split url path and query string on delimiters"""
         tokens = set()
         parameters = set()
-        purl = urlparse(url)
+        try:
+            purl = urlparse(url)
+        except ValueError:
+            print "Can't parse url:", url
+            return [], []
         path_parts = purl.path.split('/')
         for part in path_parts:
             p = re.sub(EXTENSION_RE, '', part)
