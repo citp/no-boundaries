@@ -461,11 +461,8 @@ class LeakDetector():
         tokens, parameters = rv
         return self._check_parts_for_leaks(tokens, parameters, encoding_layers)
 
-    def check_location_header(self, header_str, encoding_layers=3):
+    def check_location_header(self, location_str, encoding_layers=3):
         """Check the cookies portion of the header string for leaks"""
-        if header_str == '':
-            return list()
-        location_str = self._get_header_str(header_str, 'Location')
         if location_str == '':
             return list()
         tokens, parameters = self._split_url(location_str)
