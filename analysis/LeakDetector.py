@@ -453,8 +453,9 @@ class LeakDetector():
             if from_request:
                 cookies = ck.Cookies.from_request(cookie_str)
             else:
-                cookies = ck.Cookies.from_response(cookie_str)
-        except (ck.InvalidCookieError, UnicodeDecodeError):
+                cookies = ck.Cookies.from_response(cookie_str,
+                                                   ignore_bad_cookies=True)
+        except (ck.InvalidCookieError, UnicodeDecodeError, KeyError):
             return
         tokens = set()
         parameters = set()
