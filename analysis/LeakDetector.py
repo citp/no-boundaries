@@ -439,13 +439,21 @@ class LeakDetector():
                 return item[1]
         return
 
-    def _split_cookie(self, header_str):
+    def _split_cookie(self, header_str, from_request=True):
         """Returns all parsed parts of the cookie names and values"""
-        cookie_str = self._get_header_str(header_str, 'Cookie')
+        if from_request:
+            header_name = 'Cookie'
+        else:
+            header_name = 'Set-Cookie'
+
+        cookie_str = self._get_header_str(header_str, header_name)
         if cookie_str is None:
             return
         try:
-            cookies = ck.Cookies.from_request(cookie_str)
+            if from_request:
+                cookies = ck.Cookies.from_request(cookie_str)
+            else:
+                cookies = ck.Cookies.from_response(cookie_str)
         except (ck.InvalidCookieError, UnicodeDecodeError):
             return
         tokens = set()
@@ -455,15 +463,18 @@ class LeakDetector():
             self._split_on_delims(cookie.value, tokens, parameters)
         return tokens, parameters
 
-    def check_cookies(self, header_str, encoding_layers=3):
+
+    def check_cookies(self, header_str, encoding_layers=3,
+                      from_request=True):
         """Check the cookies portion of the header string for leaks"""
         if header_str == '':
             return list()
-        rv = self._split_cookie(header_str)
+        rv = self._split_cookie(header_str, from_request=from_request)
         if rv is None:
             return list()
         tokens, parameters = rv
         return self._check_parts_for_leaks(tokens, parameters, encoding_layers)
+
 
     def check_location_header(self, location_str, encoding_layers=3):
         """Check the cookies portion of the header string for leaks"""
