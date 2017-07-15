@@ -428,16 +428,16 @@ class LeakDetector():
         tokens, parameters = self._split_url(url)
         return self._check_parts_for_leaks(tokens, parameters, encoding_layers)
 
-    def _get_cookie_str(self, header_str):
-        """Returns the `Cookie` header string parsed from `header_str`"""
+    def _get_header_str(self, header_str, header_name):
+        """Returns the header string parsed from `header_str`"""
         for item in json.loads(header_str):
-            if item[0] == 'Cookie':
+            if item[0] == header_name:
                 return item[1]
         return
 
     def _split_cookie(self, header_str):
         """Returns all parsed parts of the cookie names and values"""
-        cookie_str = self._get_cookie_str(header_str)
+        cookie_str = self._get_header_str(header_str, 'Cookie')
         if cookie_str is None:
             return
         try:
@@ -459,6 +459,16 @@ class LeakDetector():
         if rv is None:
             return list()
         tokens, parameters = rv
+        return self._check_parts_for_leaks(tokens, parameters, encoding_layers)
+
+    def check_location_header(self, header_str, encoding_layers=3):
+        """Check the cookies portion of the header string for leaks"""
+        if header_str == '':
+            return list()
+        location_str = self._get_header_str(header_str, 'Location')
+        if location_str == '':
+            return list()
+        tokens, parameters = self._split_url(location_str)
         return self._check_parts_for_leaks(tokens, parameters, encoding_layers)
 
     def substring_search(self, input_string, max_layers=None):
