@@ -4,7 +4,6 @@ output: {{all: '| tee -a /var/log/cloud-init-output.log'}}
 runcmd:
  - git clone https://{}:{}@github.com/englehardt/OpenWPM_Leuven_Princeton.git /home/ubuntu/OpenWPM_Leuven_Princeton
  - cd /home/ubuntu/OpenWPM_Leuven_Princeton
- - git checkout browse_crawl
  - yes | ./install.sh
  - yes | ./install-dev.sh
  - sudo sed -i "s/date_prefix =.*/date_prefix = '{}'/" /home/ubuntu/OpenWPM_Leuven_Princeton/measurement_*
