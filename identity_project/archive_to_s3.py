@@ -9,6 +9,7 @@ import sys
 import os
 
 BUCKET_NAME = 'identity-tracking-project'
+ZONE = 'us-east-1'
 
 
 class ProgressPercentage(object):
@@ -73,7 +74,7 @@ if __name__ == '__main__':
         if error_code == 404:
             s3.create_bucket(Bucket=BUCKET_NAME,
                              CreateBucketConfiguration={
-                                 'LocationConstraint': 'us-west-2'}
+                                 'LocationConstraint': ZONE}
                              )
         else:
             raise
