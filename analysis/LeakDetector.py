@@ -23,6 +23,10 @@ ENCODINGS_NO_ROT = ['base16', 'base32', 'base58', 'base64',
                     'deflate', 'zlib', 'gzip']
 LIKELY_ENCODINGS = ['base16', 'base32', 'base58', 'base64',
                     'urlencode', 'yenc', 'entity']
+HASHES = ['md2', 'md4', 'md5', 'sha', 'sha1', 'sha256', 'sha224', 'sha384',
+          'sha512', 'sha3_224', 'sha3_256', 'sha3_384', 'sha3_512', 'mmh2',
+          'mmh2_unsigned', 'mmh3_32', 'mmh3_64_1', 'mmh3_64_2', 'mmh3_128',
+          'ripemd160', 'whirlpool', 'blake2b', 'blake2s']
 
 
 def load_requests_with_leaks(location):
@@ -78,9 +82,7 @@ class Hasher():
 
         self._hashes = hashes
         self.hashes_and_checksums = self._hashes.keys()
-        self.supported_hashes = self._hashes.keys()
-        self.supported_hashes.remove('crc32')
-        self.supported_hashes.remove('adler32')
+        self.supported_hashes = HASHES
 
     def _get_hashlib_hash(self, name, string):
         """Use for hashlib hashes that don't have a shortcut"""
