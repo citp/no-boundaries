@@ -31,7 +31,11 @@ def load_requests_with_leaks(location):
     records = list()
     with open(location, 'r') as f:
         for line in f:
-            records.append(json.loads(line))
+            record = json.loads(line)
+            # Convert leak lists to tuples (so the columns are hashable)
+            for i in range(1, 4):
+                record[-i] = tuple([tuple(x) for x in record[-i]])
+            records.append(record)
     requests = pd.DataFrame(records)
     requests.columns = ['id', 'crawl_id', 'visit_id', 'url', 'top_level_url',
                         'site_url', 'first_party', 'site_rank',
