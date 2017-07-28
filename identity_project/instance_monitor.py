@@ -22,14 +22,21 @@ for reservation in reservations['Reservations']:
     match = re.match(EXPERIMENT_FILTER, instance['Tags'][0]['Value'])
     if match is None:
         continue
-    instance_name = match.group('crawl_name')
+    instance_name = match.group(0)
     hostname = instance['PublicDnsName']
-
-    print "Checking status of %s at host %s" % (instance_name, hostname)
 
     # Message header
     message += "\n:::::::::::::::::::: Crawl {} :::::::::::::::::::::".format(
         instance_name)
+
+    state = instance['State']['Name']
+    if state != 'running':
+        print "Instance %s is not running. Current state: %s" % (
+            instance_name, state)
+        message += "\nInstance not running. Current state: %s\n" % state
+        continue
+
+    print "Checking status of %s at host %s" % (instance_name, hostname)
 
     # Check crawl status
     checker = subprocess.Popen(
