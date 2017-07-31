@@ -15,8 +15,8 @@ import zlib
 import json
 import re
 
-DELIMITERS = re.compile('[&|\,_]')
-EXTENSION_RE = re.compile('\.[A-Za-z]{2,4}')
+DELIMITERS = re.compile('[&|\,]')
+EXTENSION_RE = re.compile('\.[A-Za-z]{2,4}$')
 ENCODING_LAYERS = 3
 ENCODINGS_NO_ROT = ['base16', 'base32', 'base58', 'base64',
                     'urlencode', 'yenc', 'entity',
@@ -250,7 +250,7 @@ class Decoder():
 class LeakDetector():
     def __init__(self, search_strings, precompute_hashes=True, hash_set=None,
                  hash_layers=2, precompute_encodings=True, encoding_set=None,
-                 encoding_layers=2):
+                 encoding_layers=2, debugging=False):
         """LeakDetector searches URL, POST bodies, and cookies for leaks.
 
         The detector is constructed with a set of search strings (given by
@@ -280,6 +280,8 @@ class LeakDetector():
             The detector will find instances of `search_string` iteratively
             encoded up to `encoding_layers` times by any combination of
             supported encodings.
+        debugging : bool
+            Set to `True` to enable a verbose output.
         """
         self.search_strings = search_strings
         self._min_length = min([len(x) for x in search_strings])
@@ -291,13 +293,13 @@ class LeakDetector():
         self._encoding_layers = encoding_layers
         self._decoder = Decoder()
         self._precompute_pool = dict()
-        self._build_precompute_pool(precompute_hashes, precompute_encodings)
-
         # If hash/encoding sets aren't specified, use all available.
         if self._hash_set is None:
             self._hash_set = self._hasher.supported_hashes
         if self._encoding_set is None:
             self._encoding_set = self._encoder.supported_encodings
+        self._build_precompute_pool(precompute_hashes, precompute_encodings)
+        self._debugging = debugging
 
     def _compute_hashes(self, string, layers, prev_hashes=tuple()):
         """Returns all iterative hashes of `string` up to the
@@ -326,16 +328,39 @@ class LeakDetector():
 
     def _build_precompute_pool(self, precompute_hashes, precompute_encodings):
         """Build a pool of hashes for the given search string"""
-        strings = list()
+        seed_strings = list()
         for string in self.search_strings:
+            seed_strings.append(string)
+            if string.startswith('http'):
+                continue
+            all_lower = string.lower()
+            if all_lower != string:
+                seed_strings.append(string.lower())
+            all_upper = string.upper()
+            if all_upper != string:
+                seed_strings.append(string.upper())
+
+        strings = list()
+        for string in seed_strings:
             strings.append(string)
+            # If the search string appears to be an email address, we also want
+            # to include just the username portion of the URL, and the address
+            # and username with any '.'s removed from the username (since these
+            # are optional in Gmail).
             if '@' in string:
-                strings.append(string.rsplit('.', 1)[0])
                 parts = string.rsplit('@')
-                strings.append(parts[0])
+                if len(parts) == 2:
+                    uname, domain = parts
+                    strings.append(uname)
+                    strings.append(re.sub('\.', '', uname))
+                    strings.append(re.sub('\.', '', uname) + '@' + domain)
                 # Domain searches have too many false positives
                 # strings.append(parts[1])
                 # strings.append(parts[1].rsplit('.', 1)[0])
+            # The URL tokenizer strips file extensions. So if our search string
+            # has a file extension we should also search for a stripped version
+            if re.match(EXTENSION_RE, string):
+                strings.append(re.sub(EXTENSION_RE, '', string))
         for string in strings:
             self._precompute_pool[string] = (string,)
         self._min_length = min([len(x) for x in self._precompute_pool.keys()])
@@ -445,8 +470,9 @@ class LeakDetector():
             return [], []
         path_parts = purl.path.split('/')
         for part in path_parts:
-            p = re.sub(EXTENSION_RE, '', part)
-            self._split_on_delims(p, tokens, parameters)
+            if not part.endswith('.com'):
+                part = re.sub(EXTENSION_RE, '', part)
+            self._split_on_delims(part, tokens, parameters)
         self._split_on_delims(purl.query, tokens, parameters)
         self._split_on_delims(purl.fragment, tokens, parameters)
         return tokens, parameters
@@ -454,6 +480,13 @@ class LeakDetector():
     def check_url(self, url, encoding_layers=3):
         """Check if a given url contains a leak"""
         tokens, parameters = self._split_url(url)
+        if self._debugging:
+            print "URL tokens:"
+            for token in tokens:
+                print token
+            print "\nURL parameters:"
+            for key, value in parameters:
+                print "Key: %s | Value: %s" % (key, value)
         return self._check_parts_for_leaks(tokens, parameters, encoding_layers)
 
     def _get_header_str(self, header_str, header_name):
