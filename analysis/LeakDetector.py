@@ -533,10 +533,18 @@ class LeakDetector():
         return self._check_parts_for_leaks(tokens, parameters, encoding_layers)
 
     def check_location_header(self, location_str, encoding_layers=3):
-        """Check the cookies portion of the header string for leaks"""
+        """Check the Location HTTP response header for leaks."""
         if location_str == '':
             return list()
         tokens, parameters = self._split_url(location_str)
+        return self._check_parts_for_leaks(tokens, parameters, encoding_layers)
+
+    def check_referrer_header(self, header_str, encoding_layers=3):
+        """Check the Referer HTTP request header for leaks."""
+        if header_str == '':
+            return list()
+        referrer_str = self._get_header_str(header_str, "Referer")
+        tokens, parameters = self._split_url(referrer_str)
         return self._check_parts_for_leaks(tokens, parameters, encoding_layers)
 
     def substring_search(self, input_string, max_layers=None):
