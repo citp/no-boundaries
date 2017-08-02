@@ -544,6 +544,8 @@ class LeakDetector():
         if header_str == '':
             return list()
         referrer_str = self._get_header_str(header_str, "Referer")
+        if not referrer_str:
+            return list()
         tokens, parameters = self._split_url(referrer_str)
         return self._check_parts_for_leaks(tokens, parameters, encoding_layers)
 
