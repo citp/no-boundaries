@@ -829,7 +829,9 @@ function getPageScript() {
         data['prevValue'] = event.prevValue;
         data['newValue'] = event.newValue;
         send('elementModified', data);
-        console.log('elementModified',data);
+        if (testing){
+          console.log('elementModified', data);
+        }
       }
       inLog = false;
     }, false);
