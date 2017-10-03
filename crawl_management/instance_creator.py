@@ -49,7 +49,7 @@ TEST_TAGS = [{'ResourceType': 'instance',
 DATE_PREFIX = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d')
 STARTUP_SCRIPT_TEMPLATE = open('instance_startup.sh', 'r').read()
 GITHUB_CREDENTIALS = os.path.join(os.path.dirname(__file__),
-                                  'credentials', 'github')
+                                  '..', 'credentials', 'github')
 
 
 def create_instance(crawl_type, github_user, github_password):
