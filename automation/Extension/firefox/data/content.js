@@ -72,7 +72,14 @@ function getPageScript() {
      */
 
     var testing = document.currentScript.getAttribute('data-testing') === 'true';
-    console.log("Currently testing?",testing);
+
+    function console_log(){
+      if (testing){
+        console.log.apply(console, arguments)
+      }
+    }
+
+    console_log("Currently testing?",testing);
 
     // Recursively generates a path for an element
     function getPathToDomElement(element, visibilityAttr=false) {
@@ -166,17 +173,17 @@ function getPageScript() {
           return value;
         });
       } catch(error) {
-        console.log("SERIALIZATION ERROR: " + error);
+        console_log("SERIALIZATION ERROR: " + error);
         return "SERIALIZATION ERROR: " + error;
       }
     }
 
     function logErrorToConsole(error) {
-      console.log("Error name: " + error.name);
-      console.log("Error message: " + error.message);
-      console.log("Error filename: " + error.fileName);
-      console.log("Error line number: " + error.lineNumber);
-      console.log("Error stack: " + error.stack);
+      console_log("Error name: " + error.name);
+      console_log("Error message: " + error.message);
+      console_log("Error filename: " + error.fileName);
+      console_log("Error line number: " + error.lineNumber);
+      console_log("Error stack: " + error.stack);
     }
 
     // Helper to get originating script urls
@@ -247,7 +254,7 @@ function getPageScript() {
         };
         return callContext;
       } catch (e) {
-        console.log("Error parsing the script context", e, callSite);
+        console_log("Error parsing the script context", e, callSite);
         return empty_context;
       }
     }
@@ -307,7 +314,7 @@ function getPageScript() {
         send('logValue', msg);
       }
       catch(error) {
-        console.log("Unsuccessful value log!");
+        console_log("Unsuccessful value log!");
         logErrorToConsole(error);
       }
 
@@ -347,7 +354,7 @@ function getPageScript() {
         send('logCall', msg);
       }
       catch(error) {
-        console.log("Unsuccessful call log: " + instrumentedFunctionName);
+        console_log("Unsuccessful call log: " + instrumentedFunctionName);
         logErrorToConsole(error);
       }
       inLog = false;
@@ -683,7 +690,7 @@ function getPageScript() {
 
     // Instrument access to spoofed FB API (if exists)
     if (window.FB) {
-      console.log("Instrumenting window.FB");
+      console_log("Instrumenting window.FB");
       instrumentObject(window.FB, "window.FB", {
         logFunctionsAsStrings: true,
         logCallStack: true,
@@ -695,11 +702,11 @@ function getPageScript() {
     var instrument_fbasyncinit = document.currentScript.
       getAttribute('data-instrument-fbasyncinit') === 'true';
     if (instrument_fbasyncinit) {
-      console.log("Instrumenting window.fbAsyncInit");
+      console_log("Instrumenting window.fbAsyncInit");
 
       // Define a no-op to allow us to instrument
       window.fbAsyncInit = function() {
-        console.log("window.fbAsyncInit called!");
+        console_log("window.fbAsyncInit called!");
       };
       instrumentObjectProperty(window, "window", "fbAsyncInit", {
         logFunctionsAsStrings: true,
@@ -709,7 +716,7 @@ function getPageScript() {
 
     // Instrument access to our spoofed Google API (if exists)
     if (window.gapi) {
-      console.log("Instrumenting window.gapi");
+      console_log("Instrumenting window.gapi");
       instrumentObject(window.gapi, "window.gapi", {
         logFunctionsAsStrings: true,
         logCallStack: true,
@@ -787,7 +794,7 @@ function getPageScript() {
           target.tagName == 'INPUT') {
         var data = checkElementProperties(target, callContext, target.tagName);
         send('elementInserted', data);
-        console.log('elementInserted',data);
+        console_log('elementInserted',data);
       }
 
       // Search within the inserted Node
@@ -796,7 +803,7 @@ function getPageScript() {
         for (var i=0; i < elements.length; i++) {
           var data = checkElementProperties(elements[i], callContext, tagName);
           send('elementInserted', data);
-          console.log('elementInserted',data);
+          console_log('elementInserted',data);
         }
       }
       searchWithin(target, "FORM");
@@ -830,7 +837,7 @@ function getPageScript() {
         data['newValue'] = event.newValue;
         send('elementModified', data);
         if (testing){
-          console.log('elementModified', data);
+          console_log('elementModified', data);
         }
       }
       inLog = false;
@@ -966,7 +973,7 @@ function getPageScript() {
     // Enable logging
     inLog = false;
 
-    console.log("Successfully started all instrumentation.");
+    console_log("Successfully started all instrumentation.");
   } + "());";
 }
 

@@ -6,16 +6,22 @@
 function getPageScript() {
   // return a string
   return "(" + function() {
+    var testing = document.currentScript.getAttribute('data-testing') === 'true';
+    function console_log(){
+      if (testing){
+       console.log.apply(console, arguments)
+      }
+    }
     if ("webdriver" in navigator) {
-      console.log("Webdriver attributes present, remove immediately");
+      console_log("Webdriver attributes present, remove immediately");
       // Attributes can be removed immediately
       document.documentElement.removeAttribute("webdriver");
       delete window.navigator["webdriver"];
-      console.log("Webdriver attributes removed!");
+      console_log("Webdriver attributes removed!");
     } else {
       // Listener for `document` attribute
       document.addEventListener("DOMAttrModified", function monitor(ev) {
-        console.log("Removing webdriver attribute from document");
+        console_log("Removing webdriver attribute from document");
         document.documentElement.removeAttribute("webdriver");
         document.removeEventListener("DOMAttrModified", monitor, false);
       }, false);
@@ -25,7 +31,7 @@ function getPageScript() {
       Object.defineProperty(Object, 'defineProperty', {
         value: function(obj, prop, descriptor) {
           if (obj == window.navigator && prop == 'webdriver') {
-            console.log("Preventing definition of webdriver property on navigator.");
+            console_log("Preventing definition of webdriver property on navigator.");
 
             // Return Object.defineProperty to original state
             Object.defineProperty(Object, 'defineProperty', {
@@ -36,7 +42,7 @@ function getPageScript() {
           return originalDefineProperty(obj, prop, descriptor);
         }
       });
-      console.log("Webdriver attribute handlers started!");
+      console_log("Webdriver attribute handlers started!");
     }
   } + "());";
 }

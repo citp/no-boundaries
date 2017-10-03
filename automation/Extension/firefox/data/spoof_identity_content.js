@@ -2,6 +2,14 @@ function getPageScript() {
   // return a string
   return "(" + function() {
 
+    var testing = document.currentScript.getAttribute('data-testing') === 'true';
+    function console_log(){
+      if (testing){
+       console.log.apply(console, arguments)
+      }
+    }
+
+
     /*
      * Facebook Login API
      */
@@ -72,7 +80,7 @@ function getPageScript() {
       // FB.init requires an appId and will pop-up a box if the user isn't
       // currently authenticated. Third-parties are unlikely to use this.
       window.FB.init = function init(params) {
-        console.log("Call to window.FB.init with params:", params);
+        console_log("Call to window.FB.init with params:", params);
         return;
       };
 
@@ -96,7 +104,7 @@ function getPageScript() {
           } else if (typeof arguments[1] === "object") {
             params = arguments[1];
           } else {
-            console.log("Unexpected argument type for FB.api call:",arguments);
+            console_log("Unexpected argument type for FB.api call:",arguments);
             return;
           }
           callback = arguments[2];
@@ -104,7 +112,7 @@ function getPageScript() {
           path = arguments[0];
           callback = arguments[1];
         } else {
-          console.log("Unexpected argument length for FB.api call:",arguments);
+          console_log("Unexpected argument length for FB.api call:",arguments);
           return;
         }
 
@@ -114,7 +122,7 @@ function getPageScript() {
 
         var parts = path.toLowerCase().split('?');
         if (parts.length > 2)
-          console.log("Unexpected path split in FB.api",parts);
+          console_log("Unexpected path split in FB.api",parts);
 
         // Skip callback if not querying user data
         if (!parts[0].includes('me') && !parts[0].includes(FBUserInfo['id']))
@@ -135,12 +143,12 @@ function getPageScript() {
             console.error("Unable to parse fields portion of path",path);
             logErrorToConsole(error);
           }
-          console.log("FB.api fields found in path",fields);
+          console_log("FB.api fields found in path",fields);
         } else if (params && 'fields' in params) {
           fields = fields.concat(params['fields'].replace(/ /g,'').split(','));
-          console.log("FB.api fields found in params",fields);
+          console_log("FB.api fields found in params",fields);
         } else {
-          console.log("No fields found while parsing FB.api call");
+          console_log("No fields found while parsing FB.api call");
           fields = fields.concat(['name']); // default response to '/me'
         };
 
@@ -186,7 +194,7 @@ function getPageScript() {
           return;
         }
         if (window.fbAsyncInit){
-          console.log("Calling window.fbAsyncInit", window.fbAsyncInit);
+          console_log("Calling window.fbAsyncInit", window.fbAsyncInit);
           window.fbAsyncInit();
         }
       }
@@ -195,7 +203,7 @@ function getPageScript() {
       // We call it manually to trick fake a FB SDK init event
       setTimeout(fb_inited, 3000);
 
-      console.log("Facebook API spoofed")
+      console_log("Facebook API spoofed")
     }
 
     /*
@@ -411,7 +419,7 @@ function getPageScript() {
         var fields = null;
         if (args['params'] && 'fields' in args['params']) {
           fields = args['params']['fields'].replace(/ /g,'').split(',');
-          console.log("gapi.client.request fields found in params",fields);
+          console_log("gapi.client.request fields found in params",fields);
         } else if (args['path'].includes('?') && args['path'].includes('fields')) {
           try {
             var parts = args['path'].split('?')
@@ -422,13 +430,13 @@ function getPageScript() {
                 break;
               }
             }
-            console.log("gapi.client.request fields found in path",fields);
+            console_log("gapi.client.request fields found in path",fields);
           } catch (error) {
             console.error("Unable to parse fields portion of path",path);
             logErrorToConsole(error);
           }
         } else {
-          console.log("gapi.client.request no fields found. Returning all.");
+          console_log("gapi.client.request no fields found. Returning all.");
         }
 
         // Filter google API data by fields
@@ -541,7 +549,7 @@ function getPageScript() {
       window.gapi.signin2 = {};
       window.gapi.signin2.render = function() { return; };
 
-      console.log("Google API spoofed")
+      console_log("Google API spoofed")
     }
 
     /*
@@ -561,7 +569,7 @@ function getPageScript() {
     }
     var domSpoof = document.currentScript.getAttribute('data-dom-identity') === 'true';
     if (domSpoof) {
-      console.log("Spoofing identifying information in the DOM.");
+      console_log("Spoofing identifying information in the DOM.");
       var domName = 'Jerome Cisco';
       var domEmail = 'jeromecisco@hotmail.com';
       window.setTimeout(insertDOMIdentity, 100);
@@ -618,7 +626,7 @@ function getPageScript() {
     }
     var domLoginSpoof = document.currentScript.getAttribute('data-dom-login') === 'true';
     if (domLoginSpoof) {
-      console.log("Spoofing login form in the DOM.");
+      console_log("Spoofing login form in the DOM.");
       var domLoginEmail = 'example@example.com';
       window.setTimeout(insertDOMLogin, 100);
     }
@@ -712,7 +720,7 @@ function getPageScript() {
     }
     var domCheckoutSpoof = document.currentScript.getAttribute('data-dom-checkout') === 'true';
     if (domCheckoutSpoof) {
-      console.log("Spoofing checkout payment info forms in the DOM.");
+      console_log("Spoofing checkout payment info forms in the DOM.");
       window.setTimeout(insertDOMCheckout, 100);
     }
 
@@ -736,7 +744,7 @@ function getPageScript() {
     }
     var storage_spoof = document.currentScript.getAttribute('data-storage') === 'true';
     if (storage_spoof && !inIframe()) {
-      console.log("Spoofing identifying information in storage for", window.self);
+      console_log("Spoofing identifying information in storage for", window.self);
       var storageId = {
         'uid': '36732d0b-a127-4903-83a9-482cbcb56aef',
         'email': 'chief_wiggins@hotmail.com',
