@@ -5,10 +5,10 @@ import mailer
 import re
 from os.path import join, dirname
 
-# Get instances with name `YYYY-MM-DD-embedding-*'
-INSTANCE_FILTER = str(datetime.datetime.now().year) + '*'
+# Get instances with name `embedding-crawl-YYYY-MM-DD*'
+INSTANCE_FILTER = 'embedding-crawl-' + str(datetime.datetime.now().year) + '*'
 EXPERIMENT_FILTER = re.compile(
-    '\d{4}-\d{2}-\d{2}-embedding-(?P<crawl_name>.*)')
+    'embedding-crawl-\d{4}-\d{2}-\d{2}-(?P<crawl_name>.*)')
 RECIPIENTS = ['ste@cs.princeton.edu',
               'gunes.acar@esat.kuleuven.be']
 
