@@ -46,10 +46,11 @@ TEST_TAGS = [{'ResourceType': 'instance',
                   'Value': '{}'}
               }]
 
+NAME_PREFIX = 'embedding-crawl-'
 DATE_PREFIX = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d')
 STARTUP_SCRIPT_TEMPLATE = open('instance_startup.sh', 'r').read()
 GITHUB_CREDENTIALS = os.path.join(os.path.dirname(__file__),
-                                  'credentials', 'github')
+                                  '..', 'credentials', 'github')
 
 
 def create_instance(crawl_type, github_user, github_password):
@@ -69,7 +70,10 @@ def create_instance(crawl_type, github_user, github_password):
         BlockDeviceMappings=[VOLUME_INFO]
     )[0]
     instance.create_tags(
-        Tags=[{'Key': 'Name', 'Value': DATE_PREFIX + '-' + crawl_type}])
+        Tags=[{
+            'Key': 'Name',
+            'Value': NAME_PREFIX + DATE_PREFIX + '-' + crawl_type
+        }])
     return
 
 

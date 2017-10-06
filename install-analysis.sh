@@ -1,7 +1,10 @@
 #!/bin/bash
 set -e
 
-sudo apt-get install pbzip2
+sudo pip install -U -r requirements-analysis.txt
 
-sudo pip install jupyter pandas pycrypto hackercodecs pyblake2 sha3 \
-  mmhash base58 cookies jsbeautifier
+#  No need to install pbzip2 and jupyter on Travis
+if [ "$TRAVIS" != "true" ]; then
+	sudo apt-get install pbzip2
+	sudo pip install jupyter
+fi

@@ -20,6 +20,7 @@ before_install:
   - "npm install -g jpm"
 install:
   - echo "y" | ./install.sh
+  - echo "y" | ./install-analysis.sh
   - pip install -r requirements.txt
 before_script:
   - cd test
