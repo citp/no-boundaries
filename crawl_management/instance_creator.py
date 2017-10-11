@@ -27,7 +27,7 @@ VOLUME_SIZE = {
     'facebook_login': 1500,
     'form_filling': 700,
     'passive_identity': 700,
-    'dom_login_and_checkout': 700,
+    'dom_login_and_checkout': 1500,
     'dump_source': 1000
 }
 AMI_ID = 'ami-e13739f6'  # generic Ubuntu 16.04
