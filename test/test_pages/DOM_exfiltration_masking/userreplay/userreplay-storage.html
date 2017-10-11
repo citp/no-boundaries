@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+        <title>Ur Storage Endpoint</title>
+    </head>
+<body>
+<script>
+(function () {
+            /**
+              * User Replay Storage Endpoint.
+              *
+              * @version 1.0.2
+              * @build 88ac8fe
+              * @date Thu, 10 Nov 2016 17:15:46 GMT
+              */
+
+	// Customer config
+	var allowFrom = [
+		'https://business.stg.comcast.com',
+		'https://business.comcast.com',
+		'https://www.business.comcast.com',
+		'https://www.stg.xfinity.com',
+		'https://www.xfinity.com',
+		'https://stg.xfinity.com',
+		'https://xfinity.com',
+		'https://customer.xfinity.com',
+		'https://customer.stg.xfinity.com',
+                'http://business.stg.comcast.com',
+                'http://business.comcast.com',
+                'http://www.business.comcast.com',
+                'http://www.stg.xfinity.com',
+                'http://www.xfinity.com',
+                'http://stg.xfinity.com',
+                'http://xfinity.com',
+                'http://customer.xfinity.com',
+                'http://customer.stg.xfinity.com'
+	];
+
+ !function(){var e;e=function(){window.addEventListener("message",function(e){var a,r=null,s=e.origin||e.originalEvent.origin;if(allowFrom&&-1===allowFrom.indexOf(s.replace("^http(s?)://","")))return!1;try{switch(a=JSON.parse(e.data),a.action){case"read":var t={};for(var i in sessionStorage)t[i.replace(/__ur__/,"")]=sessionStorage.getItem(i);r=JSON.stringify({payloads:t});break;case"write":sessionStorage.setItem(a.key,JSON.stringify(a.data));break;case"delete":sessionStorage.removeItem(a.key);break;default:return}}catch(n){r='{"status":0,"message":'+JSON.stringify(n)+"}"}r&&e.source.postMessage(r,s)},!1)}()}();
+
+})();
+</script>
+</body>
+</html>
