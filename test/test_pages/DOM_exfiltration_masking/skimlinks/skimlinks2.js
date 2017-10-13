@@ -1428,7 +1428,6 @@
     }
 
     function bc(a) {
-        console.log('##################', a)
         var b = void 0;
         b = void 0;
         var c = "";
@@ -1441,8 +1440,8 @@
         c += "&version=10&js=1";
         b = encodeURIComponent('{"instant":"1","page":"' + l.pageLocation + '","pref":"' + l.referrer + '","pubcode":"' + B + '"' + (h.force_country ? ',"force_country":"' + h.force_country + '"' : "") + (h.force_tree ? ',"force_tree":"' +
             h.force_tree + '"' : "") + "}");
-        // XXX b = "//i.skimresources.com/api/?callback=" + a + "&data=" + b + (h.debug ? "&debug=" + h.debug : "") + (d ? "&dnt=1" : "") + (g ? "&fdnt=1" : "") + c;
-        b = "//i.localtest.me:8000/api/?callback=" + a + "&data=" + b + (h.debug ? "&debug=" + h.debug : "") + (false ? "&dnt=1" : "") + (false ? "&fdnt=1" : "") + c;
+        // XXX b = "//i.skimresources.com/api/?callback=" + a + "&data=" + b + (h.debug ? "&debug=" + h.debug : "") + (D ? "&dnt=1" : "") + (G ? "&fdnt=1" : "") + c;
+        b = "//i.skimresources.com/api/?callback=" + a + "&data=" + b + (h.debug ? "&debug=" + h.debug : "") + (D ? "&dnt=1" : "") + (G ? "&fdnt=1" : "") + c;
         da(b, !1, {}, X, !1)
     }
 
