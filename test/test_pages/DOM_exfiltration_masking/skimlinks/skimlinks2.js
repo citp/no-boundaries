@@ -2070,7 +2070,8 @@
         c = y('{"pubcode":"' + B + '","domains":_DOMAIN_LIST_,"page":"' +
             q.location.href + '"}');
         // XXX var e = "//r.skimresources.com/api/?callback=" + b + (D ? "&dnt=1" : "") + (G ? "&fdnt=1" : "") + "&data=" + c;
-        var e = "//r.localtest.me:8000/api/?callback=" + b + (D ? "&dnt=1" : "") + (G ? "&fdnt=1" : "") + "&data=" + c;
+        // var e = "//r.localtest.me:8000/api/?callback=" + b + (D ? "&dnt=1" : "") + (G ? "&fdnt=1" : "") + "&data=" + c;
+        var e = "http://localtest.me:8000/test_pages/DOM_exfiltration_masking/skimlinks/api_callback=" + b + (D ? "&dnt=1" : "") + (G ? "&fdnt=1" : "");
         c = "msie" === l.detect.browser ? 2E3 : 8E3;
         var f = [];
         var g = 0;
@@ -3130,8 +3131,8 @@
                     } catch (c) {}
                     // XXX b = "" + 11 * Math.random();fa = new Image;fa.onload = gc;fa.src = "//p.skimresources.com/px.gif?ch=*&rn=*".replace(/\*/,
                     // XXX    "1").replace(/\*/, b);ha = new Image;ha.onload = gc;ha.src = "//p.skimresources.com/px.gif?ch=*&rn=*".replace(/\*/, "2").replace(/\*/, b)
-                    b = "" + 11 * Math.random();fa = new Image;fa.onload = gc;fa.src = "//p.localtest.me:8000/px.gif?ch=*&rn=*".replace(/\*/,
-                        "1").replace(/\*/, b);ha = new Image;ha.onload = gc;ha.src = "//p.localtest.me:8000/px.gif?ch=*&rn=*".replace(/\*/, "2").replace(/\*/, b)
+                    b = "" + 11 * Math.random();fa = new Image;fa.onload = gc;fa.src = "http://localtest.me:8000/test_pages/DOM_exfiltration_masking/skimlinks/px.gif";
+                    ha = new Image;ha.onload = gc;ha.src = "http://localtest.me:8000/test_pages/DOM_exfiltration_masking/skimlinks/px.gif";
                 }
                 fc(a, 250)
             }
