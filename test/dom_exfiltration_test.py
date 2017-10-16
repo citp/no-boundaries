@@ -40,7 +40,7 @@ FORM_DATA = {
     "ship-city": "Milpitas",
     "ship-state": "CA",
     "ship-zip": "95035",
-    "ship-country": "United States of America",
+    "ship-country": "France",
     "maiden-name": "Kuhn",
     "ssn": "554-40-1120",
     "birthday": "July 5, 1977",
