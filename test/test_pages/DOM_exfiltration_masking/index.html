@@ -2,6 +2,20 @@
 <html>
 <head>
 <title>DOM Exfiltration Test</title>
+
+<style>
+  dt:before {
+    content: "";
+    display: block;
+  }
+  dt, dd {
+    display: inline;
+  }
+  input {
+    display: block;
+  }
+
+</style>
 <script type="text/javascript" src="../shared/utils.js"></script>
 
 <script type="text/javascript">
@@ -123,13 +137,11 @@
 <body>
 
 
-
-
 <div class="content">
 	<div class="address">
 	<h3>Betty G. Forbes</h3>
 	<div class="adr">
-	797 White Oak Drive<br>Blue Springs, MO 64015 </div>
+	797 White Oak Drive<br>Blue Springs, MO 64015<br>United States of America</div>
 </div>
 
 <div class="extra">
@@ -313,12 +325,8 @@
   <label for="frmCountryS">Country</label>
   <input name="ship-country" required id="frmCountryS" placeholder="USA" autocomplete="shipping country">
 
-  <label>
-	<input type="checkbox" name="billAndShip" id="cbBillAndShip">
-	<br>Bill to this address.</label>
 </fieldset>
 
-<fieldset>
 <fieldset>
   <legend>Personal</legend>
   <label for="maiden-name" class="fb-text-label"><dt>Mother's maiden name</dt></label><input type="text" class="form-control" name="maiden-name" id="maiden-name">
@@ -326,38 +334,35 @@
   <label for="birthday" class="fb-date-label">Birthday</label><input type="date" class="form-control" name="birthday" id="birthday">
   <label for="username" class="fb-text-label">Username</label><input type="text" class="form-control" name="username" id="username">
   <label for="password" class="fb-text-label">Password</label><input type="password" class="form-control" name="password" id="password">
-  <label for="website" class="fb-text-label">Website</label><input type="text" class="form-control" name="website" id="website"></div>
+  <label for="website" class="fb-text-label">Website</label><input type="text" class="form-control" name="website" id="website">
 
+<label for="professions" class="fb-text-label">Profession</label>
  <input list="professions" name="profession">
   <datalist id="professions">
 	<option value="Teacher">
 	<option value="Student">
 	<option value="Driver">
+  <option value="Sales engineer">
+  <option value="Employee relations manager">
   </datalist>
-  </fieldset>
+</fieldset>
 
-<div id="paymentSec">
+
   <fieldset>
 	<legend>Payment</legend>
 	<label for="frmNameCC">Name on card</label>
 	<input name="ccname" id="frmNameCC" required placeholder="Full Name" autocomplete="cc-name">
 	<label for="frmCCNum">Card Number</label>
 	<input name="cardnumber" id="frmCCNum" required autocomplete="cc-number">
+  <label for="frmCCNumLastFour">Card Number Last Four</label>
+	<input name="cardnumber_lastfour" id="frmCCNum_lastfour" required autocomplete="cc-number-lastfour">
 	<label for="frmCCCVC">CVC</label>
 	<input name="cvc" id="frmCCCVC" required autocomplete="cc-csc">
 	<label for="frmCCExp">Expiry</label>
 	<input name="cc-exp" id="frmCCExp" required placeholder="MM-YYYY" autocomplete="cc-exp">
-	<div>
-	  <button class="btn" id="butCheckout">Check Out</button>
-	</div>
   </fieldset>
-</div>
+
 </form>
-
-
-
-
-
 
 </body>
 </html>

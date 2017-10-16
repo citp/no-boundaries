@@ -467,7 +467,7 @@
         a = Ha(a);
         if (l.isAdblockUser ||
             // XXX !Kb("//t.skimresources.com/api/link", a, Lb)) return Nc()
-            !Kb("//t.localtest.me:8000/api/link", a, Lb)) return Nc()
+            !Kb("//localtest.me:8000/test_pages/DOM_exfiltration_masking/skimlinks/apilink", a, Lb)) return Nc()
     }
 
     function Kb(a, b, c) {
@@ -1441,7 +1441,7 @@
         b = encodeURIComponent('{"instant":"1","page":"' + l.pageLocation + '","pref":"' + l.referrer + '","pubcode":"' + B + '"' + (h.force_country ? ',"force_country":"' + h.force_country + '"' : "") + (h.force_tree ? ',"force_tree":"' +
             h.force_tree + '"' : "") + "}");
         // XXX b = "//i.skimresources.com/api/?callback=" + a + "&data=" + b + (h.debug ? "&debug=" + h.debug : "") + (D ? "&dnt=1" : "") + (G ? "&fdnt=1" : "") + c;
-        b = "//i.skimresources.com/api/?callback=" + a + "&data=" + b + (h.debug ? "&debug=" + h.debug : "") + (D ? "&dnt=1" : "") + (G ? "&fdnt=1" : "") + c;
+        b = "//localtest.me:8000/test_pages/DOM_exfiltration_masking/skimlinks/api_callback=" + a +".js"; // + "&data=" + b + (h.debug ? "&debug=" + h.debug : "") + (D ? "&dnt=1" : "") + (G ? "&fdnt=1" : "") + c;
         da(b, !1, {}, X, !1)
     }
 
@@ -2071,7 +2071,7 @@
             q.location.href + '"}');
         // XXX var e = "//r.skimresources.com/api/?callback=" + b + (D ? "&dnt=1" : "") + (G ? "&fdnt=1" : "") + "&data=" + c;
         // var e = "//r.localtest.me:8000/api/?callback=" + b + (D ? "&dnt=1" : "") + (G ? "&fdnt=1" : "") + "&data=" + c;
-        var e = "http://localtest.me:8000/test_pages/DOM_exfiltration_masking/skimlinks/api_callback=" + b + (D ? "&dnt=1" : "") + (G ? "&fdnt=1" : "");
+        var e = "http://localtest.me:8000/test_pages/DOM_exfiltration_masking/skimlinks/api_callback=" + b + ".js"; //+ (D ? "&dnt=1" : "") + (G ? "&fdnt=1" : "");
         c = "msie" === l.detect.browser ? 2E3 : 8E3;
         var f = [];
         var g = 0;
