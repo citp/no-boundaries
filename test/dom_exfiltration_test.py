@@ -1,5 +1,7 @@
+import json
 import pytest
 import utilities
+from base64 import b64decode
 from openwpmtest import OpenWPMTest
 from ..automation import TaskManager
 from ..automation import CommandSequence
@@ -7,7 +9,7 @@ from ..automation.utilities import db_utils
 from time import sleep
 from selenium.common.exceptions import WebDriverException
 
-DISPLAY_DATA = {
+DISPLAYED_DATA = {
     "name": "Betty G. Forbes",
     "email": "BettyGForbes@teleworm.us",
     "emailC": "BettyGForbes@teleworm.us",
@@ -85,7 +87,7 @@ class TestDOMExfiltration(OpenWPMTest):
     def run_dom_exfiltration_test(self, test_type):
         manager_params, browser_params = self.get_config()
         browser_params[0]['http_instrument'] = True
-        # browser_params[0]['headless'] = False
+        browser_params[0]['headless'] = False
         manager = TaskManager.TaskManager(manager_params, browser_params)
         if test_type in ["yandex", "fullstory", "hotjar"]:
             # use localhost instead of localtest.me
@@ -125,9 +127,48 @@ class TestDOMExfiltration(OpenWPMTest):
 
     def test_yandex(self):
         db = self.run_dom_exfiltration_test("yandex")
-        self.check_leaks(db)
+        self.check_leaks(db, test_type="yandex")
 
-    def check_leaks(self, db):
+    def search_leak_in_http_req(self, bait_type, observed_form_leaks,
+                                url, method, post_body, test_type=""):
+        if bait_type == "form_data":
+            bait_dict = FORM_DATA
+        elif bait_type == "displayed_data":
+            bait_dict = DISPLAYED_DATA
+
+        for elem_name, elem_value in bait_dict.iteritems():
+            leak_found = False
+            if method in ["GET" or "OPTIONS"] and elem_value in url:
+                leak_found = True
+            elif post_body:
+                if elem_value in post_body:
+                    leak_found = True
+                try:
+                    post_body_obj = json.loads(post_body)
+                except Exception:
+                    continue
+                if "wv-data" in post_body_obj:
+                    wv_decoded = ""
+                    try:
+                        wv_decoded = b64decode(post_body_obj["wv-data"])
+                    except Exception as e:
+                        for piece in post_body_obj["wv-data"].split("*"):
+                            try:
+                                wv_decoded += b64decode(piece)
+                                print "Adding decoded piece", piece
+                            except Exception as exc:
+                                print "Exception decoding piece", piece, exc
+                                pass
+                        # print "ERROR decoding", e, "POST DATA\n", post_body_obj["wv-data"], "\n"
+
+                    if elem_value in wv_decoded:
+                        print "Found form leak in base64 encoded data", elem_name, elem_value
+                        leak_found = True
+
+            if leak_found:
+                observed_form_leaks.add(elem_name)
+
+    def check_leaks(self, db, test_type=""):
         query = ("SELECT url, method, post_body FROM http_requests")
         checked_for_leaks = False  # to make sure we checked the leaks
         observed_form_leaks = set()
@@ -138,37 +179,32 @@ class TestDOMExfiltration(OpenWPMTest):
             # we might need to check for encodings and hashes
             # but we observed_form_leaks that the tested scripts send eveything
             # unencoded, except Yandex
-            for elem_name, elem_value in FORM_DATA.iteritems():
-                if (method == "POST" and elem_value in post_body) or\
-                        (method in ["GET" or "OPTIONS"] and elem_value in url):
-                    # print "Found form data", elem_name, elem_value
-                    observed_form_leaks.add(elem_name)
-
-            for elem_name, elem_value in DISPLAY_DATA.iteritems():
-                if (method == "POST" and elem_value in post_body) or\
-                        (method in ["GET" or "OPTIONS"] and elem_value in url):
-                    # print "Found display data", elem_name, elem_value
-                    observed_display_leaks.add(elem_name)
+            self.search_leak_in_http_req("form_data", observed_form_leaks,
+                                         url, method, post_body, test_type)
+            self.search_leak_in_http_req("displayed_data",
+                                         observed_display_leaks, url, method,
+                                         post_body, test_type)
 
         if not checked_for_leaks:
             pytest.fail("No requests sent by the tested script")
 
+        print "******** RESULTS *********"
         if observed_form_leaks == set(FORM_DATA.keys()):
-            print "Form data is sent as masked"
+            print "All Form data is sent UNMASKED"
         else:
             print "Form data is sent with masking or not sent at all"
 
-        if observed_display_leaks == set(DISPLAY_DATA.keys()):
-            print "Display data is sent without masking"
+        if observed_display_leaks == set(DISPLAYED_DATA.keys()):
+            print "All displayed data is sent UNMASKED"
         else:
-            print "Display data is sent with masking or not sent at all"
+            print "Displayed data is sent with masking or not sent at all"
 
         for item in FORM_DATA.iterkeys():
             if item not in observed_form_leaks:
-                print "Form data NOT sent in the clear", item, FORM_DATA[item]
+                print "Masked?", item, FORM_DATA[item]
             else:
-                print "Form data sent in the clear", item, FORM_DATA[item]
+                print "UNMASKED", item, FORM_DATA[item]
 
-        for item in DISPLAY_DATA.iterkeys():
+        for item in DISPLAYED_DATA.iterkeys():
             if item not in observed_display_leaks:
-                print "Display data NOT sent in the clear", item, DISPLAY_DATA[item]
+                print "Display data masked?", item, DISPLAYED_DATA[item]
