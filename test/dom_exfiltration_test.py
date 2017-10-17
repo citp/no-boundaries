@@ -84,12 +84,13 @@ class TestDOMExfiltration(OpenWPMTest):
 
     def run_dom_exfiltration_test(self, test_type):
         manager_params, browser_params = self.get_config()
-        browser_params[0]['headless'] = False
-        browser_params[0]['record_js_errors'] = True
         browser_params[0]['http_instrument'] = True
         manager = TaskManager.TaskManager(manager_params, browser_params)
         if test_type in ["yandex", "fullstory", "hotjar"]:
-            test_url = self.BASE_DOMAIN + test_type + "/"
+            # use localhost instead of localtest.me
+            localhost_domain = self.BASE_DOMAIN.replace("localtest.me",
+                                                        "localhost")
+            test_url = localhost_domain + test_type + "/"
         else:
             test_url = self.BASE_DOMAIN + 'index.html?test_type=%s' % test_type
         cs = CommandSequence.CommandSequence(test_url, blocking=True)
