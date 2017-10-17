@@ -85,6 +85,7 @@ class TestDOMExfiltration(OpenWPMTest):
     def run_dom_exfiltration_test(self, test_type):
         manager_params, browser_params = self.get_config()
         browser_params[0]['http_instrument'] = True
+        # browser_params[0]['headless'] = False
         manager = TaskManager.TaskManager(manager_params, browser_params)
         if test_type in ["yandex", "fullstory", "hotjar"]:
             # use localhost instead of localtest.me
@@ -139,13 +140,13 @@ class TestDOMExfiltration(OpenWPMTest):
             # unencoded, except Yandex
             for elem_name, elem_value in FORM_DATA.iteritems():
                 if (method == "POST" and elem_value in post_body) or\
-                        (method == "GET" and elem_value in url):
+                        (method in ["GET" or "OPTIONS"] and elem_value in url):
                     # print "Found form data", elem_name, elem_value
                     observed_form_leaks.add(elem_name)
 
             for elem_name, elem_value in DISPLAY_DATA.iteritems():
                 if (method == "POST" and elem_value in post_body) or\
-                        (method == "GET" and elem_value in url):
+                        (method in ["GET" or "OPTIONS"] and elem_value in url):
                     # print "Found display data", elem_name, elem_value
                     observed_display_leaks.add(elem_name)
 
