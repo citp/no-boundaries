@@ -97,7 +97,7 @@ class TestDOMExfiltration(OpenWPMTest):
         cs.get(sleep=3, timeout=60)
         cs.run_custom_function(fill_out_form)
         manager.execute_command_sequence(cs)
-        sleep(10)
+        sleep(3)
         manager.close()
         assert not db_utils.any_command_failed(manager_params['db'])
         return manager_params['db']
