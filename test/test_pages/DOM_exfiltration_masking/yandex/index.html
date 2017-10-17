@@ -1,15 +1,19 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+<meta charset="utf-8">
+<style>
+  legend{margin-top: 30px}
+</style>
 <title>Yandex</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 </head>
-
 <body>
 <!-- Yandex.Metrika counter -->
 <script type="text/javascript" > (function (d, w, c) { (w[c] = w[c] || []).push(function() { try { w.yaCounter46194273 = new Ya.Metrika({ id:46194273, clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true }); } catch(e) { } }); var n = d.getElementsByTagName("script")[0], s = d.createElement("script"), f = function () { n.parentNode.insertBefore(s, n); }; s.type = "text/javascript"; s.async = true; s.src = "https://mc.yandex.ru/metrika/watch.js"; if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); } })(document, window, "yandex_metrika_callbacks"); </script> <noscript><div><img src="https://mc.yandex.ru/watch/46194273" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 <!-- /Yandex.Metrika counter -->
 
-<div class="content">
+<div class="container">
 	<div class="address">
 	<h3>Betty G. Forbes</h3>
 	<div class="adr">
@@ -169,46 +173,65 @@
     <dd><a id="qr" href="javascript:void(0)">Click to view the QR code for this identity</a></dd>
 </dl>
 </div>
-</div>
 
-<form method="post" id="usrForm">
+
+<form method="post" id="usrForm" class="navbar-form" class="form-horizontal">
   <fieldset>
-	<legend>Contact Info</legend>
-	<label for="frmNameA">Name</label>
-	<input name="name" id="frmNameA" placeholder="Full name" required autocomplete="name">
-	<label for="frmEmailA">Email</label>
-	<input type="email" name="email" id="frmEmailA" placeholder="name@example.com" required autocomplete="email">
-	<label for="frmEmailC">Confirm Email</label>
-	<input type="email" name="emailC" id="frmEmailC" placeholder="name@example.com" required autocomplete="email">
-	<label for="frmPhoneNumA">Phone</label>
-	<input type="tel" name="phone" id="frmPhoneNumA" placeholder="+1-650-450-1212" required autocomplete="tel">
+  <legend>Contact Info</legend>
+  <div class="form-group">
+    <label class="col-md-4 control-label" for="frmNameA">Name</label>
+    <div class="col-md-4"><input class="form-control input-md" name="name" id="frmNameA" placeholder="Full name" required autocomplete="name"></div>
+  </div>
+  <div class="form-group">
+    <label class="col-md-4 control-label" for="frmEmailA">Email</label>
+    <div class="col-md-4"><input class="form-control input-md"  type="email" name="email" id="frmEmailA" placeholder="name@example.com" required autocomplete="email"></div>
+  </div>
+  <div class="form-group">
+    <label class="col-md-4 control-label" for="frmEmailC">Confirm Email</label>
+	  <div class="col-md-4"><input class="form-control input-md" type="email" name="emailC" id="frmEmailC" placeholder="name@example.com" required autocomplete="email"></div>
+  </div>
+  <div class="form-group">
+    <label class="col-md-4 control-label" for="frmPhoneNumA">Phone</label>
+    <div class="col-md-4"><input class="form-control input-md" type="tel" name="phone" id="frmPhoneNumA" placeholder="+1-650-450-1212" required autocomplete="tel"></div>
+  </div>
+  </fieldset>
 
-</fieldset>
 <fieldset>
   <legend>Shipping</legend>
-  <label for="frmAddressS">Address</label>
-  <input name="ship-address" required id="frmAddressS" placeholder="123 Any Street" autocomplete="shipping street-address">
-  <label for="frmCityS">City</label>
-  <input name="ship-city" required id="frmCityS" placeholder="New York" autocomplete="shipping address-level2">
-  <label for="frmStateS">State</label>
-  <input name="ship-state" required id="frmStateS" placeholder="NY" autocomplete="shipping address-level1">
-  <label for="frmZipS">Zip</label>
-  <input name="ship-zip" required id="frmZipS" placeholder="10011" autocomplete="shipping postal-code">
-  <label for="frmCountryS">Country</label>
-  <input name="ship-country" required id="frmCountryS" placeholder="USA" autocomplete="shipping country">
+  <div class="form-group"><label class="col-md-4 control-label" for="frmAddressS">Address</label>
+    <div class="col-md-4"><input class="form-control input-md" name="ship-address" required id="frmAddressS" placeholder="123 Any Street" autocomplete="shipping street-address"></div>
+  </div>
+
+  <div class="form-group"><label class="col-md-4 control-label" for="frmCityS">City</label>
+  <div class="col-md-4"><input class="form-control input-md" name="ship-city" required id="frmCityS" placeholder="New York" autocomplete="shipping address-level2"></div></div>
+
+  <div class="form-group"><label class="col-md-4 control-label" for="frmStateS">State</label>
+  <div class="col-md-4"><input class="form-control input-md" name="ship-state" required id="frmStateS" placeholder="NY" autocomplete="shipping address-level1"></div></div>
+
+  <div class="form-group"><label class="col-md-4 control-label" for="frmZipS">Zip</label>
+  <div class="col-md-4"><input class="form-control input-md" name="ship-zip" required id="frmZipS" placeholder="10011" autocomplete="shipping postal-code"></div></div>
+
+  <div class="form-group"><label class="col-md-4 control-label" for="frmCountryS">Country</label>
+  <div class="col-md-4"><input class="form-control input-md" name="ship-country" required id="frmCountryS" placeholder="USA" autocomplete="shipping country"></div></div>
 
 </fieldset>
 
 <fieldset>
   <legend>Personal</legend>
-  <label for="maiden-name" class="fb-text-label"><dt>Mother's maiden name</dt></label><input type="text" class="form-control" name="maiden-name" id="maiden-name">
-  <label for="ssn" class="fb-number-label"><dt>SSN</dt></label><input type="text" class="form-control" name="ssn" id="ssn">
-  <label for="birthday" class="fb-date-label">Birthday</label><input type="date" class="form-control" name="birthday" id="birthday">
-  <label for="username" class="fb-text-label">Username</label><input type="text" class="form-control" name="username" id="username">
-  <label for="password" class="fb-text-label">Password</label><input type="password" class="form-control" name="password" id="password">
-  <label for="website" class="fb-text-label">Website</label><input type="text" class="form-control" name="website" id="website">
+  <div class="form-group"><label class="col-md-4 control-label" for="maiden-name" class="fb-text-label">Mother's maiden name</label><div class="col-md-4"><input type="text" class="form-control" name="maiden-name" id="maiden-name"></div></div>
 
-<label for="professions" class="fb-text-label">Profession</label>
+  <div class="form-group"><label class="col-md-4 control-label" for="ssn" class="fb-number-label">SSN</label><div class="col-md-4"><input type="text" class="form-control" name="ssn" id="ssn"></div></div>
+
+  <div class="form-group"><label class="col-md-4 control-label" for="birthday" class="fb-date-label">Birthday</label><div class="col-md-4"><input type="date" class="form-control" name="birthday" id="birthday"></div></div>
+
+  <div class="form-group"><label class="col-md-4 control-label" for="username" class="fb-text-label">Username</label><div class="col-md-4"><input type="text" class="form-control" name="username" id="username"></div></div>
+
+  <div class="form-group"><label class="col-md-4 control-label" for="password" class="fb-text-label">Password</label><div class="col-md-4"><input type="password" class="form-control" name="password" id="password"></div></div>
+
+  <div class="form-group"><label class="col-md-4 control-label" for="website" class="fb-text-label">Website</label><div class="col-md-4"><input type="text" class="form-control" name="website" id="website"></div></div>
+
+<div class="form-group"><label class="col-md-4 control-label" for="professions" class="fb-text-label">Profession</label>
+<div class="col-md-4">
  <input list="professions" name="profession">
   <datalist id="professions">
 	<option value="Teacher">
@@ -217,24 +240,29 @@
   <option value="Sales engineer">
   <option value="Employee relations manager">
   </datalist>
+</div></div>
 </fieldset>
-
 
   <fieldset>
 	<legend>Payment</legend>
-	<label for="frmNameCC">Name on card</label>
-	<input name="ccname" id="frmNameCC" required placeholder="Full Name" autocomplete="cc-name">
-	<label for="frmCCNum">Card Number</label>
-	<input name="cardnumber" id="frmCCNum" required autocomplete="cc-number">
-  <label for="frmCCNumLastFour">Card Number Last Four</label>
-	<input name="cardnumber_lastfour" id="frmCCNum_lastfour" required autocomplete="cc-number-lastfour">
-	<label for="frmCCCVC">CVC</label>
-	<input name="cvc" id="frmCCCVC" required autocomplete="cc-csc">
-	<label for="frmCCExp">Expiry</label>
-	<input name="cc-exp" id="frmCCExp" required placeholder="MM-YYYY" autocomplete="cc-exp">
+
+	<div class="form-group"><label class="col-md-4 control-label" for="frmNameCC">Name on card</label>
+	<div class="col-md-4"><input class="form-control input-md" name="ccname" id="frmNameCC" required placeholder="Full Name" autocomplete="cc-name"></div></div>
+
+	<div class="form-group"><label class="col-md-4 control-label" for="frmCCNum">Card Number</label>
+	<div class="col-md-4"><input class="form-control input-md" name="cardnumber" id="frmCCNum" required autocomplete="cc-number"></div></div>
+
+  <div class="form-group"><label class="col-md-4 control-label" for="frmCCNumLastFour">Card Number Last Four</label><div class="col-md-4"><input class="form-control input-md" name="cardnumber_lastfour" id="frmCCNum_lastfour" required autocomplete="cc-number-lastfour"></div></div>
+
+	<div class="form-group"><label class="col-md-4 control-label" for="frmCCCVC">CVC</label>
+	<div class="col-md-4"><input class="form-control input-md" name="cvc" id="frmCCCVC" required autocomplete="cc-csc"></div></div>
+
+	<div class="form-group"><label class="col-md-4 control-label" for="frmCCExp">Expiry</label>
+	<div class="col-md-4"><input class="form-control input-md" name="cc-exp" id="frmCCExp" required placeholder="MM-YYYY" autocomplete="cc-exp"></div></div>
   </fieldset>
 
 </form>
+</div>
 
 </body>
 </html>

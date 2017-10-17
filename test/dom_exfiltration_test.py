@@ -87,7 +87,8 @@ class TestDOMExfiltration(OpenWPMTest):
     def run_dom_exfiltration_test(self, test_type):
         manager_params, browser_params = self.get_config()
         browser_params[0]['http_instrument'] = True
-        browser_params[0]['headless'] = False
+        # browser_params[0]['record_js_errors'] = True
+        # browser_params[0]['headless'] = False
         manager = TaskManager.TaskManager(manager_params, browser_params)
         if test_type in ["yandex", "fullstory", "hotjar"]:
             # use localhost instead of localtest.me
@@ -100,7 +101,7 @@ class TestDOMExfiltration(OpenWPMTest):
         cs.get(sleep=3, timeout=60)
         cs.run_custom_function(fill_out_form)
         manager.execute_command_sequence(cs)
-        sleep(3)
+        sleep(5)
         manager.close()
         assert not db_utils.any_command_failed(manager_params['db'])
         return manager_params['db']
@@ -162,7 +163,7 @@ class TestDOMExfiltration(OpenWPMTest):
                         # print "ERROR decoding", e, "POST DATA\n", post_body_obj["wv-data"], "\n"
 
                     if elem_value in wv_decoded:
-                        print "Found form leak in base64 encoded data", elem_name, elem_value
+                        print "Found leak in base64 encoded data", bait_type, elem_name, elem_value
                         leak_found = True
 
             if leak_found:
