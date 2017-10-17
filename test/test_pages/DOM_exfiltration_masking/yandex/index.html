@@ -13,7 +13,7 @@
 	<div class="address">
 	<h3>Betty G. Forbes</h3>
 	<div class="adr">
-	797 White Oak Drive<br>Blue Springs, MO 64015 </div>
+	797 White Oak Drive<br>Blue Springs, MO 64015<br>United States of America</div>
 </div>
 
 <div class="extra">
@@ -88,6 +88,7 @@
 <dl class="dl-horizontal">
     <dt>MasterCard</dt>
     <dd>5221 2537 9417 5916</dd>
+    <dd>5221253794175916</dd>
 </dl>
 
 <dl class="dl-horizontal">
@@ -170,69 +171,70 @@
 </div>
 </div>
 
+<form method="post" id="usrForm">
+  <fieldset>
+	<legend>Contact Info</legend>
+	<label for="frmNameA">Name</label>
+	<input name="name" id="frmNameA" placeholder="Full name" required autocomplete="name">
+	<label for="frmEmailA">Email</label>
+	<input type="email" name="email" id="frmEmailA" placeholder="name@example.com" required autocomplete="email">
+	<label for="frmEmailC">Confirm Email</label>
+	<input type="email" name="emailC" id="frmEmailC" placeholder="name@example.com" required autocomplete="email">
+	<label for="frmPhoneNumA">Phone</label>
+	<input type="tel" name="phone" id="frmPhoneNumA" placeholder="+1-650-450-1212" required autocomplete="tel">
+
+</fieldset>
+<fieldset>
+  <legend>Shipping</legend>
+  <label for="frmAddressS">Address</label>
+  <input name="ship-address" required id="frmAddressS" placeholder="123 Any Street" autocomplete="shipping street-address">
+  <label for="frmCityS">City</label>
+  <input name="ship-city" required id="frmCityS" placeholder="New York" autocomplete="shipping address-level2">
+  <label for="frmStateS">State</label>
+  <input name="ship-state" required id="frmStateS" placeholder="NY" autocomplete="shipping address-level1">
+  <label for="frmZipS">Zip</label>
+  <input name="ship-zip" required id="frmZipS" placeholder="10011" autocomplete="shipping postal-code">
+  <label for="frmCountryS">Country</label>
+  <input name="ship-country" required id="frmCountryS" placeholder="USA" autocomplete="shipping country">
+
+</fieldset>
+
+<fieldset>
+  <legend>Personal</legend>
+  <label for="maiden-name" class="fb-text-label"><dt>Mother's maiden name</dt></label><input type="text" class="form-control" name="maiden-name" id="maiden-name">
+  <label for="ssn" class="fb-number-label"><dt>SSN</dt></label><input type="text" class="form-control" name="ssn" id="ssn">
+  <label for="birthday" class="fb-date-label">Birthday</label><input type="date" class="form-control" name="birthday" id="birthday">
+  <label for="username" class="fb-text-label">Username</label><input type="text" class="form-control" name="username" id="username">
+  <label for="password" class="fb-text-label">Password</label><input type="password" class="form-control" name="password" id="password">
+  <label for="website" class="fb-text-label">Website</label><input type="text" class="form-control" name="website" id="website">
+
+<label for="professions" class="fb-text-label">Profession</label>
+ <input list="professions" name="profession">
+  <datalist id="professions">
+	<option value="Teacher">
+	<option value="Student">
+	<option value="Driver">
+  <option value="Sales engineer">
+  <option value="Employee relations manager">
+  </datalist>
+</fieldset>
 
 
-  <form method="post" id="usrForm">
-      <fieldset>
-        <legend>Contact Info</legend>
-        <label for="frmNameA">Name</label>
-        <input name="name" id="frmNameA" placeholder="Full name" required autocomplete="name">
-        <label for="frmEmailA">Email</label>
-        <input type="email" name="email" id="frmEmailA" placeholder="name@example.com" required autocomplete="email">
-        <label for="frmEmailC">Confirm Email</label>
-        <input type="email" name="emailC" id="frmEmailC" placeholder="name@example.com" required autocomplete="email">
-        <label for="frmPhoneNumA">Phone</label>
-        <input type="tel" name="phone" id="frmPhoneNumA" placeholder="+1-650-450-1212" required autocomplete="tel">
+  <fieldset>
+	<legend>Payment</legend>
+	<label for="frmNameCC">Name on card</label>
+	<input name="ccname" id="frmNameCC" required placeholder="Full Name" autocomplete="cc-name">
+	<label for="frmCCNum">Card Number</label>
+	<input name="cardnumber" id="frmCCNum" required autocomplete="cc-number">
+  <label for="frmCCNumLastFour">Card Number Last Four</label>
+	<input name="cardnumber_lastfour" id="frmCCNum_lastfour" required autocomplete="cc-number-lastfour">
+	<label for="frmCCCVC">CVC</label>
+	<input name="cvc" id="frmCCCVC" required autocomplete="cc-csc">
+	<label for="frmCCExp">Expiry</label>
+	<input name="cc-exp" id="frmCCExp" required placeholder="MM-YYYY" autocomplete="cc-exp">
+  </fieldset>
 
-        <datalist id="chocType">
-          <option value="white">
-            <option value="milk">
-              <option value="dark"></datalist>
-            </fieldset>
-            <fieldset>
-              <legend>Shipping</legend>
-              <label for="frmAddressS">Address</label>
-              <input name="ship-address" required id="frmAddressS" placeholder="123 Any Street" autocomplete="shipping street-address">
-              <label for="frmCityS">City</label>
-              <input name="ship-city" required id="frmCityS" placeholder="New York" autocomplete="shipping address-level2">
-              <label for="frmStateS">State</label>
-              <input name="ship-state" required id="frmStateS" placeholder="NY" autocomplete="shipping address-level1">
-              <label for="frmZipS">Zip</label>
-              <input name="ship-zip" required id="frmZipS" placeholder="10011" autocomplete="shipping postal-code">
-              <label for="frmCountryS">Country</label>
-              <input name="ship-country" required id="frmCountryS" placeholder="USA" autocomplete="shipping country">
+</form>
 
-              <label>
-                <input type="checkbox" name="billAndShip" id="cbBillAndShip">
-                <br>Bill to this address.</label>
-            </fieldset>
-
-            <fieldset>
-              <legend>Personal</legend>
-              <label for="maiden-name" class="fb-text-label"><dt>Mother's maiden name</dt></label><input type="text" class="form-control" name="maiden-name" id="maiden-name">
-              <label for="ssn" class="fb-number-label"><dt>SSN</dt></label><input type="text" class="form-control" name="ssn" id="ssn">
-              <label for="birthday" class="fb-date-label">Birthday</label><input type="date" class="form-control" name="birthday" id="birthday">
-              <label for="username" class="fb-text-label">Username</label><input type="text" class="form-control" name="username" id="username">
-              <label for="password" class="fb-text-label">Password</label><input type="password" class="form-control" name="password" id="password">
-              <label for="website" class="fb-text-label">Website</label><input type="text" class="form-control" name="website" id="website"></div>
-              </fieldset>
-
-            <div id="paymentSec">
-              <fieldset>
-                <legend>Payment</legend>
-                <label for="frmNameCC">Name on card</label>
-                <input name="ccname" id="frmNameCC" required placeholder="Full Name" autocomplete="cc-name">
-                <label for="frmCCNum">Card Number</label>
-                <input name="cardnumber" id="frmCCNum" required autocomplete="cc-number">
-                <label for="frmCCCVC">CVC</label>
-                <input name="cvc" id="frmCCCVC" required autocomplete="cc-csc">
-                <label for="frmCCExp">Expiry</label>
-                <input name="cc-exp" id="frmCCExp" required placeholder="MM-YYYY" autocomplete="cc-exp">
-                <div>
-                  <button class="btn" id="butCheckout">Check Out</button>
-                </div>
-              </fieldset>
-            </div>
-          </form>
-
-</body></html>
+</body>
+</html>

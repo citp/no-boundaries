@@ -51,7 +51,7 @@ FORM_DATA = {
     "ccname": "Jeff J. Ryan",
     "cardnumber": "4539 2182 6707 4391",
     "cardnumber_lastfour": "4391",
-    "cvc": "520",
+    "cvc": "521",
     "cc-exp": "6/2021"
     }
 
@@ -88,7 +88,10 @@ class TestDOMExfiltration(OpenWPMTest):
         browser_params[0]['record_js_errors'] = True
         browser_params[0]['http_instrument'] = True
         manager = TaskManager.TaskManager(manager_params, browser_params)
-        test_url = self.BASE_DOMAIN + 'index.html?test_type=%s' % test_type
+        if test_type in ["yandex", "fullstory", "hotjar"]:
+            test_url = self.BASE_DOMAIN + test_type + "/"
+        else:
+            test_url = self.BASE_DOMAIN + 'index.html?test_type=%s' % test_type
         cs = CommandSequence.CommandSequence(test_url, blocking=True)
         cs.get(sleep=3, timeout=60)
         cs.run_custom_function(fill_out_form)
@@ -99,48 +102,35 @@ class TestDOMExfiltration(OpenWPMTest):
         return manager_params['db']
 
     def test_userreplay(self):
-        # don't search for leaks in these resources
-        ignored_urls = [
-            "%sindex.html?test_type=userreplay" % self.BASE_DOMAIN,
-            "%s/shared/utils.js" % utilities.BASE_TEST_URL,
-            "%suserreplay/userreplay.js" % self.BASE_DOMAIN,
-            "http://localtest.me:8000/favicon.ico"]
         db = self.run_dom_exfiltration_test("userreplay")
-        self.check_leaks(db, ignored_urls)
+        self.check_leaks(db)
 
     def test_sessioncam(self):
-        # don't search for leaks in these resources
-        ignored_urls = [
-            "%sindex.html?test_type=sessioncam" % self.BASE_DOMAIN,
-            "%s/shared/utils.js" % utilities.BASE_TEST_URL,
-            "%ssessioncam/sessioncam.recorder.js" % self.BASE_DOMAIN,
-            "%ssessioncam/config.aspx" % self.BASE_DOMAIN,
-            "http://localtest.me:8000/favicon.ico"]
-
         db = self.run_dom_exfiltration_test("sessioncam")
-        self.check_leaks(db, ignored_urls)
+        self.check_leaks(db)
 
     def test_skimlinks(self):
-        ignored_urls = [
-            "%sindex.html?test_type=skimlinks" % self.BASE_DOMAIN,
-            "%s/shared/utils.js" % utilities.BASE_TEST_URL,
-            "%sskimlinks/skimlinks2.js" % self.BASE_DOMAIN,
-            "%sskimlinks/px.gif" % self.BASE_DOMAIN,
-            "%sapi_callback=skimlinksApplyHandlers" % self.BASE_DOMAIN,
-            "http://localtest.me:8000/favicon.ico",
-            "http://localtest.me/api/?callback=instantDataCallback"]
-
         db = self.run_dom_exfiltration_test("skimlinks")
-        self.check_leaks(db, ignored_urls)
+        self.check_leaks(db)
 
-    def check_leaks(self, db, ignored_urls):
+    def test_hotjar(self):
+        db = self.run_dom_exfiltration_test("hotjar")
+        self.check_leaks(db)
+
+    def test_fullstory(self):
+        db = self.run_dom_exfiltration_test("fullstory")
+        self.check_leaks(db)
+
+    def test_yandex(self):
+        db = self.run_dom_exfiltration_test("yandex")
+        self.check_leaks(db)
+
+    def check_leaks(self, db):
         query = ("SELECT url, method, post_body FROM http_requests")
         checked_for_leaks = False  # to make sure we checked the leaks
         observed_form_leaks = set()
         observed_display_leaks = set()
         for url, method, post_body in db_utils.query_db(db, query):
-            if url in ignored_urls:
-                continue
             # print url, method, post_body
             checked_for_leaks = True
             # we might need to check for encodings and hashes
@@ -162,7 +152,7 @@ class TestDOMExfiltration(OpenWPMTest):
             pytest.fail("No requests sent by the tested script")
 
         if observed_form_leaks == set(FORM_DATA.keys()):
-            print "Form data is sent without masking"
+            print "Form data is sent as masked"
         else:
             print "Form data is sent with masking or not sent at all"
 

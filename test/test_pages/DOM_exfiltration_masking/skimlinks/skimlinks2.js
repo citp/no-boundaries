@@ -1609,7 +1609,7 @@
                 typeof a ? b : a
         }),
         Ad = m("skimlinks_first_party_na", !1),
-        Bd = m("skimlinks_cookie_sync_optout", false),
+        Bd = m("skimlinks_cookie_sync_optout", true),
         Gb = !m("noimpressions", !1),
         Wc = m("skimlinks_replace_timeout", 300, function(a, b) {
             var c = parseFloat(a);
@@ -2744,7 +2744,7 @@
         },
         cc = !1;
     z.on("skim_js_init", function() {
-        h.disabled || (h.branded_merchant = m("skimwords_branded_merchant", !1), h.branded_merchant_url = m("skimwords_branded_merchant_url", !1), h.debug = m("skimwords_debug", 0), h.diy = m("skimwords_diy", !1), h.diy_filter = m("skimwords_diy_filter", !1), h.force_country = m("skimwords_force_country", !1), h.force_domain_check = m("skimwords_force_domain_check", !1), h.force_tree = m("skimwords_force_tree", !1), h.hover_name = m("skimwords_hover_name", "dark"), h.link_all = m("skimwords_link_all", !1), h.lite = m("skimwords_lite", !1), h.maxproducts = m("skimlinks_maxproducts", 3), h.merchant_excludes = m("skimwords_merchant_excludes", !1), h.merchant_includes = m("skimwords_merchant_includes", !1), h.no_limit = m("skimwords_no_limit", !1), h.noVisual = m("skimwords_no_visual", !1), h.prio_threshold = m("skimwords_prio_threshold", 0), h.standard = m("skimwords_standard", !1), h.whitelist_filter = m("skimwords_whitelist_filter", !1), h.x_min_visual_distance = Fd, h.y_min_visual_distance = Gd, h.branded_merchant && (h.branded_merchant = parseInt(h.branded_merchant)), x(h.post_init_hook) && h.post_init_hook(), z.on("beacon_callback_post_page_load", hd), z.on("dom_changed", function() {
+        h.disabled || (h.branded_merchant = m("skimwords_branded_merchant", !1), h.branded_merchant_url = m("skimwords_branded_merchant_url", !1), h.debug = m("skimwords_debug", 0), h.diy = m("skimwords_diy", !1), h.diy_filter = m("skimwords_diy_filter", !1), h.force_country = m("skimwords_force_country", !1), h.force_domain_check = m("skimwords_force_domain_check", !1), h.force_tree = m("skimwords_force_tree", !1), h.hover_name = m("skimwords_hover_name", "neutral"), h.link_all = m("skimwords_link_all", !1), h.lite = m("skimwords_lite", !1), h.maxproducts = m("skimlinks_maxproducts", 3), h.merchant_excludes = m("skimwords_merchant_excludes", !1), h.merchant_includes = m("skimwords_merchant_includes", !1), h.no_limit = m("skimwords_no_limit", !1), h.noVisual = m("skimwords_no_visual", !1), h.prio_threshold = m("skimwords_prio_threshold", 0), h.standard = m("skimwords_standard", !1), h.whitelist_filter = m("skimwords_whitelist_filter", !1), h.x_min_visual_distance = Fd, h.y_min_visual_distance = Gd, h.branded_merchant && (h.branded_merchant = parseInt(h.branded_merchant)), x(h.post_init_hook) && h.post_init_hook(), z.on("beacon_callback_post_page_load", hd), z.on("dom_changed", function() {
             return Ra({}, !0)
         }))
     });
