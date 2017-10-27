@@ -5,23 +5,6 @@ from ..automation.utilities import db_utils
 from ..automation.Commands.utils import form_utils
 import utilities as util
 
-DOM_EMAIL = 'jeromecisco@hotmail.com'
-DOM_NAME = 'Jerome Cisco'
-DOM_LOGIN = form_utils.DOM_LOGIN_ELEMS + ['submit']
-DOM_CHECKOUT = form_utils.DOM_CHECKOUT_ELEMS + ['submit']
-
-FILL_EMAIL = form_utils.FORM_FILL_EMAIL
-FILL_PASSWORD = form_utils.FORM_FILL_PASSWORD
-
-COOKIES = {
-    u'xxx-name': u'ChiefWiggins',
-    u'xxx-email': u'chief_wiggins@hotmail.com',
-    u'xxx-uid': u'36732d0b-a127-4903-83a9-482cbcb56aef'
-}
-
-IFRAME_URL = u'https://rawgit.com/englehardt/e05f7b95f4713f94a70a9c0c55bad067/raw/160a3582fafece3e3287085f9d601e5e2b649a41/blank.html'  # noqa
-TOP_LEVEL_URL = u'http://localtest.me:8000/test_pages/simple_with_iframe.html'
-
 
 class TestIdentitySpoofing(OpenWPMTest):
     NUM_BROWSERS = 1
@@ -30,7 +13,10 @@ class TestIdentitySpoofing(OpenWPMTest):
         manager_params, browser_params = self.get_test_config(data_dir)
         browser_params[0]['js_instrument'] = True
         browser_params[0]['http_instrument'] = True
+        browser_params[0]['headless'] = False
         browser_params[0]['spoof_identity']['enabled'] = True
+        browser_params[0]['spoof_identity']['dom_chunk'] = True
+
         return manager_params, browser_params
 
     def test_dom_and_storage_spoofing(self):
@@ -40,11 +26,6 @@ class TestIdentitySpoofing(OpenWPMTest):
         correct elements into the DOM (and iframes). It also verifies that
         the honeypot form filling function works as expected."""
         manager_params, browser_params = self.get_config()
-        browser_params[0]['spoof_identity']['dom_identity'] = True
-        browser_params[0]['spoof_identity']['dom_checkout'] = True
-        browser_params[0]['spoof_identity']['dom_login'] = True
-        browser_params[0]['spoof_identity']['dom_chunk'] = True
-        browser_params[0]['spoof_identity']['storage'] = True
         manager = TaskManager.TaskManager(manager_params, browser_params)
         test_url = util.BASE_TEST_URL + '/simple_with_iframe.html'
 
@@ -94,64 +75,33 @@ class TestIdentitySpoofing(OpenWPMTest):
 
             def get_chunk():
                 try:
-                    el = driver.find_element_by_id("injected-for-research-purposes-contact-at-webtap.princeton.edu")
+                    chunk_id = "injected-for-research-purposes-contact-at-webtap.princeton.edu"  # noqa
+                    el = driver.find_element_by_id(chunk_id)
                     return el.text
                 except NoSuchElementException:
                     return ""
 
             # Check main frame, should have both DOM and cookies
-            chunk = get_chunk()
-            assert len(chunk) == 500000
-            assert get_email() == DOM_EMAIL
-            assert get_login() == DOM_LOGIN
-            assert get_checkout() == DOM_CHECKOUT
-            assert DOM_NAME in get_name()
-            assert get_cookies() == COOKIES
+            assert len(get_chunk()) == 500000
+            assert get_email() == ''
+            assert get_login() == []
+            assert get_checkout() == []
+            assert get_name() == ''
+            assert get_cookies() == {}
 
-            # Check iframe, should have DOM but NOT cookies
+            # Check iframe, shouldn't have anything
             iframe = driver.find_element_by_tag_name('iframe')
             driver.switch_to_frame(iframe)
-            assert get_email() == DOM_EMAIL
-            assert get_login() == DOM_LOGIN
-            assert get_checkout() == DOM_CHECKOUT
-            assert DOM_NAME in get_name()
-            assert get_cookies() == dict()
-
-        # Verify that forms have been filled
-        def check_form_filling(**kwargs):
-            driver = kwargs['driver']
-
-            def verify_spoofed_login_elements():
-                form = driver.find_element_by_id('dom-login-credentials')
-                elem = form.find_element_by_name('username')
-                assert elem.get_attribute('value') == FILL_EMAIL
-
-                elem = form.find_element_by_name('password')
-                assert elem.get_attribute('value') == FILL_PASSWORD
-
-            def verify_spoofed_checkout_elements():
-                form = driver.find_element_by_id('dom-checkout-payment')
-                for elem_name in form_utils.DOM_CHECKOUT_ELEMS:
-                    elem = form.find_element_by_name(elem_name)
-                    assert (elem.get_attribute('value') ==
-                            form_utils.FORM_FILL_CHECKOUT[elem_name])
-
-            # Check main frame and iframe
-            # All spoofed elements should be present and filled in both
-            driver.switch_to_default_content()
-            verify_spoofed_login_elements()
-            verify_spoofed_checkout_elements()
-            iframe = driver.find_element_by_tag_name('iframe')
-            driver.switch_to_frame(iframe)
-            verify_spoofed_login_elements()
-            verify_spoofed_checkout_elements()
+            assert len(get_chunk()) == 0
+            assert get_email() == ''
+            assert get_login() == []
+            assert get_checkout() == []
+            assert get_name() == ''
+            assert get_cookies() == {}
 
         cs = CommandSequence.CommandSequence(test_url, blocking=True)
         cs.get(sleep=2, timeout=60)
         cs.run_custom_function(check_dom_and_storage)
-        cs.run_custom_function(form_utils.fill_spoofed_elements_and_submit,
-                               timeout=60)
-        cs.run_custom_function(check_form_filling)
         manager.execute_command_sequence(cs)
         manager.close()
         assert not db_utils.any_command_failed(manager_params['db'])
