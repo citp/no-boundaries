@@ -62,6 +62,10 @@ def fill_out_form(**kwargs):
     driver = kwargs['driver']
     form = driver.find_element_by_id('usrForm')
     for elem_name, elem_value in FORM_DATA.iteritems():
+        # don't insert last four
+        if elem_name == "cardnumber_lastfour":
+            continue
+
         # print elem_name, elem_value
         elem = form.find_element_by_name(elem_name)
         try:
