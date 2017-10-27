@@ -13,7 +13,6 @@ class TestIdentitySpoofing(OpenWPMTest):
         manager_params, browser_params = self.get_test_config(data_dir)
         browser_params[0]['js_instrument'] = True
         browser_params[0]['http_instrument'] = True
-        browser_params[0]['headless'] = False
         browser_params[0]['spoof_identity']['enabled'] = True
         browser_params[0]['spoof_identity']['dom_chunk'] = True
 
