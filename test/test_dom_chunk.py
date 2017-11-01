@@ -6,8 +6,28 @@ from ..automation.Commands.utils import form_utils
 import utilities as util
 
 
+SESSION_REPLAY_TEST_PAGE = '/session_replay.html'
+SESSION_REPLAY_TEST_PAGE = util.BASE_TEST_URL + SESSION_REPLAY_TEST_PAGE
+
+EXPECTED_CALLS = [
+    (SESSION_REPLAY_TEST_PAGE, "document.documentElement.innerHTML", "get"),
+    (SESSION_REPLAY_TEST_PAGE, "document.documentElement.outerHTML", "get"),
+    (SESSION_REPLAY_TEST_PAGE, "document.documentElement.innerText", "get"),
+    (SESSION_REPLAY_TEST_PAGE, "document.documentElement.textContent", "get"),
+    (SESSION_REPLAY_TEST_PAGE, "HTMLBodyElement.innerHTML", "get"),
+    (SESSION_REPLAY_TEST_PAGE, "HTMLBodyElement.outerHTML", "get"),
+    (SESSION_REPLAY_TEST_PAGE, "HTMLBodyElement.innerText", "get"),
+    (SESSION_REPLAY_TEST_PAGE, "HTMLBodyElement.textContent", "get"),
+    (SESSION_REPLAY_TEST_PAGE, "document.documentElement.innerHTML", "get"),
+    (SESSION_REPLAY_TEST_PAGE, "document.documentElement.outerHTML", "get"),
+    (SESSION_REPLAY_TEST_PAGE, "document.documentElement.innerText", "get"),
+    (SESSION_REPLAY_TEST_PAGE, "document.documentElement.textContent", "get")
+    ]
+
+
 class TestIdentitySpoofing(OpenWPMTest):
     NUM_BROWSERS = 1
+    BASE_DOMAIN = util.BASE_TEST_URL + '/DOM_exfiltration_masking/'
 
     def get_config(self, data_dir=""):
         manager_params, browser_params = self.get_test_config(data_dir)
@@ -17,6 +37,18 @@ class TestIdentitySpoofing(OpenWPMTest):
         browser_params[0]['spoof_identity']['dom_chunk'] = True
 
         return manager_params, browser_params
+
+    def test_capture_dom(self):
+        """ Ensure instrumentObject logs all property gets, sets, and calls """
+        db = self.visit(SESSION_REPLAY_TEST_PAGE)
+        rows = db_utils.get_javascript_entries(db)
+
+        # Check calls of non-recursive instrumentation
+        observed_calls = []
+        for script_url, symbol, operation, _, _ in rows:
+            # print script_url, symbol, operation
+            observed_calls.append((script_url, symbol, operation))
+        assert observed_calls == EXPECTED_CALLS
 
     def test_dom_and_storage_spoofing(self):
         """Verify that dom and storage spoofing functionality

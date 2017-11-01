@@ -968,6 +968,28 @@ function getPageScript() {
       }, false);
     }
 
+    // Instrument page source reads innerHTML, outerHTML
+    var injectDomChunk = document.currentScript.
+      getAttribute('data-domChunk') === 'true';
+
+    if (injectDomChunk) {
+      console_log("Instrumenting innerHTML, outerHTML for DOM exfiltration experiment");
+
+      var listenerLogSettings = {
+              logFunctionsAsStrings: true,
+              logCallStack: true,
+              propertiesToInstrument: [ "innerHTML", "outerHTML", "innerText", "textContent" ]
+        };
+      instrumentObject(window.HTMLBodyElement.prototype, "HTMLBodyElement",
+          listenerLogSettings);
+      //instrumentObject(window.HTMLElement.prototype, "HTMLElement",
+       //   listenerLogSettings);
+      instrumentObject(window.document.documentElement, "document.documentElement",
+          listenerLogSettings);
+      // TODO: Any other element we need to instrument?
+    }
+
+
     // Enable logging
     inLog = false;
 
@@ -1016,5 +1038,6 @@ insertScript(getPageScript(), {
   fakeAutofill: self.options.fakeAutofill,
   autofillEmail: self.options.autofillEmail,
   autofillPassword: self.options.autofillPassword,
+  domChunk: self.options.domChunk,
   instrument_fbasyncinit: self.options.instrument_fbasyncinit
 });
