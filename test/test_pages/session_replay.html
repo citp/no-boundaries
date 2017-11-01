@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test page for DOM modification instrumentation</title>
+    <script>
+      function readDom() {
+        // Read page source/text using documentElement
+        var doc_el = document.documentElement;
+        var foo = doc_el.innerHTML;
+        foo = doc_el.outerHTML;
+        foo = doc_el.innerText;
+        foo = doc_el.textContent;
+		// Read page source/text using the body element
+        body_el = document.getElementsByTagName("body")[0];
+        foo = body_el.innerHTML;
+        foo = body_el.outerHTML;
+        foo = body_el.innerText;
+        foo = body_el.textContent;
+        // Read page source/text using the html element (HTMLElement)
+        html_el = document.getElementsByTagName("html")[0];
+        foo = html_el.innerHTML;
+        foo = html_el.outerHTML;
+        foo = html_el.innerText;
+        foo = html_el.textContent;
+        
+      }
+    </script>
+  </head>
+  <body onload='readDom();'>
+    <h1> Test page for scripts capturing the DOM</h1>
+    <p> The script on this test page captures the HTML source and text content of the page.</p>
+  </body>
+</html>
