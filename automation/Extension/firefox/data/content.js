@@ -973,8 +973,6 @@ function getPageScript() {
       getAttribute('data-domChunk') === 'true';
 
     if (injectDomChunk) {
-      console_log("Instrumenting innerHTML, outerHTML for DOM exfiltration experiment");
-
       var listenerLogSettings = {
               logFunctionsAsStrings: true,
               logCallStack: true,
@@ -982,11 +980,9 @@ function getPageScript() {
         };
       instrumentObject(window.HTMLBodyElement.prototype, "HTMLBodyElement",
           listenerLogSettings);
-      //instrumentObject(window.HTMLElement.prototype, "HTMLElement",
-       //   listenerLogSettings);
       instrumentObject(window.document.documentElement, "document.documentElement",
           listenerLogSettings);
-      // TODO: Any other element we need to instrument?
+      console_log("Instrumenting DOM source capturing.");
     }
 
 
