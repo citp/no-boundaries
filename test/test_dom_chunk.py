@@ -25,9 +25,8 @@ EXPECTED_CALLS = [
     ]
 
 
-class TestIdentitySpoofing(OpenWPMTest):
+class TestDOMChunkInjection(OpenWPMTest):
     NUM_BROWSERS = 1
-    BASE_DOMAIN = util.BASE_TEST_URL + '/DOM_exfiltration_masking/'
 
     def get_config(self, data_dir=""):
         manager_params, browser_params = self.get_test_config(data_dir)
@@ -39,28 +38,25 @@ class TestIdentitySpoofing(OpenWPMTest):
         return manager_params, browser_params
 
     def test_capture_dom(self):
-        """ Ensure instrumentObject logs all property gets, sets, and calls """
+        """ Ensure we instrument the DOM capturing calls."""
         db = self.visit(SESSION_REPLAY_TEST_PAGE)
         rows = db_utils.get_javascript_entries(db)
 
-        # Check calls of non-recursive instrumentation
         observed_calls = []
         for script_url, symbol, operation, _, _ in rows:
-            # print script_url, symbol, operation
             observed_calls.append((script_url, symbol, operation))
         assert observed_calls == EXPECTED_CALLS
 
-    def test_dom_and_storage_spoofing(self):
-        """Verify that dom and storage spoofing functionality
+    def test_dom_injection(self):
+        """Verify that dom injection functionality
 
-        This verifies that DOM and Storage spoofing functions insert the
-        correct elements into the DOM (and iframes). It also verifies that
-        the honeypot form filling function works as expected."""
+        This verifies that we inject the DOM chunk into the main page only,
+        not into the iframes."""
         manager_params, browser_params = self.get_config()
         manager = TaskManager.TaskManager(manager_params, browser_params)
         test_url = util.BASE_TEST_URL + '/simple_with_iframe.html'
 
-        # Verify that DOM contains identity
+        # Verify that DOM contains the injected chunk but nothing else
         def check_dom_and_storage(**kwargs):
             driver = kwargs['driver']
 
