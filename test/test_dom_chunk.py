@@ -109,7 +109,7 @@ class TestDOMChunkInjection(OpenWPMTest):
                     return ""
 
             # Check main frame, should have both DOM and cookies
-            assert len(get_chunk()) == 500000
+            assert len(get_chunk()) == 200000
             assert get_email() == ''
             assert get_login() == []
             assert get_checkout() == []
