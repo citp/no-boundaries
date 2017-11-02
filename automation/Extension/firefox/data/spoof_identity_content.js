@@ -597,7 +597,7 @@ function getPageScript() {
         return;
       }
 
-      const CHUNKSIZE = 500000;
+      const CHUNKSIZE = 200000;
       var div = document.createElement('div');
       div.innerHTML = "<p id='injected-for-research-purposes-contact-at-webtap.princeton.edu'>" + randomString(CHUNKSIZE) + "</p>";
       document.body.appendChild(div);
