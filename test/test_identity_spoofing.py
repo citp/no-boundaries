@@ -4,6 +4,7 @@ from ..automation import TaskManager, CommandSequence
 from ..automation.utilities import db_utils
 from ..automation.Commands.utils import form_utils
 import utilities as util
+from shared import DOM_CHUNK_SIZE
 
 DOM_EMAIL = 'jeromecisco@hotmail.com'
 DOM_NAME = 'Jerome Cisco'
@@ -101,7 +102,7 @@ class TestIdentitySpoofing(OpenWPMTest):
 
             # Check main frame, should have both DOM and cookies
             chunk = get_chunk()
-            assert len(chunk) == 500000
+            assert len(chunk) == DOM_CHUNK_SIZE
             assert get_email() == DOM_EMAIL
             assert get_login() == DOM_LOGIN
             assert get_checkout() == DOM_CHECKOUT

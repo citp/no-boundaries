@@ -4,6 +4,7 @@ from ..automation import TaskManager, CommandSequence
 from ..automation.utilities import db_utils
 from ..automation.Commands.utils import form_utils
 import utilities as util
+from shared import DOM_CHUNK_SIZE
 
 
 SESSION_REPLAY_TEST_PAGE = '/session_replay.html'
@@ -109,7 +110,7 @@ class TestDOMChunkInjection(OpenWPMTest):
                     return ""
 
             # Check main frame, should have both DOM and cookies
-            assert len(get_chunk()) == 200000
+            assert len(get_chunk()) == DOM_CHUNK_SIZE
             assert get_email() == ''
             assert get_login() == []
             assert get_checkout() == []
