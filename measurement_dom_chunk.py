@@ -1,7 +1,6 @@
 from automation import TaskManager, CommandSequence
 from automation.Errors import CommandExecutionError
 import crawl_utils
-import json
 import time
 import os
 
@@ -19,9 +18,11 @@ manager_params['data_directory'] = '~/' + prefix
 manager_params['log_directory'] = '~/' + prefix
 
 # Read the site list
+sites = list()
 with open(os.path.join(os.path.dirname(__file__),
-                       'data', 'sites_to_crawl.json')) as f:
-    sites = json.load(f)
+                       'data', 'sites_to_recrawl_DOM_chunk.txt')) as f:
+    for line in f:
+        sites.append(tuple(line.strip().split(',', 2)))
 TOTAL_NUM_SITES = len(sites)
 
 for i in xrange(NUM_BROWSERS):
@@ -56,7 +57,7 @@ for i in range(start_index, end_index):
     if current_index >= TOTAL_NUM_SITES:
         break
     try:
-        url, rank, first_party = sites[i]
+        first_party, rank, url = sites[i]
         cs = CommandSequence.CommandSequence(
             url,
             site_rank=rank,

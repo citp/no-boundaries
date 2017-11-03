@@ -19,6 +19,7 @@ INSTANCE_TYPES = {
     'facebook_login': 'c4.4xlarge',
     'form_filling': 'c3.2xlarge',
     'passive_identity': 'c4.2xlarge',
+    'dom_chunk': 'c4.2xlarge',
     'dom_login_and_checkout': 'c4.2xlarge',
     'dump_source': 'c3.2xlarge'
 }
@@ -28,6 +29,7 @@ VOLUME_SIZE = {
     'facebook_login': 1500,
     'form_filling': 700,
     'passive_identity': 700,
+    'dom_chunk': 700,
     'dom_login_and_checkout': 1500,
     'dump_source': 1000
 }
