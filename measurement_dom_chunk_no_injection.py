@@ -22,6 +22,8 @@ sites = list()
 with open(os.path.join(os.path.dirname(__file__),
                        'data', 'sites_to_recrawl_DOM_chunk.txt')) as f:
     for line in f:
+        if line.strip() == '':
+            continue
         sites.append(tuple(line.strip().split(',', 2)))
 TOTAL_NUM_SITES = len(sites)
 
@@ -57,7 +59,10 @@ for i in range(start_index, end_index):
     if current_index >= TOTAL_NUM_SITES:
         break
     try:
-        first_party, rank, url = sites[i]
+        try:
+            first_party, rank, url = sites[i]
+        except ValueError:
+            continue
         cs = CommandSequence.CommandSequence(
             url,
             site_rank=rank,
