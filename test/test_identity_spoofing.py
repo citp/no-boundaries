@@ -4,6 +4,7 @@ from ..automation import TaskManager, CommandSequence
 from ..automation.utilities import db_utils
 from ..automation.Commands.utils import form_utils
 import utilities as util
+from shared import DOM_CHUNK_SIZE
 
 DOM_EMAIL = 'jeromecisco@hotmail.com'
 DOM_NAME = 'Jerome Cisco'
@@ -43,6 +44,7 @@ class TestIdentitySpoofing(OpenWPMTest):
         browser_params[0]['spoof_identity']['dom_identity'] = True
         browser_params[0]['spoof_identity']['dom_checkout'] = True
         browser_params[0]['spoof_identity']['dom_login'] = True
+        browser_params[0]['spoof_identity']['dom_chunk'] = True
         browser_params[0]['spoof_identity']['storage'] = True
         manager = TaskManager.TaskManager(manager_params, browser_params)
         test_url = util.BASE_TEST_URL + '/simple_with_iframe.html'
@@ -91,7 +93,16 @@ class TestIdentitySpoofing(OpenWPMTest):
                     cookies[cookie['name']] = cookie['value']
                 return cookies
 
+            def get_chunk():
+                try:
+                    el = driver.find_element_by_id("injected-for-research-purposes-contact-at-webtap.princeton.edu")
+                    return el.text
+                except NoSuchElementException:
+                    return ""
+
             # Check main frame, should have both DOM and cookies
+            chunk = get_chunk()
+            assert len(chunk) == DOM_CHUNK_SIZE
             assert get_email() == DOM_EMAIL
             assert get_login() == DOM_LOGIN
             assert get_checkout() == DOM_CHECKOUT

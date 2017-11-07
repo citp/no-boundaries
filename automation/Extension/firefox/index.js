@@ -37,6 +37,7 @@ exports.main = function(options, callbacks) {
         'google': true,
         'dom_identity': true,
         'dom_login': false,
+        'dom_chunk': false,
         'dom_checkout': false,
         'storage': true
       },
@@ -87,7 +88,7 @@ exports.main = function(options, callbacks) {
     loggingDB.logDebug("Javascript instrumentation enabled");
     jsInstrument.run(config['crawl_id'], config['testing'],
                      config['fake_autofill'], AUTOFILL_EMAIL,
-                     AUTOFILL_PASSWORD, config['instrument_fbasyncinit']);
+                     AUTOFILL_PASSWORD, config['instrument_fbasyncinit'], config['spoof_identity']['dom_chunk']);
   }
   if (config['cp_instrument']) {
     loggingDB.logDebug("Content Policy instrumentation enabled");

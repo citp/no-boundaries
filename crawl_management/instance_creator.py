@@ -9,6 +9,8 @@ CRAWL_SCRIPTS = {
     'facebook_login': 'measurement_facebook_login.py',
     'form_filling': 'measurement_form_filling.py',
     'passive_identity': 'measurement_passive_identity.py',
+    'dom_chunk_no_injection': 'measurement_dom_chunk_no_injection.py',
+    'dom_chunk': 'measurement_dom_chunk.py',
     'dom_login_and_checkout': 'measurement_dom_login_and_checkout.py',
     'dump_source': 'measurement_dump_source.py'
 }
@@ -18,6 +20,8 @@ INSTANCE_TYPES = {
     'facebook_login': 'c4.4xlarge',
     'form_filling': 'c3.2xlarge',
     'passive_identity': 'c4.2xlarge',
+    'dom_chunk_no_injection': 'c4.2xlarge',
+    'dom_chunk': 'c4.2xlarge',
     'dom_login_and_checkout': 'c4.2xlarge',
     'dump_source': 'c3.2xlarge'
 }
@@ -27,6 +31,8 @@ VOLUME_SIZE = {
     'facebook_login': 1500,
     'form_filling': 700,
     'passive_identity': 700,
+    'dom_chunk_no_injection': 700,
+    'dom_chunk': 700,
     'dom_login_and_checkout': 1500,
     'dump_source': 1000
 }
