@@ -553,6 +553,17 @@ function getPageScript() {
     }
 
     /*
+     * Taken from https://stackoverflow.com/a/10727155
+     */
+    function randomString(length) {
+      var chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      var result = '';
+      for (var i = length; i > 0; --i)
+        result += chars[Math.floor(Math.random() * chars.length)];
+      return result;
+    }
+
+    /*
      * Spoof identity in the DOM
      */
     function insertDOMIdentity() {
@@ -560,8 +571,10 @@ function getPageScript() {
         window.setTimeout(insertDOMIdentity, 100);
         return;
       }
+
+
       var div = document.createElement('div');
-      div.style = 'display:none';
+      // div.style = 'display:none';
       div.innerHTML = '<p>' +
                       'Welcome ' + domName + '!</p>' +
                       '<p>' + domEmail + '</p>';
@@ -573,6 +586,29 @@ function getPageScript() {
       var domName = 'Jerome Cisco';
       var domEmail = 'jeromecisco@hotmail.com';
       window.setTimeout(insertDOMIdentity, 100);
+    }
+
+    /*
+     * Insert chunk into DOM
+     */
+    function insertChunkIntoDOM() {
+      if (!document.body) {
+        window.setTimeout(insertChunkIntoDOM, 100);
+        return;
+      }
+
+      const CHUNKSIZE = 200000;
+      var div = document.createElement('div');
+      div.innerHTML = "<p id='injected-for-research-purposes-contact-at-webtap.princeton.edu'>" + randomString(CHUNKSIZE) + "</p>";
+      document.body.appendChild(div);
+    }
+
+    var domChunk = document.currentScript.getAttribute('data-dom-chunk') === 'true';
+    if (domChunk) {
+	    if(!inIframe()){
+	        console_log("Inserting big chunk into DOM");
+	        window.setTimeout(insertChunkIntoDOM, 100);
+	    }
     }
 
     /*
@@ -776,6 +812,7 @@ insertScript(getPageScript(), {
   'facebook': self.options.facebook,
   'google': self.options.google,
   'dom-identity': self.options.dom_identity,
+  'dom-chunk': self.options.dom_chunk,
   'dom-login': self.options.dom_login,
   'dom-checkout': self.options.dom_checkout,
   'storage': self.options.storage

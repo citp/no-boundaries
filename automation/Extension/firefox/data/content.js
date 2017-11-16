@@ -968,6 +968,24 @@ function getPageScript() {
       }, false);
     }
 
+    // Instrument page source reads innerHTML, outerHTML
+    var injectDomChunk = document.currentScript.
+      getAttribute('data-domChunk') === 'true';
+
+    if (injectDomChunk) {
+      var listenerLogSettings = {
+              logFunctionsAsStrings: true,
+              logCallStack: true,
+              propertiesToInstrument: [ "innerHTML", "outerHTML", "innerText", "textContent" ]
+        };
+      instrumentObject(window.HTMLBodyElement.prototype, "HTMLBodyElement",
+          listenerLogSettings);
+      instrumentObject(window.document.documentElement, "document.documentElement",
+          listenerLogSettings);
+      console_log("Instrumenting DOM source capturing.");
+    }
+
+
     // Enable logging
     inLog = false;
 
@@ -1016,5 +1034,6 @@ insertScript(getPageScript(), {
   fakeAutofill: self.options.fakeAutofill,
   autofillEmail: self.options.autofillEmail,
   autofillPassword: self.options.autofillPassword,
+  domChunk: self.options.domChunk,
   instrument_fbasyncinit: self.options.instrument_fbasyncinit
 });

@@ -5,7 +5,7 @@ var pageManager = require("./page-manager.js");
 
 exports.run = function(crawlID, testing, fakeAutofill,
                        autofillEmail, autofillPassword,
-                       instrument_fbasyncinit) {
+                       instrument_fbasyncinit, domChunk) {
 
   // Set up tables
   var createJavascriptTable = data.load("create_javascript_table.sql");
@@ -25,6 +25,7 @@ exports.run = function(crawlID, testing, fakeAutofill,
       'fakeAutofill': fakeAutofill,
       'autofillEmail': autofillEmail,
       'autofillPassword': autofillPassword,
+      'domChunk': domChunk,
       'instrument_fbasyncinit': instrument_fbasyncinit
     },
     onAttach: function onAttach(worker) {
