@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-sudo pip install -U -r requirements-analysis.txt
+pip install -U -r requirements-analysis.txt
 
 #  No need to install pbzip2 and jupyter on Travis
 if [ "$TRAVIS" != "true" ]; then
