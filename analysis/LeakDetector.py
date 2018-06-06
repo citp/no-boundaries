@@ -15,7 +15,9 @@ import zlib
 import json
 import re
 
-DELIMITERS = re.compile('[&|\,]')
+from urllib import quote_plus
+# DELIMITERS = re.compile('[&|\,]')
+DELIMITERS = re.compile('[&|\,]|%s|%s' % (quote_plus("="), quote_plus("&")))
 EXTENSION_RE = re.compile('\.[A-Za-z]{2,4}$')
 ENCODING_LAYERS = 3
 ENCODINGS_NO_ROT = ['base16', 'base32', 'base58', 'base64',
@@ -46,7 +48,7 @@ def load_requests_with_leaks(location):
                         'method', 'referrer', 'headers', 'loading_href',
                         'req_call_stack', 'content_policy_type',
                         'post_body', 'time_stamp',
-                        'url_leaks', 'cookie_leaks', 'post_body_leaks']
+                        'url_leaks', 'cookie_leaks', 'post_body_leaks', 'referrer_leaks']
     return requests
 
 
