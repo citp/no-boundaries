@@ -28,6 +28,42 @@ if not os.path.isdir(DATA_DIR):
 OUT_BASE = os.path.join(DATA_DIR, 'analysis')
 
 
+CHECK_REFERRER_LEAKS = True
+
+
+def check_row_for_leaks(args):
+    url, headers, post_body = args
+    url_leaks = detector.check_url(url)
+    url_leaks += detector.substring_search(url, max_layers=2)
+    cookie_leaks = detector.check_cookies(headers)
+    cookie_str = detector.get_cookie_str(headers, from_request=True)
+    cookie_leaks += detector.substring_search(cookie_str, max_layers=2)
+    post_leaks = detector.substring_search(post_body, max_layers=2)
+    if CHECK_REFERRER_LEAKS:
+        referrer_leaks = detector.check_referrer_header(headers)
+        referrer_str = detector.get_referrer_str(headers)
+        referrer_leaks += detector.substring_search(referrer_str, max_layers=2)
+        return url_leaks, cookie_leaks, post_leaks, referrer_leaks
+    else:
+        return url_leaks, cookie_leaks, post_leaks
+
+
+def check_resp_row_for_leaks(args):
+    url, headers, location = args
+    url_leaks = detector.check_url(url)
+    url_leaks += detector.substring_search(url)
+    set_cookie_leaks = detector.check_cookies(headers, from_request=False)
+    cookie_str = detector.get_cookie_str(headers, from_request=False)
+    set_cookie_leaks += detector.substring_search(cookie_str, max_layers=2)
+    location_leaks = detector.check_location_header(location)
+    location_str = detector.get_location_str(headers)
+    location_leaks += detector.substring_search(location_str, max_layers=2)
+    return url_leaks, set_cookie_leaks, location_leaks
+
+
+########################################
+
+
 if len(sys.argv) < 5:
     print ("Usage: detect_leaks_in_requests.py <db_folder> <output_name> <where_to_search>"
            "<search_string_1> ... <search_string_n>")
@@ -66,45 +102,13 @@ detector = LeakDetector.LeakDetector(
     encoding_layers=2, hash_layers=2
 )
 
-CHECK_REFERRER_LEAKS = True
-
-
-def check_row_for_leaks(args):
-    url, headers, post_body = args
-    url_leaks = detector.check_url(url)
-    url_leaks += detector.substring_search(url, max_layers=2)
-    cookie_leaks = detector.check_cookies(headers)
-    cookie_str = detector.get_cookie_str(headers, from_request=True)
-    cookie_leaks += detector.substring_search(cookie_str, max_layers=2)
-    post_leaks = detector.substring_search(post_body, max_layers=2)
-    if CHECK_REFERRER_LEAKS:
-        referrer_leaks = detector.check_referrer_header(headers)
-        referrer_str = detector.get_referrer_str(headers)
-        referrer_leaks += detector.substring_search(referrer_str, max_layers=2)
-        return url_leaks, cookie_leaks, post_leaks, referrer_leaks
-    else:
-        return url_leaks, cookie_leaks, post_leaks
-
-
-def check_resp_row_for_leaks(args):
-    url, headers, location = args
-    url_leaks = detector.check_url(url)
-    url_leaks += detector.substring_search(url)
-    set_cookie_leaks = detector.check_cookies(headers, from_request=False)
-    cookie_str = detector.get_cookie_str(headers, from_request=False)
-    set_cookie_leaks += detector.substring_search(cookie_str, max_layers=2)
-    location_leaks = detector.check_location_header(location)
-    location_str = detector.get_location_str(headers)
-    location_leaks += detector.substring_search(location_str, max_layers=2)
-    return url_leaks, set_cookie_leaks, location_leaks
-
-
+print "Will connect to DB", db_file
 con = sqlite3.connect(db_file)
 con.row_factory = sqlite3.Row
 cur = con.cursor()
 
-total = tuple(cur.execute("SELECT MAX(id) FROM http_requests").fetchone())[0]
-print "Total number of requests to process: %i" % total
+num_requests = tuple(cur.execute("SELECT MAX(id) FROM http_requests").fetchone())[0]
+print "Total number of requests to process: %i" % num_requests
 
 if where_to_search == "requests":
     cur.execute("SELECT r.id, r.crawl_id, r.visit_id, r.url, r.top_level_url, "
@@ -133,7 +137,7 @@ pool = mp.Pool(processes=n_cpu)
 if n_cpu > 16:
     # cluster specific code
     # read in all requests at once to memory
-    CHUNKSIZE = total
+    CHUNKSIZE = num_requests
 else:
     CHUNKSIZE = 100000
 
@@ -179,9 +183,16 @@ while True:
             if any(map(lambda x: len(x) > 0, results[i])):
                 output = tuple(rows[i]) + results[i]
                 f.write(json.dumps(output) + '\n')
-    if counter % 30 == 0:
-        print "Processed: %i | Time %0.2f" % (
-            counter*CHUNKSIZE, time.time() - start_time)
+    if counter % 10 == 0:
+        processed = counter * CHUNKSIZE
+        progress = 100 * processed / float(num_requests)
+        elapsed = time.time() - start_time
+        speed = processed / elapsed
+        remaining = (num_requests - processed)/speed
+        print "Processed: %i (%0.2f) Speed: %d rows/s | Elapsed %0.2f | "
+        "Remaining %d (mins)" % (processed, progress, speed, elapsed,
+                                 remaining / 60)
+
 pool.close()
 pool.join()
 print "Total time: %0.2f" % (time.time() - start_time)
