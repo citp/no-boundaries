@@ -189,9 +189,9 @@ while True:
         elapsed = time.time() - start_time
         speed = processed / elapsed
         remaining = (num_requests - processed)/speed
-        print "Processed: %i (%0.2f) Speed: %d rows/s | Elapsed %0.2f | "
-        "Remaining %d (mins)" % (processed, progress, speed, elapsed,
-                                 remaining / 60)
+        print "Processed: %i (%0.2f) Speed: %d rows/s | Elapsed %0.2f | "\
+            "Remaining %d (mins)" % (processed, progress, speed, elapsed,
+                                     remaining / 60)
 
 pool.close()
 pool.join()
