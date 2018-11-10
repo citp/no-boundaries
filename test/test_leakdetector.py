@@ -33,9 +33,9 @@ TEST_URLS = [
 class TestLeakDetector(unittest.TestCase):
 
     def test_url_leak_detection(self):
-        search_strings = [FORM_FILL_EMAIL, FORM_FILL_PASSWORD]
+        SEARCH_STRINGS = [FORM_FILL_EMAIL, FORM_FILL_PASSWORD]
         detector = LeakDetector.LeakDetector(
-            search_strings, encoding_set=LeakDetector.ENCODINGS_NO_ROT,
+            SEARCH_STRINGS, encoding_set=LeakDetector.ENCODINGS_NO_ROT,
             encoding_layers=3, hash_layers=3, debugging=True
         )
         for url in TEST_URLS:

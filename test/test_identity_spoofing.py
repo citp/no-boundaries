@@ -20,7 +20,7 @@ COOKIES = {
     u'xxx-uid': u'36732d0b-a127-4903-83a9-482cbcb56aef'
 }
 
-IFRAME_URL = u'https://rawgit.com/englehardt/e05f7b95f4713f94a70a9c0c55bad067/raw/160a3582fafece3e3287085f9d601e5e2b649a41/blank.html'  # noqa
+IFRAME_URL = u'https://gistcdn.githack.com/englehardt/e05f7b95f4713f94a70a9c0c55bad067/raw/160a3582fafece3e3287085f9d601e5e2b649a41/blank.html'  # noqa
 TOP_LEVEL_URL = u'http://localtest.me:8000/test_pages/simple_with_iframe.html'
 
 

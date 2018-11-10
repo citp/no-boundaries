@@ -36,7 +36,7 @@ class TestMITMProxy(OpenWPMTest):
         # (e.g. google.com). Otherwise, test would pass even there's a
         # problem with the mitmproxy certificate.
         # https://dxr.mozilla.org/mozilla-central/source/security/manager/ssl/StaticHPKPins.h#697  # noqa
-        test_url = "https://rawgit.com/"  # we use this site in the tests
+        test_url = "https://httpbin.org/"  # we use this site in the tests
 
         db = self.visit(test_url)
         self.assert_request_and_responses(db, test_url)
