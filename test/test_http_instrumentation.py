@@ -263,6 +263,8 @@ class TestHTTPInstrument(OpenWPMTest):
 
     def test_http_stacktrace(self):
         test_url = utilities.BASE_TEST_URL + '/http_stacktrace.html'
+        print "******* test_url", test_url
+        print "*********", HTTP_STACKTRACES
         db = self.visit(test_url, sleep_after=3)
         rows = db_utils.query_db(db, (
             "SELECT url, req_call_stack FROM http_requests"))
