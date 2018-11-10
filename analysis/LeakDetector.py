@@ -48,7 +48,8 @@ def load_requests_with_leaks(location):
                         'method', 'referrer', 'headers', 'loading_href',
                         'req_call_stack', 'content_policy_type',
                         'post_body', 'time_stamp',
-                        'url_leaks', 'cookie_leaks', 'post_body_leaks', 'referrer_leaks']
+                        'url_leaks', 'cookie_leaks', 'post_body_leaks',
+                        'referrer_leaks']
     return requests
 
 
@@ -554,7 +555,8 @@ class LeakDetector():
             return list()
         tokens, parameters = self._split_url(location_str)
         return self._check_whole_and_parts_for_leaks(
-            location_str, tokens, parameters, encoding_layers, substring_search)
+            location_str, tokens, parameters, encoding_layers,
+            substring_search)
 
     def check_referrer_header(self, header_str, encoding_layers=3,
                               substring_search=True):
@@ -569,11 +571,13 @@ class LeakDetector():
         # print "referrer_str", referrer_str
         tokens, parameters = self._split_url(referrer_str)
         return self._check_whole_and_parts_for_leaks(
-            referrer_str, tokens, parameters, encoding_layers, substring_search)
+            referrer_str, tokens, parameters, encoding_layers,
+            substring_search)
 
     def _check_whole_and_parts_for_leaks(self, input_string, tokens,
                                          parameters, encoding_layers,
                                          substring_search):
+        """Search an input string and its parts for leaks."""
         results = self._check_parts_for_leaks(tokens, parameters,
                                               encoding_layers)
         if substring_search:
