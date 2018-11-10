@@ -179,47 +179,47 @@ class DecodeException(Exception):
 class Decoder():
     def __init__(self):
         # Define supported encodings
-        encodings = dict()
-        encodings['base16'] = lambda x: base64.b16decode(x)
-        encodings['base32'] = lambda x: base64.b32decode(x)
-        encodings['base58'] = lambda x: base58.b58decode(x)
-        encodings['base64'] = lambda x: base64.b64decode(x)
-        encodings['urlencode'] = lambda x: urllib.unquote_plus(x)
-        encodings['deflate'] = lambda x: self._decompress_with_zlib('deflate',
+        decodings = dict()
+        decodings['base16'] = lambda x: base64.b16decode(x)
+        decodings['base32'] = lambda x: base64.b32decode(x)
+        decodings['base58'] = lambda x: base58.b58decode(x)
+        decodings['base64'] = lambda x: base64.b64decode(x)
+        decodings['urlencode'] = lambda x: urllib.unquote_plus(x)
+        decodings['deflate'] = lambda x: self._decompress_with_zlib('deflate',
                                                                     x)
-        encodings['zlib'] = lambda x: self._decompress_with_zlib('zlib', x)
-        encodings['gzip'] = lambda x: self._decompress_with_zlib('gzip', x)
-        encodings['json'] = lambda x: json.loads(x)
-        encodings['binary'] = lambda x: x.decode('bin')
-        encodings['entity'] = lambda x: x.decode('entity')
-        encodings['rot1'] = lambda x: x.decode('rot1')
-        encodings['rot10'] = lambda x: x.decode('rot10')
-        encodings['rot11'] = lambda x: x.decode('rot11')
-        encodings['rot12'] = lambda x: x.decode('rot12')
-        encodings['rot13'] = lambda x: x.decode('rot13')
-        encodings['rot14'] = lambda x: x.decode('rot14')
-        encodings['rot15'] = lambda x: x.decode('rot15')
-        encodings['rot16'] = lambda x: x.decode('rot16')
-        encodings['rot17'] = lambda x: x.decode('rot17')
-        encodings['rot18'] = lambda x: x.decode('rot18')
-        encodings['rot19'] = lambda x: x.decode('rot19')
-        encodings['rot2'] = lambda x: x.decode('rot2')
-        encodings['rot20'] = lambda x: x.decode('rot20')
-        encodings['rot21'] = lambda x: x.decode('rot21')
-        encodings['rot22'] = lambda x: x.decode('rot22')
-        encodings['rot23'] = lambda x: x.decode('rot23')
-        encodings['rot24'] = lambda x: x.decode('rot24')
-        encodings['rot25'] = lambda x: x.decode('rot25')
-        encodings['rot3'] = lambda x: x.decode('rot3')
-        encodings['rot4'] = lambda x: x.decode('rot4')
-        encodings['rot5'] = lambda x: x.decode('rot5')
-        encodings['rot6'] = lambda x: x.decode('rot6')
-        encodings['rot7'] = lambda x: x.decode('rot7')
-        encodings['rot8'] = lambda x: x.decode('rot8')
-        encodings['rot9'] = lambda x: x.decode('rot9')
-        encodings['yenc'] = lambda x: x.decode('yenc')
-        self._encodings = encodings
-        self.supported_encodings = self._encodings.keys()
+        decodings['zlib'] = lambda x: self._decompress_with_zlib('zlib', x)
+        decodings['gzip'] = lambda x: self._decompress_with_zlib('gzip', x)
+        decodings['json'] = lambda x: json.loads(x)
+        decodings['binary'] = lambda x: x.decode('bin')
+        decodings['entity'] = lambda x: x.decode('entity')
+        decodings['rot1'] = lambda x: x.decode('rot1')
+        decodings['rot10'] = lambda x: x.decode('rot10')
+        decodings['rot11'] = lambda x: x.decode('rot11')
+        decodings['rot12'] = lambda x: x.decode('rot12')
+        decodings['rot13'] = lambda x: x.decode('rot13')
+        decodings['rot14'] = lambda x: x.decode('rot14')
+        decodings['rot15'] = lambda x: x.decode('rot15')
+        decodings['rot16'] = lambda x: x.decode('rot16')
+        decodings['rot17'] = lambda x: x.decode('rot17')
+        decodings['rot18'] = lambda x: x.decode('rot18')
+        decodings['rot19'] = lambda x: x.decode('rot19')
+        decodings['rot2'] = lambda x: x.decode('rot2')
+        decodings['rot20'] = lambda x: x.decode('rot20')
+        decodings['rot21'] = lambda x: x.decode('rot21')
+        decodings['rot22'] = lambda x: x.decode('rot22')
+        decodings['rot23'] = lambda x: x.decode('rot23')
+        decodings['rot24'] = lambda x: x.decode('rot24')
+        decodings['rot25'] = lambda x: x.decode('rot25')
+        decodings['rot3'] = lambda x: x.decode('rot3')
+        decodings['rot4'] = lambda x: x.decode('rot4')
+        decodings['rot5'] = lambda x: x.decode('rot5')
+        decodings['rot6'] = lambda x: x.decode('rot6')
+        decodings['rot7'] = lambda x: x.decode('rot7')
+        decodings['rot8'] = lambda x: x.decode('rot8')
+        decodings['rot9'] = lambda x: x.decode('rot9')
+        decodings['yenc'] = lambda x: x.decode('yenc')
+        self._decodings = decodings
+        self.supported_encodings = self._decodings.keys()
 
     def _decompress_with_zlib(self, compression_type, string, level=9):
         """Compress in one of the zlib supported formats: zlib, gzip, or deflate.
@@ -239,12 +239,12 @@ class Decoder():
         """Catch-all error for all supported decoders"""
 
     def decode(self, encoding, string):
-        """Encode `string` in desired `encoding`"""
+        """Decode `string` encoded by `encoding`"""
         try:
-            return self._encodings[encoding](string)
+            return self._decodings[encoding](string)
         except Exception as e:
             raise DecodeException(
-                'Error while trying to apply encoding %s' % encoding,
+                'Error while trying to decode %s' % encoding,
                 e
             )
 
@@ -479,7 +479,7 @@ class LeakDetector():
         self._split_on_delims(purl.fragment, tokens, parameters)
         return tokens, parameters
 
-    def check_url(self, url, encoding_layers=3):
+    def check_url(self, url, encoding_layers=3, substring_search=True):
         """Check if a given url contains a leak"""
         tokens, parameters = self._split_url(url)
         if self._debugging:
@@ -489,18 +489,18 @@ class LeakDetector():
             print "\nURL parameters:"
             for key, value in parameters:
                 print "Key: %s | Value: %s" % (key, value)
-        return self._check_parts_for_leaks(tokens, parameters, encoding_layers)
+        return self._check_whole_and_parts_for_leaks(
+            url, tokens, parameters, encoding_layers, substring_search)
 
     def _get_header_str(self, header_str, header_name):
         """Returns the header string parsed from `header_str`"""
         for item in json.loads(header_str):
             if item[0] == header_name:
                 return item[1]
-        return
+        return ""
 
-    def _split_cookie(self, header_str, from_request=True):
+    def _split_cookie(self, cookie_str, from_request=True):
         """Returns all parsed parts of the cookie names and values"""
-        cookie_str = self.get_cookie_str(header_str, from_request)
         if cookie_str is None:
             return
         try:
@@ -525,6 +525,8 @@ class LeakDetector():
         return self._get_header_str(header_str, "Referer")
 
     def get_cookie_str(self, header_str, from_request=True):
+        if not header_str:
+            return ""
         if from_request:
             header_name = 'Cookie'
         else:
@@ -533,24 +535,29 @@ class LeakDetector():
         return self._get_header_str(header_str, header_name)
 
     def check_cookies(self, header_str, encoding_layers=3,
-                      from_request=True):
+                      from_request=True, substring_search=True):
         """Check the cookies portion of the header string for leaks"""
-        if header_str == '':
+        cookie_str = self.get_cookie_str(header_str, from_request)
+        if not cookie_str:
             return list()
         rv = self._split_cookie(header_str, from_request=from_request)
         if rv is None:
             return list()
         tokens, parameters = rv
-        return self._check_parts_for_leaks(tokens, parameters, encoding_layers)
+        return self._check_whole_and_parts_for_leaks(
+            cookie_str, tokens, parameters, encoding_layers, substring_search)
 
-    def check_location_header(self, location_str, encoding_layers=3):
+    def check_location_header(self, location_str, encoding_layers=3,
+                              substring_search=True):
         """Check the Location HTTP response header for leaks."""
         if location_str == '':
             return list()
         tokens, parameters = self._split_url(location_str)
-        return self._check_parts_for_leaks(tokens, parameters, encoding_layers)
+        return self._check_whole_and_parts_for_leaks(
+            location_str, tokens, parameters, encoding_layers, substring_search)
 
-    def check_referrer_header(self, header_str, encoding_layers=3):
+    def check_referrer_header(self, header_str, encoding_layers=3,
+                              substring_search=True):
         """Check the Referer HTTP request header for leaks."""
         if header_str == '':
             return list()
@@ -561,7 +568,20 @@ class LeakDetector():
             return list()
         # print "referrer_str", referrer_str
         tokens, parameters = self._split_url(referrer_str)
-        return self._check_parts_for_leaks(tokens, parameters, encoding_layers)
+        return self._check_whole_and_parts_for_leaks(
+            referrer_str, tokens, parameters, encoding_layers, substring_search)
+
+    def _check_whole_and_parts_for_leaks(self, input_string, tokens,
+                                         parameters, encoding_layers,
+                                         substring_search):
+        results = self._check_parts_for_leaks(tokens, parameters,
+                                              encoding_layers)
+        if substring_search:
+            substr_results = self.substring_search(input_string, max_layers=2)
+            # filter repeating results
+            return list(set(results + substr_results))
+        else:
+            return results
 
     def substring_search(self, input_string, max_layers=None):
         """Do a substring search for all precomputed hashes/encodings
