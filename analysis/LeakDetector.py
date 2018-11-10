@@ -502,8 +502,8 @@ class LeakDetector():
 
     def _split_cookie(self, cookie_str, from_request=True):
         """Returns all parsed parts of the cookie names and values"""
-        if cookie_str is None:
-            return
+        tokens = set()
+        parameters = set()
         try:
             if from_request:
                 cookies = ck.Cookies.from_request(cookie_str)
@@ -511,9 +511,8 @@ class LeakDetector():
                 cookies = ck.Cookies.from_response(cookie_str,
                                                    ignore_bad_cookies=True)
         except (ck.InvalidCookieError, UnicodeDecodeError, KeyError):
-            return
-        tokens = set()
-        parameters = set()
+            return tokens, parameters  # return empty sets
+
         for cookie in cookies.values():
             self._split_on_delims(cookie.name, tokens, parameters)
             self._split_on_delims(cookie.value, tokens, parameters)
@@ -541,10 +540,7 @@ class LeakDetector():
         cookie_str = self.get_cookie_str(header_str, from_request)
         if not cookie_str:
             return list()
-        rv = self._split_cookie(header_str, from_request=from_request)
-        if rv is None:
-            return list()
-        tokens, parameters = rv
+        tokens, parameters = self._split_cookie(header_str, from_request=from_request)
         return self._check_whole_and_parts_for_leaks(
             cookie_str, tokens, parameters, encoding_layers, substring_search)
 
