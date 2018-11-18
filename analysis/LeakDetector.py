@@ -25,7 +25,7 @@ ENCODINGS_NO_ROT = ['base16', 'base32', 'base58', 'base64',
                     'deflate', 'zlib', 'gzip']
 LIKELY_ENCODINGS = ['base16', 'base32', 'base58', 'base64',
                     'urlencode', 'yenc', 'entity']
-HASHES = ['md2', 'md4', 'md5', 'sha', 'sha1', 'sha256', 'sha224', 'sha384',
+HASHES = ['md2', 'md4', 'md5', 'sha1', 'sha256', 'sha224', 'sha384',
           'sha512', 'sha3_224', 'sha3_256', 'sha3_384', 'sha3_512', 'mmh2',
           'mmh2_unsigned', 'mmh3_32', 'mmh3_64_1', 'mmh3_64_2', 'mmh3_128',
           'ripemd160', 'whirlpool', 'blake2b', 'blake2s']
@@ -500,12 +500,7 @@ class LeakDetector():
 
     def _split_cookie(self, header_str, from_request=True):
         """Returns all parsed parts of the cookie names and values"""
-        if from_request:
-            header_name = 'Cookie'
-        else:
-            header_name = 'Set-Cookie'
-
-        cookie_str = self._get_header_str(header_str, header_name)
+        cookie_str = self.get_cookie_str(header_str, from_request)
         if cookie_str is None:
             return
         try:
@@ -522,6 +517,20 @@ class LeakDetector():
             self._split_on_delims(cookie.name, tokens, parameters)
             self._split_on_delims(cookie.value, tokens, parameters)
         return tokens, parameters
+
+    def get_location_str(self, header_str):
+        return self._get_header_str(header_str, "Location")
+
+    def get_referrer_str(self, header_str):
+        return self._get_header_str(header_str, "Referer")
+
+    def get_cookie_str(self, header_str, from_request=True):
+        if from_request:
+            header_name = 'Cookie'
+        else:
+            header_name = 'Set-Cookie'
+
+        return self._get_header_str(header_str, header_name)
 
     def check_cookies(self, header_str, encoding_layers=3,
                       from_request=True):
@@ -545,7 +554,7 @@ class LeakDetector():
         """Check the Referer HTTP request header for leaks."""
         if header_str == '':
             return list()
-        referrer_str = self._get_header_str(header_str, "Referer")
+        referrer_str = self.get_referrer_str(header_str)
         # We use this check instead of ==''
         # since _get_header_str may return None
         if not referrer_str:

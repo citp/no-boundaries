@@ -61,7 +61,10 @@ def get_ps_plus_1(url, **kwargs):
     if 'psl' not in kwargs:
         raise ValueError(
             "A PublicSuffixList must be passed as a keyword argument.")
-    hostname = urlparse(url).hostname
+    try:
+        hostname = urlparse(url).hostname
+    except Exception:
+        return None
     if is_ip_address(hostname):
         return hostname
     elif hostname is None:
@@ -70,7 +73,7 @@ def get_ps_plus_1(url, **kwargs):
         # * a relative url
         # * a `javascript:` or `data:` url
         # * many others
-        return
+        return None
     else:
         return kwargs['psl'].get_public_suffix(hostname)
 
