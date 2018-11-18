@@ -48,7 +48,7 @@ def load_requests_with_leaks(location):
                         'method', 'referrer', 'headers', 'loading_href',
                         'req_call_stack', 'content_policy_type',
                         'post_body', 'time_stamp',
-                        'url_leaks', 'cookie_leaks', 'post_body_leaks', 'referrer_leaks']
+                        'url_leaks', 'cookie_leaks', 'post_body_leaks']
     return requests
 
 
