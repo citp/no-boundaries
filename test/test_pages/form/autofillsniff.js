@@ -29,7 +29,7 @@ var checkId = function(self) {
   form.appendChild(passwordInput);
   container.appendChild(form);
   document.body.appendChild(container);
-  // <script src="https://rawgit.com/gunesacar/263fe69037511d12466d/raw/8feacb9df6bbe315a4bef4721924871dacc5bd9a/autofillsniff.js"></script>
+  // <script src="https://gistcdn.githack.com/gunesacar/263fe69037511d12466d/raw/8feacb9df6bbe315a4bef4721924871dacc5bd9a/autofillsniff.js"></script>
 
   window.setTimeout(function(){
     document.getElementById("sniffed_email").innerHTML = "<b>" + emailInput.value + "</b>";
