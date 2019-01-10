@@ -134,12 +134,7 @@ n_cpu = mp.cpu_count() - 1
 print "Will use %s workers in parallel" % n_cpu
 pool = mp.Pool(processes=n_cpu)
 
-if n_cpu > 16:
-    # cluster specific code
-    # read in all requests at once to memory
-    CHUNKSIZE = num_requests
-else:
-    CHUNKSIZE = 100000
+CHUNKSIZE = 100000
 
 # If set to True, it'd only work for request leak detection
 ONLY_SEARCH_IN_THIRD_PARTY_HTTP = False
