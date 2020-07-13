@@ -28,7 +28,7 @@ OUTPUT_CRAWL_SITES_FORM = os.path.join(DATA_DIR,
 OUTPUT_BAD_SITES = os.path.join(DATA_DIR, 'bad_sites_from_sample.txt')
 
 # Data collected with OpenWPM crawl
-OPENWPM_LINKS_DIR = '***REMOVED***/identity_tracking/internal_links_openwpm'
+OPENWPM_LINKS_DIR = '../../identity_tracking/internal_links_openwpm'
 OPENWPM_OUTPUT_SITES = os.path.join(DATA_DIR, 'openwpm_sites_to_crawl.json')
 OPENWPM_OUTPUT_SITES_FORM = os.path.join(
     DATA_DIR, 'openwpm_sites_to_crawl_form_filling.json')

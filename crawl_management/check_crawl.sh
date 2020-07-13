@@ -9,7 +9,7 @@ if [ "$#" -lt 1 ]; then
     exit 1
 fi
 
-key=/home/***REMOVED***/.ssh/crawler_access
+key=/path/to/access_key
 LOG_FILE=/home/ubuntu/crontab.log
 INDEX_FILE=/home/ubuntu/.openwpm/current_site_index
 host=ubuntu@$1

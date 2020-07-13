@@ -20,6 +20,7 @@ if ssh -i ~/.ssh/$keyname -q $host [[ -f /tmp/crawl.running ]]; then
 fi
 
 printf '\nCrawls to archive: \n'
+# replace 2017 in the following line with the current year
 crawl_dirs=( $(ssh -i ~/.ssh/$keyname $host 'ls -1 --ignore "*.tar.bz2" | grep 2017') )
 for dir in ${crawl_dirs[@]}; do
     echo '  *'$dir

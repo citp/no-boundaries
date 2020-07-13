@@ -9,8 +9,7 @@ from os.path import join, dirname
 INSTANCE_FILTER = 'embedding-crawl-' + str(datetime.datetime.now().year) + '*'
 EXPERIMENT_FILTER = re.compile(
     'embedding-crawl-\d{4}-\d{2}-\d{2}-(?P<crawl_name>.*)')
-RECIPIENTS = ['ste@cs.princeton.edu',
-              'gunes.acar@esat.kuleuven.be']
+RECIPIENTS = ['']  # list of email addresses
 
 ec2 = boto3.client('ec2')
 reservations = ec2.describe_instances(Filters=[

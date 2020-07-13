@@ -20,11 +20,7 @@ import df_utils as dfu
 # DATA_DIR/analysis/2017-06-03_crawl_1/<analysis_file_2>
 # DATA_DIR/analysis/2017-06-20_crawl_2/...
 # DATA_DIR/analysis/...
-DATA_DIR = '***REMOVED***/identity_tracking_decompressed/'
-if not os.path.isdir(DATA_DIR):
-    DATA_DIR = '/media/***REMOVED***/Data/dev/no_boundaries/'
-if not os.path.isdir(DATA_DIR):
-    DATA_DIR = '***REMOVED***/identity_tracking'
+DATA_DIR = ''  # !!! needs to be specified
 OUT_BASE = os.path.join(DATA_DIR, 'analysis')
 
 
