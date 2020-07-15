@@ -1,5 +1,16 @@
-OpenWPM Third-party Identity Sniffing Fork
+OpenWPM - No boundaries fork
 =======
+This is a fork of OpenWPM used in the "[No boundaries: data exfiltration by third parties embedded on web pages](https://webtransparency.cs.princeton.edu/no_boundaries/)" study, which appeared at 2020 Privacy Enhancing Technologies Symposium.
+
+Please check the [upstream repository of OpenWPM](https://github.com/mozilla/OpenWPM/) for the latest README and instructions. The instructions below are for an (now) outdated version of OpenWPM that we used in our study.
+
+### Scripts and data files specific to this study:
+- **measurement_passive_identity.py**: Used to detect Login Manager misuse and Whole-DOM Scraping
+- **measurement_dom_chunk.py**: Used to detect Whole-DOM Scraping
+- **measurement_dom_chunk_no_injection.py** Used to detect Whole-DOM Scraping
+- **measurement_facebook_api.py**: Used to detect Social API misuse
+- **sites_to_crawl.json**: The list of homepage and inner page URLs crawled in the study
+
 
 OpenWPM is a web privacy measurement framework which makes it easy to collect
 data for privacy studies on a scale of thousands to millions of site. OpenWPM
