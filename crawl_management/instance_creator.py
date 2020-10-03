@@ -38,8 +38,8 @@ VOLUME_SIZE = {
 }
 AMI_ID = 'ami-e13739f6'  # generic Ubuntu 16.04
 NUM_INSTANCES = 1
-KEY_NAME = '***REMOVED***'
-SECURITY_GROUP_ID = '***REMOVED***'  # TODO
+KEY_NAME = '***********'
+SECURITY_GROUP_ID = '***********'  # TODO
 VOLUME_INFO = {'DeviceName': '/dev/sda1',
                'Ebs': {
                    'VolumeSize': None,  # should be set by VOLUME_SIZE
